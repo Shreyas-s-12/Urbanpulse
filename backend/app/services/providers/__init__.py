@@ -1,0 +1,1 @@
+# UrbanPulse Provider Adapters Package

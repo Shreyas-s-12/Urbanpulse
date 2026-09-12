@@ -1,0 +1,61 @@
+{
+  "EventCategory": [
+    "ACCIDENT",
+    "FIRE",
+    "FLOOD",
+    "EARTHQUAKE",
+    "CYCLONE",
+    "STORM",
+    "LANDSLIDE",
+    "POTHOLE",
+    "ROAD_CLOSURE",
+    "TRAFFIC",
+    "MURDER",
+    "ROBBERY",
+    "THEFT",
+    "GARBAGE",
+    "BLOCKED_DRAIN",
+    "FALLEN_TREE",
+    "WEATHER_ALERT",
+    "OTHER"
+  ],
+  "EventStatus": [
+    "VERIFIED",
+    "REPORTED",
+    "UNVERIFIED",
+    "MONITORING",
+    "RESOLVED"
+  ],
+  "EventSource": [
+    "Google Maps",
+    "Open-Meteo",
+    "USGS",
+    "GDACS",
+    "Official Police Feed",
+    "Municipal Dispatch",
+    "Verified Citizen Feed",
+    "UrbanPulse Sensor",
+    "Demo Data"
+  ],
+  "TravelMode": [
+    "drive",
+    "two_wheeler",
+    "transit",
+    "walk",
+    "bicycle"
+  ],
+  "RouteCategory": [
+    "FASTEST",
+    "SAFEST",
+    "LOWEST_RISK",
+    "RECOMMENDED"
+  ],
+  "IntelligenceRadiusKm": [
+    5,
+    10,
+    25,
+    50,
+    100,
+    250
+  ]
+}

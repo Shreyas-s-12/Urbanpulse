@@ -1,0 +1,79 @@
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Node.js / Frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.next/
+out/
+build/
+dist/
+.turbo/
+coverage/
+
+# Python / Backend / AI
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# AI Model Checkpoints, Weights & Large Datasets
+ai/models/weights/
+*.onnx
+*.pt
+*.pth
+*.bin
+*.h5
+*.tflite
+*.safetensors
+ai/evaluation/results/*.csv
+
+# Vector Databases & Local Caches
+data/chroma/
+data/faiss/
+data/weaviate/
+*.parquet
+
+# IDE / Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker / Database Data Mounts
+postgres_data/
+redis_data/

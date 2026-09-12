@@ -1,0 +1,55 @@
+{
+  "DEFAULT_INTELLIGENCE_RADIUS_KM": 50.0,
+  "DEFAULT_CRS": "EPSG:4326",
+  "SUPPORTED_RADII_KM": [5, 10, 25, 50, 100, 250],
+  "PRESET_GLOBAL_LOCATIONS": [
+    {
+      "city": "Bengaluru",
+      "region": "Karnataka",
+      "country": "India",
+      "latitude": 12.9716,
+      "longitude": 77.5946,
+      "timezone": "Asia/Kolkata"
+    },
+    {
+      "city": "Mysuru",
+      "region": "Karnataka",
+      "country": "India",
+      "latitude": 12.2958,
+      "longitude": 76.6394,
+      "timezone": "Asia/Kolkata"
+    },
+    {
+      "city": "London",
+      "region": "Greater London",
+      "country": "United Kingdom",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "timezone": "Europe/London"
+    },
+    {
+      "city": "Tokyo",
+      "region": "Kanto",
+      "country": "Japan",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "timezone": "Asia/Tokyo"
+    },
+    {
+      "city": "New York",
+      "region": "New York",
+      "country": "United States",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "timezone": "America/New_York"
+    },
+    {
+      "city": "Sydney",
+      "region": "New South Wales",
+      "country": "Australia",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "timezone": "Australia/Sydney"
+    }
+  ]
+}

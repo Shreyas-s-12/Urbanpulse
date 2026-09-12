@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  # Spatial Database: PostgreSQL + PostGIS extension
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: urbanpulse_postgis
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-urbanpulse_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-urbanpulse_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-urbanpulse_db}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/functions:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-urbanpulse_admin} -d ${POSTGRES_DB:-urbanpulse_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - urbanpulse_network
+
+  # Cache & Event Broker
+  redis:
+    image: redis:7-alpine
+    container_name: urbanpulse_redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - urbanpulse_network
+
+  # Backend Core API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: urbanpulse_backend
+    restart: unless-stopped
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-urbanpulse_admin}:${POSTGRES_PASSWORD:-urbanpulse_secret}@db:5432/${POSTGRES_DB:-urbanpulse_db}
+      - REDIS_URL=redis://redis:6379/0
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - ./backend:/app
+      - ./shared:/shared
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - urbanpulse_network
+
+  # Frontend Web Client
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: urbanpulse_frontend
+    restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api/v1
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - urbanpulse_network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  urbanpulse_network:
+    driver: bridge

@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UrbanIncident",
+  "type": "object",
+  "required": ["id", "city", "category", "severity", "location", "timestamp", "status"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "city": { "type": "string", "enum": ["bengaluru", "mysuru"] },
+    "category": {
+      "type": "string",
+      "enum": [
+        "traffic_congestion",
+        "road_accident",
+        "pothole",
+        "road_damage",
+        "waterlogging_flood",
+        "fire_incident",
+        "cleanliness_waste",
+        "tree_hazard_fallen",
+        "infrastructure_breakdown"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["low", "moderate", "high", "critical"]
+    },
+    "location": {
+      "type": "object",
+      "required": ["latitude", "longitude"],
+      "properties": {
+        "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
+        "longitude": { "type": "number", "minimum": -180, "maximum": 180 },
+        "address": { "type": "string" },
+        "ward": { "type": "string" }
+      }
+    },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "status": {
+      "type": "string",
+      "enum": ["reported", "ai_verified", "official_verified", "resolved", "rejected"]
+    },
+    "confidenceScore": { "type": "number", "minimum": 0, "maximum": 1 },
+    "mediaUrls": {
+      "type": "array",
+      "items": { "type": "string", "format": "uri" }
+    }
+  }
+}
