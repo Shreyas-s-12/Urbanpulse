@@ -5,6 +5,7 @@ import { useLocationStore } from '@/stores/useLocationStore';
 import { useNearbyEvents } from '@/hooks/useNearbyEvents';
 import { copilotService } from '@/services/copilotService';
 import { CopilotMessage } from '@shared/types';
+import MarkdownRenderer from '@/components/common/MarkdownRenderer';
 
 export default function CopilotView() {
   const { currentLocation, selectedRadiusKm } = useLocationStore();
@@ -145,16 +146,17 @@ export default function CopilotView() {
               <div
                 style={{
                   maxWidth: '82%',
-                  backgroundColor: isUser ? 'var(--accent-blue)' : 'var(--bg-app)',
+                  backgroundColor: isUser ? 'var(--accent-blue)' : 'var(--bg-surface)',
                   color: isUser ? '#FFFFFF' : 'var(--text-primary)',
                   padding: '14px 18px',
                   borderRadius: isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
                   fontSize: '13px',
-                  lineHeight: 1.5,
+                  lineHeight: 1.55,
                   border: isUser ? 'none' : '1px solid var(--border-subtle)',
+                  boxShadow: isUser ? 'var(--shadow-sm)' : 'var(--shadow-xs)',
                 }}
               >
-                <div>{msg.content}</div>
+                <MarkdownRenderer content={msg.content} isUser={isUser} />
 
                 {/* Cited Live Signals */}
                 {msg.citedLiveSignals && msg.citedLiveSignals.length > 0 && (

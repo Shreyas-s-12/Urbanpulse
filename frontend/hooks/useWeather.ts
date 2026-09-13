@@ -8,14 +8,17 @@ export function useWeather(latitude: number | null | undefined, longitude: numbe
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Reset immediately to avoid stale data leakage when switching locations
+    setWeather(null);
+    setError(null);
+
     if (latitude === null || latitude === undefined || longitude === null || longitude === undefined) {
-      setWeather(null);
+      setLoading(false);
       return;
     }
 
     let isMounted = true;
     setLoading(true);
-    setError(null);
 
     weatherClient
       .fetchWeather(latitude, longitude)

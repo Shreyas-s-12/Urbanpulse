@@ -69,16 +69,22 @@ export const locationService = {
           addr.suburb ||
           'Local Area';
         const district = addr.county || addr.state_district || '';
-        const region = addr.state || addr.province || '';
+        const state = addr.state || addr.province || '';
+        const region = state;
         const country = addr.country || '';
+        const countryCode = (addr.country_code || '').toUpperCase() || undefined;
+        const regionCode = addr['ISO3166-2-lvl4'] || undefined;
 
         return {
           latitude,
           longitude,
           city,
           district,
+          state,
           region,
           country,
+          countryCode,
+          regionCode,
           displayName: data.display_name || city + ', ' + country,
           isUserLocation: false,
         };
@@ -136,16 +142,22 @@ export const locationService = {
             item.name ||
             'Location';
           const district = addr.county || addr.state_district || '';
-          const region = addr.state || addr.province || '';
+          const state = addr.state || addr.province || '';
+          const region = state;
           const country = addr.country || '';
+          const countryCode = (addr.country_code || '').toUpperCase() || undefined;
+          const regionCode = addr['ISO3166-2-lvl4'] || undefined;
 
           return {
             latitude: parseFloat(item.lat),
             longitude: parseFloat(item.lon),
             city,
             district,
+            state,
             region,
             country,
+            countryCode,
+            regionCode,
             displayName: item.display_name || city + ', ' + country,
             isUserLocation: false,
           };

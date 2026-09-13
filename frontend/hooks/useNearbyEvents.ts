@@ -12,14 +12,17 @@ export function useNearbyEvents(
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Reset immediately to avoid stale events when switching locations
+    setEvents([]);
+    setError(null);
+
     if (latitude === null || latitude === undefined || longitude === null || longitude === undefined) {
-      setEvents([]);
+      setLoading(false);
       return;
     }
 
     let isMounted = true;
     setLoading(true);
-    setError(null);
 
     eventService
       .getEventsWithinRadius(latitude, longitude, radiusKm)

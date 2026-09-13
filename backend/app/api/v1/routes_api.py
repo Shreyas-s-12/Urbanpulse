@@ -14,10 +14,14 @@ from datetime import datetime, timezone
 
 from app.services.providers.geocoding_provider import GeocodingProvider
 from app.services.providers.weather_provider import WeatherProvider
+from app.services.providers.air_quality_provider import AirQualityProvider
+from app.services.providers.road_provider import RoadProvider
 from app.services.providers.earthquake_provider import EarthquakeProvider
 from app.services.providers.routing_provider import RoutingProvider
 from app.services.providers.crime_provider import CrimeProvider
 from app.services.event_fusion import EventFusionService
+from app.services.google_traffic import GoogleTrafficService
+from app.services.urban_intel import UrbanIntelService
 
 router = APIRouter(prefix="/api/v1", tags=["UrbanPulse Intelligence"])
 
@@ -76,12 +80,14 @@ async def coordinate_query(
     return CoordinateQuery(latitude=resolved_lat, longitude=resolved_lon)
 
 
-def event_collection_status(events: List[Dict[str, Any]]) -> str:
-    if not events:
-        return "UNAVAILABLE"
-    if all(event.get("source") == "Demo Data" for event in events):
-        return "DEMO"
-    return "AVAILABLE"
+def event_collection_status(events: List[Dict[str, Any]], providers_checked: Optional[List[str]] = None) -> str:
+    if events:
+        if all(event.get("source") == "Demo Data" for event in events):
+            return "DEMO"
+        return "AVAILABLE"
+    if providers_checked and len(providers_checked) > 0:
+        return "EMPTY_VERIFIED"
+    return "NO_COVERAGE"
 
 
 # ==============================================================================
@@ -122,37 +128,34 @@ async def get_weather(
 # 3. Events & Incidents Endpoints (Spatial Radial Query & 24h History)
 # ==============================================================================
 
+@router.get("/events")
 @router.get("/events/nearby")
+@router.get("/hazards")
 @router.get("/incidents/nearby")
 async def get_nearby_events(
     coords: CoordinateQuery = Depends(coordinate_query),
     radius_km: Optional[float] = Query(None),
     radius: Optional[float] = Query(None),
+    category: Optional[str] = Query(None),
 ):
     """Retrieve normalized CITY_EVENT items within a specified radius."""
     selected_radius = radius_km if radius_km is not None else (radius if radius is not None else 50.0)
-    events = EventFusionService.get_events_near_location(coords.latitude, coords.longitude, selected_radius)
-
-    # Ingest live USGS earthquakes if within radius
-    try:
-        quakes = await EarthquakeProvider.get_earthquakes(coords.latitude, coords.longitude, radius_km=selected_radius)
-        if quakes:
-            # Merge with existing
-            existing_ids = {e["eventId"] for e in events}
-            for qk in quakes:
-                if qk["eventId"] not in existing_ids:
-                    events.append(qk)
-    except Exception:
-        pass
-
+    fusion_result = await EventFusionService.get_live_events_near_location(
+        center_lat=coords.latitude,
+        center_lon=coords.longitude,
+        radius_km=selected_radius,
+        category=category,
+    )
+    events = fusion_result.get("events", [])
     events.sort(key=lambda x: x.get("distanceKm", 0))
 
     return {
-        "status": event_collection_status(events),
+        "status": fusion_result.get("status", event_collection_status(events, fusion_result.get("providersChecked"))),
         "center": {"latitude": coords.latitude, "longitude": coords.longitude},
         "radiusKm": selected_radius,
         "count": len(events),
         "events": events,
+        "providersChecked": fusion_result.get("providersChecked", []),
         "lastUpdated": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -162,20 +165,29 @@ async def get_event_history(
     coords: CoordinateQuery = Depends(coordinate_query),
     radius_km: Optional[float] = Query(None),
     radius: Optional[float] = Query(None),
+    category: Optional[str] = Query(None),
     hours: int = Query(24),
 ):
     """Chronological 24-hour event timeline for given coordinates."""
     selected_radius = radius_km if radius_km is not None else (radius if radius is not None else 50.0)
-    events = EventFusionService.get_events_near_location(coords.latitude, coords.longitude, selected_radius)
+    fusion_result = await EventFusionService.get_live_events_near_location(
+        center_lat=coords.latitude,
+        center_lon=coords.longitude,
+        radius_km=selected_radius,
+        hours=hours,
+        category=category,
+    )
+    events = fusion_result.get("events", [])
     events.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
 
     return {
-        "status": event_collection_status(events),
+        "status": fusion_result.get("status", event_collection_status(events, fusion_result.get("providersChecked"))),
         "center": {"latitude": coords.latitude, "longitude": coords.longitude},
         "radiusKm": selected_radius,
         "timeWindowHours": hours,
         "count": len(events),
         "events": events,
+        "providersChecked": fusion_result.get("providersChecked", []),
         "lastUpdated": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -208,8 +220,112 @@ async def event_stream(
 
 
 # ==============================================================================
-# 4. Urban Condition Scoring Endpoint (Transparent Deterministic Formula)
+# 4. Traffic Endpoint (Google Routes API v2 Real-Time Conditions)
 # ==============================================================================
+
+@router.get("/traffic")
+async def get_traffic(
+    coords: CoordinateQuery = Depends(coordinate_query),
+    radius_km: Optional[float] = Query(None),
+    radius: Optional[float] = Query(None),
+):
+    """Retrieve real-time Google Traffic telemetry and congestion conditions."""
+    selected_radius = radius_km if radius_km is not None else (radius if radius is not None else 50.0)
+    return await GoogleTrafficService.get_traffic_summary(coords.latitude, coords.longitude, selected_radius)
+
+
+# ==============================================================================
+# 5. Global Intelligence & Domain Endpoints
+# ==============================================================================
+
+@router.get("/intel")
+async def get_urban_intel(
+    coords: CoordinateQuery = Depends(coordinate_query),
+    radius_km: Optional[float] = Query(None),
+    radius: Optional[float] = Query(None),
+    scale: Optional[str] = Query(None),
+    units: Optional[str] = Query("metric"),
+):
+    """
+    Unified master intelligence endpoint returning the normalized UrbanIntelResponse.
+    Integrates all location-aware provider adapters with explicit source provenance.
+    """
+    selected_radius = radius_km if radius_km is not None else (radius if radius is not None else 50.0)
+    return await UrbanIntelService.get_full_intelligence(
+        coords.latitude,
+        coords.longitude,
+        radius_km=selected_radius,
+        requested_aqi_scale=scale,
+        units=units or "metric",
+    )
+
+
+@router.get("/air-quality")
+async def get_air_quality(
+    coords: CoordinateQuery = Depends(coordinate_query),
+    scale: Optional[str] = Query(None),
+    country_code: Optional[str] = Query(None),
+):
+    """
+    Standard-aware air quality intelligence powered by Open-Meteo CAMS/SILAM.
+    Supports US AQI, CPCB India AQI, and European AQI.
+    """
+    return await AirQualityProvider.get_air_quality(
+        coords.latitude,
+        coords.longitude,
+        country_code=country_code,
+        requested_scale=scale,
+    )
+
+
+@router.get("/roads")
+async def get_roads(
+    coords: CoordinateQuery = Depends(coordinate_query),
+    radius_km: Optional[float] = Query(None),
+    radius: Optional[float] = Query(None),
+):
+    """
+    Separates Road Network coverage from physical road surface condition monitoring.
+    """
+    selected_radius = radius_km if radius_km is not None else (radius if radius is not None else 50.0)
+    fusion_result = await EventFusionService.get_live_events_near_location(
+        center_lat=coords.latitude,
+        center_lon=coords.longitude,
+        radius_km=selected_radius,
+    )
+    events = fusion_result.get("events", [])
+    return await RoadProvider.get_road_status_async(coords.latitude, coords.longitude, selected_radius, events)
+
+
+@router.get("/civil-safety")
+async def get_civil_safety(
+    coords: CoordinateQuery = Depends(coordinate_query),
+    radius_km: Optional[float] = Query(None),
+    radius: Optional[float] = Query(None),
+    country_code: Optional[str] = Query(None),
+    city: Optional[str] = Query(None),
+):
+    """
+    Jurisdiction-aware civil safety and public incident transparency endpoint.
+    Distinguishes official police dispatch feeds, municipal open data, and civic safety bulletins.
+    """
+    selected_radius = radius_km if radius_km is not None else (radius if radius is not None else 50.0)
+    # If country_code not passed, resolve via geocoding
+    resolved_country = country_code
+    resolved_city = city
+    if not resolved_country:
+        try:
+            loc = await GeocodingProvider.reverse_geocode(coords.latitude, coords.longitude)
+            resolved_country = loc.get("countryCode")
+            resolved_city = loc.get("city") or resolved_city
+        except Exception:
+            pass
+
+    return await CrimeProvider.get_crime_events_async(
+        coords.latitude, coords.longitude, selected_radius, country_code=resolved_country, city=resolved_city
+    )
+
+
 
 @router.get("/urban-condition")
 async def get_urban_condition(
@@ -218,182 +334,12 @@ async def get_urban_condition(
     radius: Optional[float] = Query(None),
 ):
     """
-    Computes transparent 0-100 Urban Condition Score from available signals.
-    Never invents missing data. If a provider is unavailable, score is null.
+    Computes transparent, deterministic 0-100 Urban Condition Score.
+    Reports knownSignals vs missingSignals and penalizes missing signals in confidence.
     """
-    # 1. Fetch live events
     selected_radius = radius_km if radius_km is not None else (radius if radius is not None else 50.0)
-    events = EventFusionService.get_events_near_location(coords.latitude, coords.longitude, selected_radius)
-    try:
-        quakes = await EarthquakeProvider.get_earthquakes(coords.latitude, coords.longitude, radius_km=selected_radius)
-        existing_ids = {event["eventId"] for event in events}
-        for quake in quakes:
-            if quake["eventId"] not in existing_ids:
-                events.append(quake)
-    except Exception:
-        pass
-
-    # 2. Fetch live weather
-    weather_data = WeatherProvider.get_weather(coords.latitude, coords.longitude)
-    # 3. Check crime availability
-    crime_status = CrimeProvider.get_crime_events(coords.latitude, coords.longitude, selected_radius)
-
-    now_iso = datetime.now(timezone.utc).isoformat()
-
-    # Calculate individual pillar scores
-    # Traffic pillar
-    traffic_events = [e for e in events if e.get("eventType") in ["TRAFFIC", "ACCIDENT"]]
-    if traffic_events:
-        avg_delay = sum(e.get("metadata", {}).get("delayMinutes", 0) for e in traffic_events) / len(traffic_events)
-        traffic_score = max(20, min(95, int(100 - avg_delay * 2.2)))
-        traffic_status = "Moderate Slowdowns" if traffic_score < 70 else "Fluid Mobility"
-        traffic_metric = f"{len(traffic_events)} corridor bottleneck(s)"
-        traffic_data_status = event_collection_status(traffic_events)
-    else:
-        traffic_score = None
-        traffic_status = "Data Unavailable"
-        traffic_metric = "No verified live traffic provider"
-        traffic_data_status = "UNAVAILABLE"
-
-    # Roads pillar
-    potholes = [e for e in events if e.get("eventType") == "POTHOLE"]
-    if potholes:
-        roads_score = max(25, 90 - len(potholes) * 12)
-        roads_status = "Fair Surface Quality" if roads_score > 65 else "Surface Deterioration Alert"
-        roads_metric = f"{len(potholes)} active pothole alert(s)"
-        roads_data_status = event_collection_status(potholes)
-    else:
-        roads_score = None
-        roads_status = "Data Unavailable"
-        roads_metric = "No verified road-condition provider"
-        roads_data_status = "UNAVAILABLE"
-
-    # Civil safety pillar
-    if crime_status.get("status") == "AVAILABLE":
-        safety_score = 78
-        safety_status = "Patrolled Zone"
-        safety_metric = "Official feed active"
-        safety_data_status = "AVAILABLE"
-    else:
-        safety_score = None  # Transparently null when provider is unavailable
-        safety_status = "Data Unavailable"
-        safety_metric = "No public police API"
-        safety_data_status = "UNAVAILABLE"
-
-    # Weather pillar
-    if weather_data.get("status") == "AVAILABLE" and weather_data.get("current"):
-        curr = weather_data["current"]
-        rain_prob = curr.get("rainProbability", 10)
-        weather_score = max(30, int(100 - rain_prob * 0.55))
-        weather_status = curr.get("conditionLabel", "Clear")
-        weather_metric = f"{curr.get('temperatureC')} • {rain_prob}% rain prob"
-        weather_data_status = "AVAILABLE"
-    else:
-        weather_score = None
-        weather_status = "Weather Unavailable"
-        weather_metric = "Sensor link pending"
-        weather_data_status = "UNAVAILABLE"
-
-    # Environment pillar (Open-Meteo AQI proxy)
-    env_score = None
-    env_status = "Data Unavailable"
-    env_metric = "No AQI provider configured"
-    env_data_status = "UNAVAILABLE"
-
-    # Natural Hazards pillar
-    disasters = [e for e in events if e.get("eventType") in ["EARTHQUAKE", "FLOOD", "FIRE", "STORM"]]
-    hazard_score = max(15, 95 - len(disasters) * 18)
-    hazard_status = "Normal Vigilance" if not disasters else f"{len(disasters)} hazard alert(s)"
-    hazard_metric = f"{len(disasters)} natural signal(s)"
-    hazard_data_status = event_collection_status(disasters) if disasters else "AVAILABLE"
-
-    # Compute overall weighted average of available pillars
-    available_scores = [s for s in [traffic_score, roads_score, safety_score, weather_score, env_score, hazard_score] if s is not None]
-    if available_scores:
-        overall = round(sum(available_scores) / len(available_scores))
-        if overall >= 80:
-            label = "EXCELLENT"
-        elif overall >= 65:
-            label = "FAVORABLE"
-        elif overall >= 45:
-            label = "MODERATE"
-        else:
-            label = "CONCERN"
-    else:
-        overall = None
-        label = "UNAVAILABLE"
-
-    pillars = [
-        {
-            "name": "Traffic & Mobility",
-            "score": traffic_score,
-            "status": traffic_status,
-            "metric": traffic_metric,
-            "description": "Calculated from congestion delays and reported vehicular blockages.",
-            "dataStatus": traffic_data_status,
-        },
-        {
-            "name": "Road Surface & Infrastructure",
-            "score": roads_score,
-            "status": roads_status,
-            "metric": roads_metric,
-            "description": "Asphalt integrity and detected pothole hazards.",
-            "dataStatus": roads_data_status,
-        },
-        {
-            "name": "Civil Safety & Public Feeds",
-            "score": safety_score,
-            "status": safety_status,
-            "metric": safety_metric,
-            "description": "Public safety dispatch and law enforcement transparency feeds.",
-            "dataStatus": safety_data_status,
-        },
-        {
-            "name": "Atmospheric & Weather Conditions",
-            "score": weather_score,
-            "status": weather_status,
-            "metric": weather_metric,
-            "description": "Real-time barometric, thermal, and precipitation telemetry.",
-            "dataStatus": weather_data_status,
-        },
-        {
-            "name": "Environment & Air Quality",
-            "score": env_score,
-            "status": env_status,
-            "metric": env_metric,
-            "description": "Particulate matter and civic cleanliness indicators.",
-            "dataStatus": env_data_status,
-        },
-        {
-            "name": "Natural Hazard & Seismic Watch",
-            "score": hazard_score,
-            "status": hazard_status,
-            "metric": hazard_metric,
-            "description": "USGS seismic sensor stream and storm surge detection.",
-            "dataStatus": hazard_data_status,
-        },
-    ]
-
-    available_pillars = [pillar for pillar in pillars if pillar["score"] is not None]
-    data_status = (
-        "UNAVAILABLE"
-        if not available_pillars
-        else "AVAILABLE"
-        if len(available_pillars) == len(pillars)
-        else "PARTIAL"
-    )
-
-    return {
-        "overallScore": overall,
-        "label": label,
-        "pillars": pillars,
-        "activeIncidentsCount": len(events),
-        "locationName": f"{coords.latitude:.4f}, {coords.longitude:.4f}",
-        "radiusKm": selected_radius,
-        "confidence": round(len(available_pillars) / len(pillars), 2),
-        "lastUpdated": now_iso,
-        "dataStatus": data_status,
-    }
+    intel = await UrbanIntelService.get_full_intelligence(coords.latitude, coords.longitude, selected_radius)
+    return intel["condition"]
 
 
 # ==============================================================================
@@ -417,13 +363,17 @@ async def analyze_route(req: RouteAnalyzeRequest):
     if origin_lat is None or origin_lon is None or dest_lat is None or dest_lon is None:
         raise HTTPException(status_code=422, detail="origin and destination coordinates are required")
 
-    # Gather corridor events
-    mid_lat = (origin_lat + dest_lat) / 2
-    mid_lon = (origin_lon + dest_lon) / 2
-    corridor_events = EventFusionService.get_events_near_location(mid_lat, mid_lon, radius_km=50.0)
+    # Gather corridor events safely
+    corridor_events = []
+    try:
+        mid_lat = (origin_lat + dest_lat) / 2
+        mid_lon = (origin_lon + dest_lon) / 2
+        corridor_events = EventFusionService.get_events_near_location(mid_lat, mid_lon, radius_km=50.0)
+    except Exception as exc:
+        pass
 
-    route_plan = RoutingProvider.analyze_route(
-        origin_lat, origin_lon, dest_lat, dest_lon, travel_mode, corridor_events
+    route_plan = await RoutingProvider.analyze_route(
+        origin_lat, origin_lon, dest_lat, dest_lon, travel_mode, corridor_events, req.departure_time
     )
 
     return {
@@ -473,16 +423,15 @@ async def copilot_query(req: CopilotRequest):
     if not message:
         raise HTTPException(status_code=422, detail="message is required")
 
-    events = EventFusionService.get_events_near_location(latitude, longitude, req.radius_km)
-    try:
-        quakes = await EarthquakeProvider.get_earthquakes(latitude, longitude, radius_km=req.radius_km)
-        existing_ids = {event["eventId"] for event in events}
-        for quake in quakes:
-            if quake["eventId"] not in existing_ids:
-                events.append(quake)
-    except Exception:
-        pass
-    weather = WeatherProvider.get_weather(latitude, longitude)
+    intel = await UrbanIntelService.get_full_intelligence(latitude, longitude, req.radius_km)
+    location_ctx = intel.get("location", {})
+    weather = intel.get("weather", {})
+    air_quality = intel.get("airQuality", {})
+    traffic = intel.get("traffic", {})
+    roads = intel.get("roads", {})
+    events = intel.get("events", [])
+    condition = intel.get("condition", {})
+
     high_impact = [e for e in events if e.get("severity", 0) >= 70]
     quakes = [e for e in events if e.get("eventType") == "EARTHQUAKE"]
 
@@ -490,9 +439,55 @@ async def copilot_query(req: CopilotRequest):
     citations = []
     actions = []
 
-    location_str = req.city or f"({latitude:.3f}, {longitude:.3f})"
+    city_name = location_ctx.get("city") or req.city
+    country_name = location_ctx.get("country") or ""
+    location_str = f"{city_name}, {country_name}".strip(", ") if city_name else f"({latitude:.3f}, {longitude:.3f})"
 
-    if any(w in query_lower for w in ["earthquake", "quake", "tremor", "seismic"]):
+    if any(w in query_lower for w in ["air", "aqi", "pollution", "smog", "air quality"]):
+        if air_quality.get("status") == "AVAILABLE" and air_quality.get("value") is not None:
+            val = air_quality["value"]
+            scale = air_quality.get("scale", "US_AQI")
+            cat = air_quality.get("category", "Moderate")
+            pol = air_quality.get("pollutant", "PM2.5")
+            src = air_quality.get("source", "Open-Meteo CAMS/SILAM")
+            answer = (
+                f"Air quality for {location_str} is classified as **{cat}** with a {scale} value of **{val}** (dominant pollutant: {pol}). "
+                f"Data is modeled via {src} atmospheric telemetry."
+            )
+            citations.append({"type": "Air Quality", "source": src, "detail": f"{scale}: {val} ({cat})"})
+            actions = ["Inspect air quality breakdown", "Check outdoor activity advisory"]
+        else:
+            answer = f"No verified real-time air quality sensor or atmospheric feed is available for {location_str}."
+            actions = ["Check nearby regional stations", "Refresh telemetry"]
+
+    elif any(w in query_lower for w in ["road", "pothole", "asphalt", "pavement"]):
+        net_status = roads.get("roadNetworkStatus", "AVAILABLE")
+        cond_status = roads.get("roadConditionStatus", "NO_VERIFIED_FEED")
+        haz_count = roads.get("activeHazardCount", 0)
+        if cond_status == "AVAILABLE" and haz_count > 0:
+            answer = (
+                f"Road network mapping is **{net_status}** for {location_str}. "
+                f"There are **{haz_count} active road surface alert(s)** (potholes/cavities) verified in your {req.radius_km} km radius."
+            )
+            citations.append({"type": "Road Condition", "source": roads.get("roadConditionSource", "UrbanPulse"), "detail": f"{haz_count} alerts"})
+        else:
+            answer = (
+                f"Road network mapping is **{net_status}** for {location_str}. "
+                f"However, **no verified physical road-surface condition feed** covers this jurisdiction. "
+                f"UrbanPulse does not assume roads are clear without active sensors."
+            )
+            citations.append({"type": "Roads Telemetry", "source": "Road Engine", "detail": "No verified physical sensor feed"})
+        actions = ["Plan a Journey", "Report a road hazard"]
+
+    elif any(w in query_lower for w in ["crime", "police", "safety", "theft", "security"]):
+        answer = (
+            f"Public safety status for {location_str}: **No verified open police dispatch feed** is currently connected for these coordinates. "
+            f"UrbanPulse strictly refrains from reporting '0 crimes' or false safety guarantees in the absence of verified law enforcement feeds."
+        )
+        citations.append({"type": "Civil Safety", "source": "Official Police Feeds", "detail": "No open data API available"})
+        actions = ["Check local emergency numbers", "View verified civic events"]
+
+    elif any(w in query_lower for w in ["earthquake", "quake", "tremor", "seismic"]):
         if quakes:
             eq = quakes[0]
             mag = eq.get("metadata", {}).get("magnitude", 4.5)
@@ -509,21 +504,29 @@ async def copilot_query(req: CopilotRequest):
         actions = ["Inspect seismic epicenter on Live Map", "Check emergency civil defense guidelines"]
 
     elif any(w in query_lower for w in ["route", "traffic", "slower", "delay", "corridor"]):
-        if high_impact:
+        if traffic.get("status") == "AVAILABLE":
+            delay = traffic.get("delayMinutes", 0)
+            status_text = traffic.get("trafficStatus", "NORMAL")
+            detail = traffic.get("detail", "Free-flowing")
+            answer = (
+                f"Live Google Traffic telemetry for {location_str}: **{status_text}** ({detail}). "
+                f"Congestion delay is approximately +{delay} minutes relative to free-flow conditions."
+            )
+            citations.append({"type": "Google Traffic", "source": "Google Routes API", "detail": f"+{delay} min delay"})
+        elif high_impact:
             hazard = high_impact[0]
             delay = hazard.get("metadata", {}).get("delayMinutes", 18)
             answer = (
-                f"Corridor transit is slowed by a verified {hazard.get('eventType', 'incident')} ({hazard.get('title')}) "
-                f"located {hazard.get('distanceKm')} km away. Expected delay is ~{delay} minutes. "
-                f"Recommended action: Take the Outer Ring Bypass to avoid the bottleneck."
+                f"Corridor transit near {location_str} is slowed by a verified {hazard.get('eventType', 'incident')} ({hazard.get('title')}) "
+                f"located {hazard.get('distanceKm')} km away. Expected delay is ~{delay} minutes."
             )
             citations.append({"type": hazard.get("eventType"), "source": hazard.get("source"), "detail": hazard.get("title")})
         else:
-            answer = f"No verified high-severity traffic incidents are available within {req.radius_km} km of {location_str}."
-            citations.append({"type": "Traffic Flow", "source": "UrbanPulse Event Feed", "detail": "No verified traffic provider data"})
+            answer = f"No verified high-severity traffic incidents or Google traffic telemetry available within {req.radius_km} km of {location_str}."
+            citations.append({"type": "Traffic Flow", "source": "Google Routes API", "detail": "Feed unavailable or unconfigured"})
         actions = ["Plan a Journey", "Compare fastest vs safest bypass"]
 
-    elif any(w in query_lower for w in ["weather", "rain", "storm", "flood"]):
+    elif any(w in query_lower for w in ["weather", "rain", "storm", "flood", "temperature"]):
         if weather.get("status") == "AVAILABLE" and weather.get("current"):
             curr = weather["current"]
             answer = (
@@ -537,10 +540,14 @@ async def copilot_query(req: CopilotRequest):
         actions = ["Check 24-hour precipitation forecast", "Inspect flood underpasses"]
 
     else:
+        score_text = f"{condition.get('overallScore')}/100" if condition.get('overallScore') is not None else "Unavailable"
+        known = condition.get("knownSignals", 0)
+        missing = condition.get("missingSignals", 0)
         answer = (
-            f"UrbanPulse is monitoring **{len(events)} active events** across a **{req.radius_km} km radius** around {location_str}. "
-            f"Live signals include {len(high_impact)} high-priority hazard alert(s). "
-            f"Unavailable providers are reported without fabricated values."
+            f"UrbanPulse is monitoring {location_str} across a **{req.radius_km} km radius**. "
+            f"Composite Urban Condition Score is **{score_text}** (confidence: {condition.get('confidence', 0):.0%}, "
+            f"{known} known signals, {missing} missing feeds). "
+            f"Active incidents logged: **{len(events)}**. Missing feeds are never treated as safe."
         )
         for ev in events[:2]:
             citations.append({"type": ev.get("eventType"), "source": ev.get("source"), "detail": ev.get("title")})
@@ -554,3 +561,85 @@ async def copilot_query(req: CopilotRequest):
         "citedLiveSignals": citations,
         "suggestedActions": actions,
     }
+
+
+# ==============================================================================
+# 7. Location Intelligence Agent Endpoint
+# ==============================================================================
+
+@router.post("/agent/interact")
+async def agent_interact(req: Dict[str, Any]):
+    """
+    Primary endpoint for the Location Intelligence Agent experience.
+    Parses intent, resolves location, queries live providers, and dispatches map actions.
+    """
+    from app.services.agent.location_agent import LocationAgentService
+
+    query = req.get("query")
+    if not query or not str(query).strip():
+        raise HTTPException(status_code=422, detail="query is required")
+
+    return await LocationAgentService.process_interaction(req)
+
+
+# ==============================================================================
+# 8. Forecasting & Live RAG Endpoints
+# ==============================================================================
+
+@router.get("/forecast")
+async def get_forecast(
+    coords: CoordinateQuery = Depends(coordinate_query),
+    horizon: str = Query("7_DAYS", pattern="^(7_DAYS|30_DAYS)$"),
+    city: Optional[str] = Query(None),
+    country_code: Optional[str] = Query(None),
+):
+    """
+    Returns authentic 7-day multi-pillar predictions or 30-day monthly outlooks for coordinates.
+    Grounds weather in Open-Meteo numerical models and AQI in atmospheric chemistry models.
+    """
+    from app.services.forecast.forecasting_service import ForecastingService
+
+    meta = {"city": city, "countryCode": country_code}
+    if horizon == "30_DAYS":
+        return await ForecastingService.get_30_day_outlook(coords.latitude, coords.longitude, meta)
+    return await ForecastingService.get_7_day_forecast(coords.latitude, coords.longitude, meta)
+
+
+@router.get("/live-updates")
+async def get_live_updates(
+    coords: CoordinateQuery = Depends(coordinate_query),
+    radius_km: float = Query(100.0, ge=1.0, le=500.0),
+):
+    """
+    Retrieves live-ingested events, earthquake telemetry, and civic incident bulletins.
+    Applies 1.5km geospatial deduplication and freshness classification.
+    """
+    from app.pipelines.live_ingestion.event_ingestion import LiveIngestionPipeline
+
+    events = await LiveIngestionPipeline.ingest_live_events(coords.latitude, coords.longitude, radius_km=radius_km)
+    return {
+        "latitude": coords.latitude,
+        "longitude": coords.longitude,
+        "radiusKm": radius_km,
+        "events": events,
+        "total": len(events),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+@router.get("/rag/knowledge")
+async def get_rag_knowledge(
+    coords: CoordinateQuery = Depends(coordinate_query),
+    query: str = Query("safety"),
+    city: Optional[str] = Query(None),
+    limit: int = Query(5, ge=1, le=20),
+):
+    """
+    Searches location-aware RAG knowledge base for authoritative procedures and bulletins.
+    """
+    from app.services.rag.rag_service import LocationAwareRAGService
+
+    docs = await LocationAwareRAGService.retrieve_relevant_knowledge(
+        coords.latitude, coords.longitude, query=query, city=city, limit=limit
+    )
+    return {"results": docs, "total": len(docs)}

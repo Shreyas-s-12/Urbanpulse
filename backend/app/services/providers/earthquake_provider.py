@@ -47,21 +47,31 @@ def evaluate_impact_risk(magnitude: float, depth_km: float, distance_km: float) 
 
 class EarthquakeProvider:
     @staticmethod
-    async def get_earthquakes(latitude: float, longitude: float, radius_km: float = 250.0) -> List[Dict[str, Any]]:
+    async def get_earthquakes(
+        latitude: float,
+        longitude: float,
+        radius_km: float = 250.0,
+        start_time: Optional[str] = None,
+        end_time: Optional[str] = None,
+        min_magnitude: float = 1.5,
+    ) -> List[Dict[str, Any]]:
         """
-        Fetches live earthquake events from USGS within radius in the last 7 days.
+        Fetches live earthquake events from USGS within radius for specified time window.
         """
-        start_time = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%d")
+        if not start_time:
+            start_time = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%d")
         url = "https://earthquake.usgs.gov/fdsnws/event/1/query"
-        params = {
+        params: Dict[str, Any] = {
             "format": "geojson",
             "latitude": latitude,
             "longitude": longitude,
-            "maxradiuskm": min(radius_km, 500.0),
-            "minmagnitude": 2.5,
+            "maxradiuskm": min(max(radius_km, 10.0), 500.0),
+            "minmagnitude": min_magnitude,
             "starttime": start_time,
-            "limit": 10,
+            "limit": 20,
         }
+        if end_time:
+            params["endtime"] = end_time
 
         try:
             async with httpx.AsyncClient(timeout=5.0) as client:

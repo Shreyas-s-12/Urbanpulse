@@ -37,7 +37,9 @@ export const weatherClient = {
           windSpeedKmh: Math.round(wind),
           uvIndex: uv,
           airQualityStatus: 'AQI 58 (Moderate)',
-          dataStatus: 'AVAILABLE',
+          source: 'Open-Meteo API',
+          lastUpdated: new Date().toISOString(),
+          status: 'AVAILABLE',
         };
       }
     } catch (e) {
@@ -52,7 +54,9 @@ export const weatherClient = {
       windSpeedKmh: 0,
       uvIndex: 0,
       airQualityStatus: 'Unavailable',
-      dataStatus: 'UNAVAILABLE',
+      source: 'Open-Meteo API',
+      lastUpdated: new Date().toISOString(),
+      status: 'UNAVAILABLE',
     };
   },
 

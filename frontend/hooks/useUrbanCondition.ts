@@ -12,14 +12,17 @@ export function useUrbanCondition(
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Reset immediately to avoid stale condition score when switching locations
+    setCondition(null);
+    setError(null);
+
     if (latitude === null || latitude === undefined || longitude === null || longitude === undefined) {
-      setCondition(null);
+      setLoading(false);
       return;
     }
 
     let isMounted = true;
     setLoading(true);
-    setError(null);
 
     urbanConditionService
       .getUrbanCondition(latitude, longitude, radiusKm)

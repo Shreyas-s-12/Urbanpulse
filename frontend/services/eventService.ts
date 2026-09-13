@@ -8,13 +8,16 @@ export const eventService = {
     radiusKm: IntelligenceRadiusKm
   ): Promise<UnifiedCityEvent[]> {
     try {
-      const events = await apiClient.get<UnifiedCityEvent[]>('/events/nearby', {
+      const res: any = await apiClient.get('/events/nearby', {
         latitude: centerLat,
         longitude: centerLon,
         radius_km: radiusKm,
       });
-      if (Array.isArray(events)) {
-        return events;
+      if (Array.isArray(res)) {
+        return res;
+      }
+      if (res && Array.isArray(res.events)) {
+        return res.events;
       }
     } catch (err) {
       console.warn('Backend event fetch failed, fallback to empty list:', err);
@@ -30,20 +33,70 @@ export const eventService = {
     hours: number = 24
   ): Promise<UnifiedCityEvent[]> {
     try {
-      const events = await apiClient.get<UnifiedCityEvent[]>('/events/history', {
+      const res: any = await apiClient.get('/events/history', {
         latitude: centerLat,
         longitude: centerLon,
         radius_km: radiusKm,
         category: category || '',
         hours,
       });
-      if (Array.isArray(events)) {
-        return events;
+      if (Array.isArray(res)) {
+        return res;
+      }
+      if (res && Array.isArray(res.events)) {
+        return res.events;
       }
     } catch (err) {
       console.warn('Backend event history fetch failed:', err);
     }
     return [];
+  },
+
+  async getEventHistoryDetailed(
+    centerLat: number,
+    centerLon: number,
+    radiusKm: IntelligenceRadiusKm = 50,
+    category?: string,
+    hours: number = 24
+  ): Promise<{
+    events: UnifiedCityEvent[];
+    status: 'AVAILABLE' | 'EMPTY_VERIFIED' | 'NO_COVERAGE' | 'ERROR';
+    count: number;
+    providersChecked?: string[];
+  }> {
+    try {
+      const res: any = await apiClient.get('/events/history', {
+        latitude: centerLat,
+        longitude: centerLon,
+        radius_km: radiusKm,
+        category: category || '',
+        hours,
+      });
+      if (res && typeof res === 'object') {
+        const events = Array.isArray(res.events) ? res.events : (Array.isArray(res) ? res : []);
+        const status = res.status || (events.length > 0 ? 'AVAILABLE' : 'EMPTY_VERIFIED');
+        return {
+          events,
+          status,
+          count: typeof res.count === 'number' ? res.count : events.length,
+          providersChecked: res.providersChecked || [],
+        };
+      }
+    } catch (err) {
+      console.warn('Backend event history detailed fetch failed:', err);
+      return {
+        events: [],
+        status: 'ERROR',
+        count: 0,
+        providersChecked: [],
+      };
+    }
+    return {
+      events: [],
+      status: 'NO_COVERAGE',
+      count: 0,
+      providersChecked: [],
+    };
   },
 
   subscribeToLiveEvents(

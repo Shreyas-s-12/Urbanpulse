@@ -26,15 +26,21 @@ export const urbanConditionService = {
 
     return {
       overallScore: 82,
-      conditionStatus: 'GOOD',
-      summary: 'Urban metrics synchronized with live local telemetry.',
+      label: 'GOOD',
       pillars: [
-        { name: 'Road Infrastructure', score: 85, metric: 'Normal corridor flow', status: 'GOOD', description: 'Road Infrastructure conditions', dataStatus: 'VALID' },
-        { name: 'Atmospheric Safety', score: 88, metric: 'Stable weather parameters', status: 'GOOD', description: 'Atmospheric safety status', dataStatus: 'VALID' },
-        { name: 'Seismic & Geological', score: 95, metric: 'No significant seismic activity', status: 'EXCELLENT', description: 'Seismic and geological safety', dataStatus: 'VALID' },
-        { name: 'Public Safety', score: 75, metric: 'Standard civic activity', status: 'MODERATE', description: 'Public safety incidents', dataStatus: 'VALID' },
-        { name: 'Urban Sanitation', score: 80, metric: 'Normal municipal status', status: 'GOOD', description: 'Sanitation infrastructure', dataStatus: 'VALID' },
+        { name: 'Road Infrastructure', score: 85, metric: 'Normal corridor flow', status: 'GOOD', description: 'Road Infrastructure conditions', dataStatus: 'AVAILABLE' },
+        { name: 'Atmospheric Safety', score: 88, metric: 'Stable weather parameters', status: 'GOOD', description: 'Atmospheric safety status', dataStatus: 'AVAILABLE' },
+        { name: 'Seismic & Geological', score: 95, metric: 'No significant seismic activity', status: 'EXCELLENT', description: 'Seismic and geological safety', dataStatus: 'AVAILABLE' },
+        { name: 'Public Safety', score: 75, metric: 'Standard civic activity', status: 'MODERATE', description: 'Public safety incidents', dataStatus: 'AVAILABLE' },
+        { name: 'Urban Sanitation', score: 80, metric: 'Normal municipal status', status: 'GOOD', description: 'Sanitation infrastructure', dataStatus: 'AVAILABLE' },
       ],
+      activeIncidentsCount: 0,
+      locationName: 'Local Area',
+      radiusKm: radiusKm || 50,
+      confidence: 0.85,
+      knownSignals: 5,
+      missingSignals: 0,
+      lastUpdated: new Date().toISOString(),
       dataStatus: 'PARTIAL',
     };
   },

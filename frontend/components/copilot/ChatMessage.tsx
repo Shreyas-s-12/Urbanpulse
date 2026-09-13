@@ -1,10 +1,9 @@
 import React from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import MarkdownRenderer from '@/components/common/MarkdownRenderer';
 
 /**
  * ChatMessage component renders a single copilot or user message.
- * It uses react-markdown with `skipHtml` to safely render markdown content.
+ * It uses the universal MarkdownRenderer to safely and semantically render markdown content.
  * Props:
  *  - content: string – markdown text.
  *  - isUser: boolean – true for user messages (right‑aligned bubble).
@@ -38,18 +37,17 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       <div
         style={{
           maxWidth: '82%',
-          backgroundColor: isUser ? 'var(--accent-blue)' : 'var(--bg-app)',
+          backgroundColor: isUser ? 'var(--accent-blue)' : 'var(--bg-surface)',
           color: isUser ? '#FFFFFF' : 'var(--text-primary)',
           padding: '14px 18px',
           borderRadius: isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
           fontSize: '13px',
-          lineHeight: 1.5,
+          lineHeight: 1.55,
           border: isUser ? 'none' : '1px solid var(--border-subtle)',
+          boxShadow: isUser ? 'var(--shadow-sm)' : 'var(--shadow-xs)',
         }}
       >
-        <ReactMarkdown remarkPlugins={[remarkGfm]} skipHtml={true}>
-          {content}
-        </ReactMarkdown>
+        <MarkdownRenderer content={content} isUser={isUser} />
         {citedLiveSignals && citedLiveSignals.length > 0 && (
           <div
             style={{

@@ -1,6 +1,8 @@
+'use client';
+
 import React from 'react';
-import CopilotView from '@/features/copilot/CopilotView';
+import AgentHomeView from '@/features/agent/AgentHomeView';
 
 export default function CopilotPage() {
-  return <CopilotView />;
+  return <AgentHomeView />;
 }

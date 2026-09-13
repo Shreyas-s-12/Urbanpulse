@@ -38,7 +38,10 @@ class GeocodingProvider:
         Works globally for any latitude/longitude including rural or offshore coordinates.
         """
         url = "https://nominatim.openstreetmap.org/reverse"
-        headers = {"User-Agent": settings.NOMINATIM_USER_AGENT}
+        headers = {
+            "User-Agent": settings.NOMINATIM_USER_AGENT,
+            "Accept-Language": "en, *;q=0.5",
+        }
         params = {
             "lat": latitude,
             "lon": longitude,
@@ -64,12 +67,15 @@ class GeocodingProvider:
                         or None
                     )
                     district = addr.get("county") or addr.get("state_district") or None
-                    region = addr.get("state") or addr.get("province") or None
+                    state = addr.get("state") or addr.get("province") or None
+                    region = state
                     country = addr.get("country") or None
+                    country_code = addr.get("country_code", "").upper() or None
+                    region_code = addr.get("ISO3166-2-lvl4") or None
 
                     display_name = data.get("display_name")
                     if not display_name:
-                        parts = [p for p in [city, region, country] if p]
+                        parts = [p for p in [city, state, country] if p]
                         display_name = ", ".join(parts) if parts else f"{latitude:.4f}°, {longitude:.4f}°"
 
                     timezone_name = await GeocodingProvider.resolve_timezone(latitude, longitude)
@@ -80,8 +86,11 @@ class GeocodingProvider:
                         "accuracy": accuracy,
                         "city": city,
                         "district": district,
+                        "state": state,
                         "region": region,
                         "country": country,
+                        "countryCode": country_code,
+                        "regionCode": region_code,
                         "timezone": timezone_name,
                         "displayName": display_name,
                         "isUserLocation": True,
@@ -96,8 +105,11 @@ class GeocodingProvider:
             "accuracy": accuracy,
             "city": None,
             "district": None,
+            "state": None,
             "region": None,
             "country": None,
+            "countryCode": None,
+            "regionCode": None,
             "timezone": await GeocodingProvider.resolve_timezone(latitude, longitude),
             "displayName": f"Coordinates ({latitude:.4f}, {longitude:.4f})",
             "isUserLocation": True,
@@ -122,7 +134,10 @@ class GeocodingProvider:
             return [resolved]
 
         url = "https://nominatim.openstreetmap.org/search"
-        headers = {"User-Agent": settings.NOMINATIM_USER_AGENT}
+        headers = {
+            "User-Agent": settings.NOMINATIM_USER_AGENT,
+            "Accept-Language": "en, *;q=0.5",
+        }
         params = {
             "q": q,
             "format": "jsonv2",
@@ -148,8 +163,11 @@ class GeocodingProvider:
                             or None
                         )
                         district = addr.get("county") or addr.get("state_district") or None
-                        region = addr.get("state") or addr.get("province") or None
+                        state = addr.get("state") or addr.get("province") or None
+                        region = state
                         country = addr.get("country") or None
+                        country_code = addr.get("country_code", "").upper() or None
+                        region_code = addr.get("ISO3166-2-lvl4") or None
 
                         item_lat = float(item.get("lat"))
                         item_lon = float(item.get("lon"))
@@ -161,8 +179,11 @@ class GeocodingProvider:
                             "accuracy": None,
                             "city": city,
                             "district": district,
+                            "state": state,
                             "region": region,
                             "country": country,
+                            "countryCode": country_code,
+                            "regionCode": region_code,
                             "timezone": timezone_name,
                             "displayName": item.get("display_name", f"{city or 'Location'}, {country or ''}"),
                             "isUserLocation": False,

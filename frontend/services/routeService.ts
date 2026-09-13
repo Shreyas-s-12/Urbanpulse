@@ -1,9 +1,11 @@
-﻿import { ResolvedLocation, RoutePlan, TravelMode } from '@shared/types';
+import { ResolvedLocation, RoutePlan, TravelMode } from '@shared/types';
 import { apiClient } from './apiClient';
 
 export const routeService = {
   /**
-   * Calls the FastAPI backend /routes/analyze endpoint for intelligent multi-candidate routing.
+   * Calls the FastAPI backend /routes/analyze endpoint for authentic Google Routes API routing.
+   * Derives real Google traffic conditions and separate UrbanPulse hazard risks.
+   * Does NOT substitute mock routes if Google Routes API fails.
    */
   async calculateRoutes(
     from: ResolvedLocation,
@@ -11,6 +13,10 @@ export const routeService = {
     mode: TravelMode = 'drive',
     departureTime: string = 'Immediate'
   ): Promise<RoutePlan> {
+    if (!from || !to) {
+      throw new Error('Origin and destination coordinates are required.');
+    }
+
     try {
       const plan = await apiClient.post<RoutePlan>('/routes/analyze', {
         from_location: from,
@@ -22,71 +28,16 @@ export const routeService = {
       if (plan && plan.candidateRoutes && plan.candidateRoutes.length > 0) {
         return plan;
       }
-    } catch (err) {
-      console.warn('Backend route analysis failed, calculating fallback route plan:', err);
+
+      throw new Error('No traffic-aware candidate routes returned by Google Routes API.');
+    } catch (err: any) {
+      console.error('Real-time route calculation failed:', err);
+      const detail =
+        err?.data?.detail ||
+        err?.response?.data?.detail ||
+        err?.message ||
+        'Failed to connect to real-time Google Routes service.';
+      throw new Error(detail);
     }
-
-    // Direct fallback if backend unreachable
-    return routeService.calculateFallbackRoute(from, to, mode, departureTime);
-  },
-
-  calculateFallbackRoute(
-    from: ResolvedLocation,
-    to: ResolvedLocation,
-    mode: TravelMode,
-    departureTime: string
-  ): RoutePlan {
-    const r = 6371.0;
-    const dlat = ((to.latitude - from.latitude) * Math.PI) / 180;
-    const dlon = ((to.longitude - from.longitude) * Math.PI) / 180;
-    const a =
-      Math.sin(dlat / 2) * Math.sin(dlat / 2) +
-      Math.cos((from.latitude * Math.PI) / 180) *
-        Math.cos((to.latitude * Math.PI) / 180) *
-        Math.sin(dlon / 2) *
-        Math.sin(dlon / 2);
-    const directKm = r * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const roadKm = Math.max(1.5, Math.round(directKm * 1.25 * 10) / 10);
-
-    const speedMap: Record<TravelMode, number> = {
-      drive: 42,
-      two_wheeler: 46,
-      transit: 28,
-      walk: 4.8,
-      bicycle: 15,
-    };
-    const speed = speedMap[mode] || 40;
-    const baseMinutes = Math.max(3, Math.round((roadKm / speed) * 60));
-
-    const route1 = {
-      id: 'ROUTE-PRIMARY',
-      name: 'Primary Arterial Corridor',
-      category: 'FASTEST' as const,
-      travelMode: mode,
-      distanceKm: roadKm,
-      estimatedTimeMinutes: baseMinutes,
-      trafficDelayMinutes: 0,
-      overallRiskScore: 20,
-      confidenceScore: 90,
-      summary: 'Direct corridor via arterial transit routes',
-      rationale: 'Direct transit route based on localized geometry.',
-      polyline: [
-        { latitude: from.latitude, longitude: from.longitude },
-        { latitude: (from.latitude + to.latitude) / 2, longitude: (from.longitude + to.longitude) / 2 },
-        { latitude: to.latitude, longitude: to.longitude },
-      ],
-      intersectingEvents: [],
-      weatherAlerts: [],
-    };
-
-    return {
-      fromLocation: from,
-      toLocation: to,
-      departureTime,
-      travelMode: mode,
-      candidateRoutes: [route1],
-      recommendedRouteId: route1.id,
-      copilotAdvisory: 'Normal travel corridor active. No major delays reported.',
-    };
   },
 };

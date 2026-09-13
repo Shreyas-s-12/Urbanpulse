@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { UnifiedCityEvent } from '@shared/types';
 import GoogleMapView from '@/components/map/GoogleMapView';
@@ -8,17 +8,27 @@ import { useMapContext } from '@/context/MapContext';
 import { useLiveUpdates } from '@/hooks/useLiveUpdates';
 import { useNearbyEvents } from '@/hooks/useNearbyEvents';
 import { useUrbanCondition } from '@/hooks/useUrbanCondition';
+import { useTraffic } from '@/hooks/useTraffic';
 import { useWeather } from '@/hooks/useWeather';
+import { useAirQuality } from '@/hooks/useAirQuality';
 import { useLocationStore } from '@/stores/useLocationStore';
+import { locationService } from '@/services/locationService';
 
 export default function MainScreen() {
-  const { currentLocation, selectedRadiusKm } = useLocationStore();
+  const { currentLocation, setCurrentLocation, selectedRadiusKm } = useLocationStore();
   const { mapMode } = useMapContext();
   const [selectedEvent, setSelectedEvent] = useState<UnifiedCityEvent | null>(null);
 
   const { weather, loading: weatherLoading } = useWeather(
     currentLocation?.latitude,
     currentLocation?.longitude
+  );
+
+  const { airQuality, loading: airQualityLoading } = useAirQuality(
+    currentLocation?.latitude,
+    currentLocation?.longitude,
+    undefined,
+    currentLocation?.countryCode
   );
 
   const { events, setEvents, loading: eventsLoading } = useNearbyEvents(
@@ -32,6 +42,24 @@ export default function MainScreen() {
     currentLocation?.longitude,
     selectedRadiusKm
   );
+
+  const { traffic, loading: trafficLoading } = useTraffic(
+    currentLocation?.latitude,
+    currentLocation?.longitude,
+    selectedRadiusKm
+  );
+
+  const handleMapClick = async (coords: { latitude: number; longitude: number }) => {
+    try {
+      const resolved = await locationService.reverseGeocode(coords.latitude, coords.longitude);
+      setCurrentLocation({
+        ...resolved,
+        isUserLocation: false,
+      });
+    } catch (err) {
+      console.warn('Map click reverse geocoding error:', err);
+    }
+  };
 
   useLiveUpdates(
     currentLocation?.latitude,
@@ -53,15 +81,56 @@ export default function MainScreen() {
           : 'MODERATE RISK'
         : 'UNAVAILABLE';
 
-  const trafficCount = events.filter((event) => event.eventType === 'TRAFFIC' || event.eventType === 'ACCIDENT').length;
-  const trafficLabel = trafficCount > 2 ? 'Heavy' : trafficCount > 0 ? 'Moderate' : 'Unavailable';
-  const trafficColor =
-    trafficCount > 2 ? 'var(--severity-critical)' : trafficCount > 0 ? '#F59E0B' : 'var(--text-muted)';
-  const potholeCount = events.filter((event) => event.eventType === 'POTHOLE').length;
-  const airQualityStatus =
-    weather?.airQualityStatus && weather.airQualityStatus !== 'Unavailable'
-      ? weather.airQualityStatus
+  const isTrafficValid = traffic && traffic.status === 'AVAILABLE' && traffic.trafficStatus !== 'UNAVAILABLE';
+  const trafficLabel = trafficLoading
+    ? 'Loading…'
+    : isTrafficValid
+      ? traffic.trafficStatus
       : 'Unavailable';
+
+  const trafficDetail = trafficLoading
+    ? 'Querying live feed'
+    : isTrafficValid
+      ? traffic.detail
+      : 'No verified feed';
+
+  const trafficColor =
+    !isTrafficValid || trafficLoading
+      ? 'var(--text-muted)'
+      : traffic.trafficStatus === 'SEVERE' || traffic.trafficStatus === 'HEAVY'
+        ? 'var(--severity-critical)'
+        : traffic.trafficStatus === 'MODERATE'
+          ? '#F59E0B'
+          : 'var(--accent-primary)';
+
+  const potholeCount = events.filter((event) => event.eventType === 'POTHOLE').length;
+
+  const localTimeStr = useMemo(() => {
+    if (!currentLocation?.timezone) return '';
+    try {
+      return new Intl.DateTimeFormat('en-US', {
+        timeZone: currentLocation.timezone,
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+        timeZoneName: 'short',
+      }).format(new Date());
+    } catch {
+      return '';
+    }
+  }, [currentLocation?.timezone]);
+
+  const airQualityLabel = airQualityLoading
+    ? 'Loading…'
+    : airQuality?.value !== null && airQuality?.value !== undefined
+      ? `${airQuality.scale === 'CPCB_INDIA_AQI' ? 'CPCB' : airQuality.scale === 'EUROPEAN_AQI' ? 'EAQI' : 'AQI'} ${airQuality.value}`
+      : 'Unavailable';
+
+  const airQualityDetail = airQualityLoading
+    ? 'Querying atmospheric feed'
+    : airQuality?.status === 'AVAILABLE'
+      ? `${airQuality.category} (${airQuality.pollutant})`
+      : 'No verified sensor';
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
@@ -69,9 +138,11 @@ export default function MainScreen() {
         center={currentLocation}
         radiusKm={selectedRadiusKm}
         events={events}
-        layers={{ traffic: true, disasters: true, hazards: true, boundary: true }}
+        layers={{ traffic: true, accidents: true, disasters: true, hazards: true, boundary: true }}
+        trafficEnabled={true}
         mapMode={mapMode}
         onSelectEvent={setSelectedEvent}
+        onMapClick={handleMapClick}
         height="100%"
       />
 
@@ -94,8 +165,15 @@ export default function MainScreen() {
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-              Local Intelligence
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                Local Intelligence
+              </span>
+              {localTimeStr && (
+                <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--accent-blue)', backgroundColor: 'var(--accent-blue-light)', padding: '1px 6px', borderRadius: '4px' }}>
+                  {localTimeStr}
+                </span>
+              )}
             </div>
             <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
               {currentLocation ? currentLocation.city || 'Coordinates Selected' : 'Search for a location'}
@@ -170,19 +248,19 @@ export default function MainScreen() {
           <MetricTile
             label="Traffic"
             value={trafficLabel}
-            detail={trafficCount > 0 ? `${trafficCount} corridor slowdown${trafficCount === 1 ? '' : 's'}` : 'No verified feed'}
+            detail={trafficDetail}
             valueColor={trafficColor}
           />
           <MetricTile
             label="Roads"
-            value={potholeCount > 0 ? `${potholeCount}` : 'Unavailable'}
-            detail={potholeCount > 0 ? 'Pothole alerts' : 'No verified feed'}
-            valueColor="var(--text-primary)"
+            value={potholeCount > 0 ? `${potholeCount} hazards` : 'Network Mapped'}
+            detail={potholeCount > 0 ? 'Verified cavity alerts' : 'Surface: Asphalt (OSM)'}
+            valueColor={potholeCount > 0 ? 'var(--severity-critical)' : 'var(--text-primary)'}
           />
           <MetricTile
             label="Air Quality"
-            value={airQualityStatus.split(' ')[0]}
-            detail={airQualityStatus}
+            value={airQualityLabel}
+            detail={airQualityDetail}
             valueColor="var(--accent-primary)"
           />
         </div>

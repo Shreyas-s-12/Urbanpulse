@@ -7,8 +7,10 @@ import GoogleMapView from '@/components/map/GoogleMapView';
 import { UnifiedCityEvent } from '@shared/types';
 import { useMapContext } from '@/context/MapContext';
 
+import { locationService } from '@/services/locationService';
+
 export default function MapPage() {
-  const { currentLocation, selectedRadiusKm } = useLocationStore();
+  const { currentLocation, setCurrentLocation, selectedRadiusKm } = useLocationStore();
   const { mapMode, setMapMode } = useMapContext();
   const [events, setEvents] = useState<UnifiedCityEvent[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<UnifiedCityEvent | null>(null);
@@ -16,10 +18,23 @@ export default function MapPage() {
   // Layer toggles
   const [layers, setLayers] = useState({
     traffic: true,
+    accidents: true,
     disasters: true,
     hazards: true,
     boundary: true,
   });
+
+  const handleMapClick = async (coords: { latitude: number; longitude: number }) => {
+    try {
+      const resolved = await locationService.reverseGeocode(coords.latitude, coords.longitude);
+      setCurrentLocation({
+        ...resolved,
+        isUserLocation: false,
+      });
+    } catch (err) {
+      console.warn('Map click reverse geocoding error:', err);
+    }
+  };
 
   useEffect(() => {
     if (!currentLocation) return;
@@ -35,7 +50,7 @@ export default function MapPage() {
   }, [currentLocation, selectedRadiusKm]);
 
   const filteredEvents = events.filter((e) => {
-    if (!layers.traffic && (e.eventType === 'TRAFFIC' || e.eventType === 'ACCIDENT')) return false;
+    if (!layers.accidents && (e.eventType === 'TRAFFIC' || e.eventType === 'ACCIDENT')) return false;
     if (!layers.disasters && (e.eventType === 'EARTHQUAKE' || e.eventType === 'FLOOD' || e.eventType === 'FIRE')) return false;
     if (!layers.hazards && (e.eventType === 'POTHOLE' || e.eventType === 'FALLEN_TREE' || e.eventType === 'THEFT')) return false;
     return true;
@@ -48,8 +63,10 @@ export default function MapPage() {
         radiusKm={selectedRadiusKm}
         events={filteredEvents}
         layers={layers}
+        trafficEnabled={layers.traffic}
         mapMode={mapMode}
         onSelectEvent={setSelectedEvent}
+        onMapClick={handleMapClick}
         height="100%"
       />
 
@@ -75,13 +92,38 @@ export default function MapPage() {
           MAP INTELLIGENCE LAYERS
         </div>
 
+        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', cursor: 'pointer' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <input
+              type="checkbox"
+              checked={layers.traffic}
+              onChange={(e) => setLayers({ ...layers, traffic: e.target.checked })}
+            />
+            Traffic (Google Live)
+          </span>
+          {layers.traffic && (
+            <span
+              style={{
+                fontSize: '9px',
+                fontWeight: 700,
+                color: 'var(--accent-primary)',
+                backgroundColor: 'var(--accent-primary-light)',
+                padding: '2px 6px',
+                borderRadius: 'var(--radius-xs)',
+              }}
+            >
+              LIVE
+            </span>
+          )}
+        </label>
+
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', cursor: 'pointer' }}>
           <input
             type="checkbox"
-            checked={layers.traffic}
-            onChange={(e) => setLayers({ ...layers, traffic: e.target.checked })}
+            checked={layers.accidents}
+            onChange={(e) => setLayers({ ...layers, accidents: e.target.checked })}
           />
-          Traffic & Accidents
+          Accidents & Disruptions
         </label>
 
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', cursor: 'pointer' }}>

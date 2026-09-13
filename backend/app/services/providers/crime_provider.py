@@ -1,25 +1,67 @@
-"""
-UrbanPulse Crime Provider Adapter
-Provides public safety and crime intelligence with explicit source provenance and availability status.
-Strict rule: Does NOT fabricate crime data when no verified public feed exists for the coordinates.
-"""
-
-from typing import Any, Dict, List
+from typing import Any, Dict, Optional
+from datetime import datetime, timezone
+import asyncio
+from app.services.providers.base_provider import BaseProvider
+from app.services.providers.civil_safety_registry import CivilSafetyRegistry
 
 
-class CrimeProvider:
-    @staticmethod
-    def get_crime_events(latitude: float, longitude: float, radius_km: float = 50.0) -> Dict[str, Any]:
+class CrimeProvider(BaseProvider):
+    provider_name = "Official Police Feeds"
+    provider_type = "GOVERNMENT_STATION"
+    default_coverage = "JURISDICTION_DEPENDENT"
+
+    @classmethod
+    async def get_crime_events_async(
+        cls,
+        latitude: float,
+        longitude: float,
+        radius_km: float = 50.0,
+        country_code: Optional[str] = None,
+        city: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """
-        Retrieves public safety records if a verified open police feed exists for the region.
-        Otherwise gracefully returns UNAVAILABLE without creating fictitious crime records.
+        Asynchronously evaluates jurisdiction and queries available civil safety feeds.
         """
-        # In a production environment with police open data feeds (e.g. UK Police API, data.gov),
-        # an external HTTP query is executed here.
-        # When no feed covers the location:
+        return await CivilSafetyRegistry.get_civil_safety(
+            latitude=latitude,
+            longitude=longitude,
+            radius_km=radius_km,
+            country_code=country_code,
+            city=city,
+        )
+
+    @classmethod
+    def get_crime_events(
+        cls,
+        latitude: float,
+        longitude: float,
+        radius_km: float = 50.0,
+        country_code: Optional[str] = None,
+        city: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Synchronous wrapper checking cache or returning transparent absence of feed.
+        """
+        cache_key = f"{country_code or ''}:{round(latitude, 2)}:{round(longitude, 2)}"
+        cached = CivilSafetyRegistry._cache.get(cache_key)
+        if cached:
+            return cached["data"]
+
+        now_iso = datetime.now(timezone.utc).isoformat()
         return {
-            "status": "UNAVAILABLE",
-            "message": "Official crime data feed currently unavailable for this geographic jurisdiction.",
-            "source": "Official Police Feed",
+            "status": "NO_COVERAGE",
+            "feedCapability": "NO_COVERAGE",
+            "message": "No verified public safety or police dispatch API covers these coordinates.",
+            "source": cls.provider_name,
+            "sourceType": cls.provider_type,
+            "observedAt": now_iso,
+            "retrievedAt": now_iso,
+            "coverage": cls.default_coverage,
+            "confidence": 0.0,
             "events": [],
+            "incidents": [],
+            "updates": [],
+            "sources": [{"name": cls.provider_name, "type": cls.provider_type, "authority": "Official Jurisdictional Station"}],
+            "verifiedCount": None,  # Transparently None, NOT 0!
+            "incidentCount": None,
         }

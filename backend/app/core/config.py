@@ -41,9 +41,12 @@ class Settings(BaseSettings):
     # AI Providers & Model Hubs
     GOOGLE_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
+    OPENAI_MODEL: str = "gpt-4o-mini"
+    OPENAI_EMBEDDING_MODEL: str = "text-embedding-3-small"
     HUGGINGFACE_API_TOKEN: str = ""
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(env_file=(".env", "../.env"), env_file_encoding="utf-8", extra="ignore")
+
 
     @field_validator("DEBUG", "DEMO_MODE", mode="before")
     @classmethod

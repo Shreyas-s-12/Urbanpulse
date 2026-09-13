@@ -77,3 +77,9 @@ data/weaviate/
 # Docker / Database Data Mounts
 postgres_data/
 redis_data/
+
+# Local caches / generated files
+*.sqlite
+*.sqlite3
+*.db
+*.tsbuildinfo
