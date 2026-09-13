@@ -13,6 +13,8 @@ AgentIntent = Literal[
     "WEATHER",
     "AIR_QUALITY",
     "OVERALL_RATING",
+    "ROADS",
+    "CIVIL_SAFETY",
     "EVENTS",
     "HAZARDS",
     "ROUTE",
@@ -21,6 +23,12 @@ AgentIntent = Literal[
     "FORECAST",
     "MONTHLY_OUTLOOK",
     "LIVE_UPDATES",
+    "WHAT_CHANGED",
+    "WHY_SCORE",
+    "MONITOR",
+    "ANOMALY",
+    "SIMULATE",
+    "ASK_THE_MAP",
 ]
 
 AgentTimeQualifier = Literal["CURRENT", "FORECAST", "HISTORICAL"]
@@ -38,6 +46,11 @@ AgentMapActionType = Literal[
     "CLEAR_ROUTE",
     "SHOW_FORECAST",
     "SHOW_LIVE_UPDATES",
+    "SHOW_CHANGES",
+    "SHOW_SCORE",
+    "SHOW_ANOMALIES",
+    "SHOW_SCENARIO",
+    "SHOW_COMPARISON",
 ]
 
 

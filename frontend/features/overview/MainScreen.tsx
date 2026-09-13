@@ -170,7 +170,7 @@ export default function MainScreen() {
                 Local Intelligence
               </span>
               {localTimeStr && (
-                <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--accent-blue)', backgroundColor: 'var(--accent-blue-light)', padding: '1px 6px', borderRadius: '4px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)', backgroundColor: 'var(--accent-primary-light)', padding: '1px 6px', borderRadius: '4px' }}>
                   {localTimeStr}
                 </span>
               )}
@@ -269,7 +269,7 @@ export default function MainScreen() {
           href="/urban-condition"
           style={{
             fontSize: '12px',
-            color: 'var(--accent-blue)',
+            color: 'var(--accent-primary)',
             fontWeight: 600,
             display: 'flex',
             alignItems: 'center',
@@ -307,7 +307,7 @@ export default function MainScreen() {
               {eventsLoading ? 'Loading signals...' : `${events.length} incidents within ${selectedRadiusKm} km`}
             </div>
           </div>
-          <Link href="/events" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--accent-blue)' }}>
+          <Link href="/events" style={{ fontSize: '12px', fontWeight: 600, color: 'var(--accent-primary)', }}>
             24h Timeline &rarr;
           </Link>
         </div>
@@ -429,7 +429,7 @@ export default function MainScreen() {
             style={{
               padding: '8px 16px',
               borderRadius: 'var(--radius-sm)',
-              backgroundColor: 'var(--accent-blue)',
+              backgroundColor: 'var(--accent-primary)',
               color: '#FFFFFF',
               fontSize: '12px',
               fontWeight: 600,

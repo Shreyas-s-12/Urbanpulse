@@ -16,7 +16,7 @@ export default function ForecastPanel() {
 
   const getScoreBadge = (score: number) => {
     if (score >= 80) {
-      return { bg: 'rgba(19, 184, 135, 0.12)', color: '#059669' };
+      return { bg: 'rgba(16, 185, 129, 0.12)', color: '#059669' };
     }
     if (score >= 60) {
       return { bg: 'rgba(245, 158, 11, 0.12)', color: '#D97706' };
@@ -74,8 +74,8 @@ export default function ForecastPanel() {
                 fontWeight: 700,
                 padding: '2px 6px',
                 borderRadius: 'var(--radius-xs, 4px)',
-                backgroundColor: 'rgba(54, 127, 242, 0.1)',
-                color: 'var(--accent-blue, #367FF2)',
+                backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                color: 'var(--accent-primary, #2563EB)',
               }}
             >
               FORECAST
@@ -126,8 +126,8 @@ export default function ForecastPanel() {
             border: 'none',
             background: 'transparent',
             cursor: 'pointer',
-            color: !is30Day ? 'var(--accent-blue, #367FF2)' : 'var(--text-secondary, #65717D)',
-            borderBottom: !is30Day ? '2px solid var(--accent-blue, #367FF2)' : '2px solid transparent',
+            color: !is30Day ? 'var(--accent-primary, #2563EB)' : 'var(--text-secondary, #65717D)',
+            borderBottom: !is30Day ? '2px solid var(--accent-primary, #2563EB)' : '2px solid transparent',
             transition: 'all 0.15s ease',
           }}
         >
@@ -143,8 +143,8 @@ export default function ForecastPanel() {
             border: 'none',
             background: 'transparent',
             cursor: 'pointer',
-            color: is30Day ? 'var(--accent-blue, #367FF2)' : 'var(--text-secondary, #65717D)',
-            borderBottom: is30Day ? '2px solid var(--accent-blue, #367FF2)' : '2px solid transparent',
+            color: is30Day ? 'var(--accent-primary, #2563EB)' : 'var(--text-secondary, #65717D)',
+            borderBottom: is30Day ? '2px solid var(--accent-primary, #2563EB)' : '2px solid transparent',
             transition: 'all 0.15s ease',
           }}
         >
@@ -234,7 +234,7 @@ export default function ForecastPanel() {
                 }}
               >
                 <span>Sources & Confidence</span>
-                <span style={{ fontWeight: 700, color: 'var(--accent-blue, #367FF2)' }}>
+                <span style={{ fontWeight: 700, color: 'var(--accent-primary, #2563EB)' }}>
                   Confidence: {Math.round((activeForecast.confidence || 0.62) * 100)}%
                 </span>
               </div>
@@ -269,7 +269,7 @@ export default function ForecastPanel() {
               }}
             >
               <span>7-DAY TELEMETRY</span>
-              <span style={{ color: 'var(--accent-blue, #367FF2)' }}>
+              <span style={{ color: 'var(--accent-primary, #2563EB)' }}>
                 Confidence: {Math.round((activeForecast.confidence || 0.85) * 100)}%
               </span>
             </div>

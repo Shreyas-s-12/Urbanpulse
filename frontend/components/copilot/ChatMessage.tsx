@@ -37,7 +37,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       <div
         style={{
           maxWidth: '82%',
-          backgroundColor: isUser ? 'var(--accent-blue)' : 'var(--bg-surface)',
+          backgroundColor: isUser ? 'var(--accent-primary)' : 'var(--bg-surface)',
           color: isUser ? '#FFFFFF' : 'var(--text-primary)',
           padding: '14px 18px',
           borderRadius: isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
@@ -105,7 +105,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                   borderRadius: 'var(--radius-full)',
                   backgroundColor: 'var(--bg-app)',
                   border: '1px solid var(--border-subtle)',
-                  color: 'var(--accent-blue)',
+                  color: 'var(--accent-primary)',
                   fontWeight: 600,
                   transition: 'all 0.1s ease',
                 }}

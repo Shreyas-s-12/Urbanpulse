@@ -92,7 +92,7 @@ export default function CopilotView() {
       <div style={{ marginBottom: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--accent-primary)', boxShadow: '0 0 8px #13B887' }} />
+            <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--accent-primary)', boxShadow: '0 0 8px rgba(37, 99, 235, 0.6)' }} />
             <h1 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)' }}>
               UrbanPulse Copilot
             </h1>
@@ -146,7 +146,7 @@ export default function CopilotView() {
               <div
                 style={{
                   maxWidth: '82%',
-                  backgroundColor: isUser ? 'var(--accent-blue)' : 'var(--bg-surface)',
+                  backgroundColor: isUser ? 'var(--accent-primary)' : 'var(--bg-surface)',
                   color: isUser ? '#FFFFFF' : 'var(--text-primary)',
                   padding: '14px 18px',
                   borderRadius: isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
@@ -205,7 +205,7 @@ export default function CopilotView() {
                         borderRadius: 'var(--radius-full)',
                         backgroundColor: 'var(--bg-app)',
                         border: '1px solid var(--border-subtle)',
-                        color: 'var(--accent-blue)',
+                        color: 'var(--accent-primary)',
                         fontWeight: 600,
                         transition: 'all 0.1s ease',
                       }}

@@ -116,6 +116,16 @@ class GeocodingProvider:
         }
 
     @staticmethod
+    async def geocode(query: str) -> Optional[Dict[str, Any]]:
+        """
+        Geocodes a single location query string to a location context dict.
+        """
+        results = await GeocodingProvider.search(query)
+        if results and len(results) > 0:
+            return results[0]
+        return None
+
+    @staticmethod
     async def search(query: str) -> List[Dict[str, Any]]:
         """
         Searches any city, district, address, landmark, or raw coordinates worldwide.

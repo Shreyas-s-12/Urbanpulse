@@ -3,6 +3,8 @@ import { ResolvedLocation, IntelligenceRadiusKm, AppMode, UnitSystem } from '@sh
 
 interface LocationState {
   currentLocation: ResolvedLocation | null;
+  selectedMapPoint: { latitude: number; longitude: number; label?: string; city?: string; country?: string } | null;
+  comparisonLocations: Array<{ name: string; latitude: number; longitude: number }>;
   permissionStatus: 'prompt' | 'granted' | 'denied' | 'unsupported';
   selectedRadiusKm: IntelligenceRadiusKm;
   mode: AppMode;
@@ -12,6 +14,11 @@ interface LocationState {
 
   // Actions
   setCurrentLocation: (location: ResolvedLocation) => void;
+  setSelectedMapPoint: (point: { latitude: number; longitude: number; label?: string; city?: string; country?: string } | null) => void;
+  setComparisonLocations: (locations: Array<{ name: string; latitude: number; longitude: number }>) => void;
+  addComparisonLocation: (location: { name: string; latitude: number; longitude: number }) => void;
+  removeComparisonLocation: (index: number) => void;
+  clearComparisonLocations: () => void;
   setPermissionStatus: (status: 'prompt' | 'granted' | 'denied' | 'unsupported') => void;
   setSelectedRadiusKm: (radius: IntelligenceRadiusKm) => void;
   setMode: (mode: AppMode) => void;
@@ -22,6 +29,8 @@ interface LocationState {
 
 export const useLocationStore = create<LocationState>((set) => ({
   currentLocation: null,
+  selectedMapPoint: null,
+  comparisonLocations: [],
   permissionStatus: 'prompt',
   selectedRadiusKm: 50,
   mode: 'explore',
@@ -30,6 +39,19 @@ export const useLocationStore = create<LocationState>((set) => ({
   searchQuery: '',
 
   setCurrentLocation: (location) => set({ currentLocation: location }),
+  setSelectedMapPoint: (point) => set({ selectedMapPoint: point }),
+  setComparisonLocations: (locations) => set({ comparisonLocations: locations }),
+  addComparisonLocation: (location) =>
+    set((state) => ({
+      comparisonLocations: state.comparisonLocations.length < 5
+        ? [...state.comparisonLocations, location]
+        : state.comparisonLocations,
+    })),
+  removeComparisonLocation: (index) =>
+    set((state) => ({
+      comparisonLocations: state.comparisonLocations.filter((_, i) => i !== index),
+    })),
+  clearComparisonLocations: () => set({ comparisonLocations: [] }),
   setPermissionStatus: (status) => set({ permissionStatus: status }),
   setSelectedRadiusKm: (radius) => set({ selectedRadiusKm: radius }),
   setMode: (mode) => set({ mode }),
@@ -37,3 +59,4 @@ export const useLocationStore = create<LocationState>((set) => ({
   setIsResolvingLocation: (resolving) => set({ isResolvingLocation: resolving }),
   setSearchQuery: (searchQuery) => set({ searchQuery }),
 }));
+

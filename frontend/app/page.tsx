@@ -27,11 +27,10 @@ export default function HomePage() {
       }
     } catch {}
     setHasStarted(true);
-    router.push('/copilot');
   };
 
   if (!hasStarted) {
-    return <LandingScreen onStart={handleStart} destination="/copilot" />;
+    return <LandingScreen onStart={handleStart} />;
   }
 
   return <AgentHomeView />;

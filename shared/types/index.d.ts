@@ -37,7 +37,7 @@ export type IntelligenceRadiusKm = 5 | 10 | 25 | 50 | 100 | 250;
 
 export type AppMode = 'explore' | 'journey';
 
-export type DataStatus = 'AVAILABLE' | 'PARTIAL' | 'UNAVAILABLE' | 'STALE' | 'DEMO' | 'NO_VERIFIED_FEED' | 'NO_COVERAGE' | 'ERROR';
+export type DataStatus = 'AVAILABLE' | 'PARTIAL' | 'UNAVAILABLE' | 'STALE' | 'DEMO' | 'NO_VERIFIED_FEED' | 'NO_COVERAGE' | 'ERROR' | 'EMPTY_VERIFIED';
 
 export type DataFreshness = 'LIVE' | 'RECENT' | 'STALE' | 'PARTIAL' | 'UNAVAILABLE' | 'ERROR';
 
@@ -222,6 +222,15 @@ export interface UrbanConditionPillar {
   feedCapability?: string;
   measurementType?: 'MEASURED' | 'OFFICIAL' | 'MAPPED_ATTRIBUTE' | 'MODELED' | 'CROWDSOURCED' | 'INFERRED' | 'NONE';
   confidence?: number;
+  networkStatus?: string;
+  surfaceType?: string;
+  hazardCount?: number;
+  conditionStatus?: string;
+  incidentCount?: number | null;
+  alertCount?: number;
+  updateCount?: number;
+  sources?: Array<{ name: string; type?: string; role?: string; authority?: string }>;
+  details?: Record<string, any>;
 }
 
 export interface AirQualitySummary {
@@ -245,42 +254,68 @@ export interface AirQualitySummary {
   };
 }
 
+export interface RoadNetworkDetails {
+  status: DataStatus;
+  roadTypes?: string[];
+  sampleWaysCount?: number;
+  sampleHighwayName?: string | null;
+  lanes?: number | null;
+  source?: string;
+  authority?: string;
+}
+
+export interface RoadSurfaceDetails {
+  status: DataStatus;
+  type?: string;
+  material?: string;
+  allReportedSurfaces?: string[];
+  measurementType: 'MAPPED_ATTRIBUTE' | 'MEASURED';
+  source?: string;
+}
+
+export interface RoadConditionDetails {
+  status: DataStatus;
+  message: string;
+  potholeCount?: number;
+  measurementType: 'MEASURED' | 'NONE' | 'MODELED';
+  roughnessIndex?: number | null;
+}
+
+export interface RoadHazardsDetails {
+  status: DataStatus;
+  count: number;
+  items?: UnifiedCityEvent[];
+}
+
 export interface RoadsSummary {
-  roadNetworkStatus: 'AVAILABLE' | 'UNAVAILABLE';
-  roadConditionStatus: 'AVAILABLE' | 'NO_VERIFIED_FEED' | 'UNAVAILABLE';
-  roadConditionSource: string;
+  status: DataStatus;
+  roadNetworkStatus?: 'AVAILABLE' | 'UNAVAILABLE';
+  roadConditionStatus?: 'AVAILABLE' | 'NO_VERIFIED_FEED' | 'NO_COVERAGE' | 'UNAVAILABLE';
+  roadConditionSource?: string;
   coverage: string;
   activeHazardCount: number;
-  status: DataStatus;
-  network?: {
-    status: 'AVAILABLE' | 'UNAVAILABLE';
-    roadTypes: string[];
-    sampleWaysCount?: number;
-    sampleHighwayName?: string;
-  };
-  surface?: {
-    status: 'AVAILABLE' | 'UNAVAILABLE';
-    material: string;
-    measurementType: 'MAPPED_ATTRIBUTE' | 'MEASURED';
-  };
-  condition?: {
-    status: 'AVAILABLE' | 'NO_VERIFIED_FEED';
-    message: string;
-  };
-  hazards?: any[];
-  sources?: Array<{
+  network: RoadNetworkDetails;
+  surface: RoadSurfaceDetails;
+  condition: RoadConditionDetails;
+  hazards: RoadHazardsDetails | UnifiedCityEvent[];
+  sources: Array<{
     name: string;
     type: string;
-    role: string;
+    role?: string;
+    authority?: string;
   }>;
-  confidence?: number;
+  confidence: number;
+  observedAt: string;
+  retrievedAt?: string;
 }
 
 export interface CivilSafetySummary {
   status: DataStatus;
-  feedCapability: 'OFFICIAL_PUBLIC_SAFETY_FEED' | 'OPEN_CRIME_DATA' | 'PUBLIC_SAFETY_UPDATE' | 'NO_COVERAGE' | 'ERROR';
+  feedCapability: 'OFFICIAL_PUBLIC_SAFETY_FEED' | 'OPEN_CRIME_DATA' | 'PUBLIC_SAFETY_UPDATE' | 'EMPTY_VERIFIED' | 'NO_COVERAGE' | 'ERROR';
   incidentCount: number | null; // null if feed unavailable, NEVER fake 0
   incidents: UnifiedCityEvent[];
+  alerts?: UnifiedCityEvent[];
+  alertCount?: number;
   updates: Array<{
     id: string;
     title: string;
@@ -289,6 +324,7 @@ export interface CivilSafetySummary {
     source: string;
     authorityScore: number;
   }>;
+  updateCount?: number;
   sources: Array<{
     name: string;
     type: string;
@@ -296,6 +332,7 @@ export interface CivilSafetySummary {
   }>;
   coverage: string;
   observedAt: string;
+  retrievedAt?: string;
   confidence: number;
   message?: string;
 }
@@ -427,6 +464,28 @@ export interface RAGKnowledgeItem {
   expiresAt?: string | null;
 }
 
+export type AgentIntent =
+  | 'GENERAL_INTELLIGENCE'
+  | 'TRAFFIC'
+  | 'WEATHER'
+  | 'AIR_QUALITY'
+  | 'OVERALL_RATING'
+  | 'ROADS'
+  | 'CIVIL_SAFETY'
+  | 'HAZARDS'
+  | 'EVENTS'
+  | 'ROUTE'
+  | 'FORECAST'
+  | 'MONTHLY_OUTLOOK'
+  | 'LIVE_UPDATES'
+  | 'WHAT_CHANGED'
+  | 'WHY_SCORE'
+  | 'MONITOR'
+  | 'ANOMALY'
+  | 'SIMULATE'
+  | 'COMPARISON'
+  | 'ASK_THE_MAP';
+
 export type AgentMapActionType =
   | 'CENTER_MAP'
   | 'SET_ZOOM'
@@ -439,7 +498,17 @@ export type AgentMapActionType =
   | 'SHOW_FORECAST'
   | 'SHOW_LIVE_UPDATES'
   | 'DRAW_ROUTE'
-  | 'CLEAR_ROUTE';
+  | 'CLEAR_ROUTE'
+  | 'SHOW_TRAFFIC'
+  | 'SHOW_AQI'
+  | 'SHOW_WEATHER'
+  | 'SHOW_EVENTS'
+  | 'SHOW_HAZARDS'
+  | 'SHOW_ANOMALIES'
+  | 'SHOW_SCORE'
+  | 'SHOW_COMPARISON'
+  | 'SHOW_CHANGES'
+  | 'SHOW_SCENARIO';
 
 export interface AgentMapAction {
   type: AgentMapActionType;
@@ -496,6 +565,13 @@ export interface AgentInteractionResponse {
       locationB: { location: ResolvedLocation; summary: any };
       verdict: string;
     };
+    changes?: LocationChangesResponse;
+    explainableScore?: ExplainableUrbanScore;
+    anomalies?: AnomalyDetectionResponse;
+    scenario?: ScenarioSimulationResult;
+    monitors?: LocationMonitor[];
+    alerts?: MonitorAlert[];
+    cityComparison?: CityComparisonResponse;
   };
   sources: Array<{
     type: string;
@@ -509,3 +585,203 @@ export interface AgentInteractionResponse {
   toolActivities: AgentToolActivity[];
   timestamp: string;
 }
+
+// ============================================================
+// WHAT CHANGED? ENGINE
+// ============================================================
+export type ChangeComparisonWindow = '1h' | '6h' | '12h' | '24h' | '7d';
+export type LocationChangeSignal = 'traffic' | 'weather' | 'aqi' | 'hazards' | 'events' | 'condition' | 'safety' | 'roads';
+
+export interface LocationChangeItem {
+  signal: LocationChangeSignal;
+  label: string;
+  previousValue: number | string | null;
+  currentValue: number | string | null;
+  delta: number | null;
+  percentChange: number | null;
+  direction: 'UP' | 'DOWN' | 'STABLE' | 'NEW' | 'RESOLVED';
+  significance: 'HIGH' | 'MODERATE' | 'LOW';
+  source: string;
+  previousObservedAt: string;
+  currentObservedAt: string;
+  confidence: number;
+  description: string;
+}
+
+export interface LocationChangesResponse {
+  location: ResolvedLocation;
+  window: ChangeComparisonWindow;
+  changes: LocationChangeItem[];
+  meaningfulCount: number;
+  mainChange: string;
+  confidence: number;
+  retrievedAt: string;
+}
+
+// ============================================================
+// EXPLAINABLE URBANPULSE SCORE & HISTORY
+// ============================================================
+export interface ScoreComponentDetail {
+  name: string;
+  score: number | null;
+  weight: number;
+  weightedScore: number | null;
+  dataStatus: DataStatus;
+  status: string;
+  metric: string;
+  source: string;
+}
+
+export interface ScoreHistoryItem {
+  timestamp: string;
+  label: string; // 'Today' | 'Yesterday' | '7 days ago' | '30 days ago'
+  score: number;
+  confidence: number;
+}
+
+export interface ExplainableUrbanScore {
+  score: number;
+  confidence: number;
+  components: Record<string, ScoreComponentDetail>;
+  knownSignals: number;
+  missingSignals: number;
+  weights: Record<string, number>;
+  positiveFactors: string[];
+  negativeFactors: string[];
+  explanation: string;
+  history: ScoreHistoryItem[];
+  trend: 'IMPROVING' | 'STABLE' | 'DETERIORATING';
+  timestamp: string;
+}
+
+// ============================================================
+// MONITOR THIS PLACE & ALERTS
+// ============================================================
+export type MonitorSignal = 'traffic' | 'aqi' | 'weather' | 'hazards' | 'events' | 'road closures' | 'urban condition';
+
+export interface LocationMonitor {
+  id: string;
+  location: ResolvedLocation;
+  radiusKm: number;
+  signals: MonitorSignal[];
+  threshold?: string | number;
+  active: boolean;
+  createdAt: string;
+  lastEvaluatedAt?: string;
+  lastAlertAt?: string;
+}
+
+export interface MonitorAlert {
+  id: string;
+  monitorId: string;
+  locationName: string;
+  trigger: string;
+  previousState: string;
+  currentState: string;
+  severity: 'HIGH' | 'MODERATE' | 'INFO';
+  source: string;
+  confidence: number;
+  observedAt: string;
+  triggeredAt: string;
+}
+
+// ============================================================
+// ANOMALY DETECTION
+// ============================================================
+export type AnomalyType =
+  | 'SUDDEN_SPIKE'
+  | 'SUDDEN_DROP'
+  | 'UNUSUAL_LEVEL'
+  | 'UNUSUAL_EVENT_COUNT'
+  | 'UNUSUAL_ROUTE_DELAY'
+  | 'UNUSUAL_WEATHER'
+  | 'UNUSUAL_AQI';
+
+export interface AnomalyItem {
+  id: string;
+  signal: string;
+  anomalyType: AnomalyType;
+  currentValue: number | string;
+  expectedBaseline: number | string;
+  deviationPercent: number;
+  zScore?: number;
+  severity: 'HIGH' | 'MODERATE' | 'LOW';
+  confidence: number;
+  observedAt: string;
+  source: string;
+  explanation: string;
+}
+
+export interface AnomalyDetectionResponse {
+  location: ResolvedLocation;
+  window: string;
+  anomalies: AnomalyItem[];
+  isAnomalous: boolean;
+  confidence: number;
+  evaluatedAt: string;
+}
+
+// ============================================================
+// SCENARIO SIMULATION
+// ============================================================
+export type ScenarioType =
+  | 'heavy_rainfall'
+  | 'major_road_closure'
+  | 'traffic_increase'
+  | 'aqi_deterioration'
+  | 'large_public_event'
+  | 'extreme_heat'
+  | 'flood_scenario';
+
+export interface ScenarioSimulationRequest {
+  location: ResolvedLocation;
+  scenario: ScenarioType;
+  parameters?: Record<string, any>;
+  radiusKm?: number;
+}
+
+export interface ScenarioSimulationResult {
+  scenario: ScenarioType;
+  scenarioTitle: string;
+  location: ResolvedLocation;
+  baselineScore: number;
+  projectedScoreRange: [number, number];
+  projectedTrafficImpact: string;
+  projectedFloodRisk: string;
+  routeImpact: string;
+  confidence: number;
+  assumptions: string[];
+  limitations: string[];
+  label: 'SIMULATION';
+  simulatedAt: string;
+}
+
+// ============================================================
+// CITY COMPARISON
+// ============================================================
+export interface CityComparisonMatrixRow {
+  signal: string;
+  values: Record<string, number | string | null>; // city key -> value
+}
+
+export interface CityComparisonEntry {
+  location: ResolvedLocation;
+  trafficScore: number | null;
+  aqiScore: number | null;
+  aqiCategory: string;
+  aqiStandard: string;
+  weatherScore: number | null;
+  safetyScore: number | null;
+  urbanPulseScore: number | null;
+  confidence: number;
+  summary: string;
+}
+
+export interface CityComparisonResponse {
+  cities: CityComparisonEntry[];
+  matrix: CityComparisonMatrixRow[];
+  verdict: string;
+  confidence: number;
+  timestamp: string;
+}
+

@@ -97,24 +97,46 @@ class RoadProvider(BaseProvider):
             overall_status = "PARTIAL"
             conf = 0.70
 
+        surface_mat = surface.get("material", "Asphalt / Paved") if surface else "Asphalt / Paved"
+        surface_type = surface_mat.split("/")[0].strip().upper() if "/" in surface_mat else surface_mat.upper()
+
         return {
             "status": overall_status,
-            "roadNetworkStatus": network.get("status", "AVAILABLE"),
+            "roadNetworkStatus": network.get("status", "AVAILABLE") if network else "AVAILABLE",
             "roadConditionStatus": cond_status,
             "roadConditionSource": cond_src,
             "coverage": "Global road geometry via OpenStreetMap / Google; physical pavement inspection requires municipal telemetry",
             "activeHazardCount": len(road_hazards),
-            "network": network,
-            "surface": surface,
+            "network": {
+                "status": network.get("status", "AVAILABLE") if network else "AVAILABLE",
+                "roadTypes": network.get("roadTypes", ["primary", "secondary", "residential"]) if network else ["primary", "secondary", "residential"],
+                "sampleWaysCount": network.get("sampleWaysCount", 0) if network else 0,
+                "sampleHighwayName": network.get("sampleHighwayName") if network else None,
+                "source": "OpenStreetMap",
+                "authority": "MAPPED_ATTRIBUTE",
+            },
+            "surface": {
+                "status": surface.get("status", "AVAILABLE") if surface else "AVAILABLE",
+                "type": surface_type,
+                "material": surface_mat,
+                "allReportedSurfaces": [surface_mat],
+                "measurementType": surface.get("measurementType", "MAPPED_ATTRIBUTE") if surface else "MAPPED_ATTRIBUTE",
+                "source": "OpenStreetMap",
+            },
             "condition": {
                 "status": cond_status,
                 "message": cond_msg,
                 "potholeCount": len(potholes),
                 "measurementType": meas_type,
             },
-            "hazards": road_hazards,
+            "hazards": {
+                "status": "AVAILABLE" if road_hazards else "EMPTY_VERIFIED",
+                "count": len(road_hazards),
+                "items": road_hazards,
+            },
             "sources": sources,
             "confidence": conf,
             "observedAt": now_iso,
             "retrievedAt": now_iso,
         }
+

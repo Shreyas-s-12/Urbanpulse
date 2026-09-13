@@ -220,7 +220,7 @@ export default function RoutePlanningView() {
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent-blue)', textTransform: 'uppercase' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase' }}>
               REAL-TIME TRAFFIC & ROUTE INTELLIGENCE
             </span>
             <span
@@ -230,7 +230,7 @@ export default function RoutePlanningView() {
                 padding: '2px 6px',
                 borderRadius: 'var(--radius-xs)',
                 backgroundColor: 'rgba(54, 127, 242, 0.1)',
-                color: 'var(--accent-blue)',
+                color: 'var(--accent-primary)',
               }}
             >
               GOOGLE ROUTES V2

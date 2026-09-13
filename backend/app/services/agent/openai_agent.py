@@ -114,14 +114,145 @@ AGENT_TOOLS = [
     {
         "type": "function",
         "function": {
+            "name": "get_road_intelligence",
+            "description": "Retrieve verified road network hierarchy, mapped surface attributes, physical condition telemetry, and active road hazards/potholes.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "latitude": {"type": "number"},
+                    "longitude": {"type": "number"},
+                    "radius_km": {"type": "number", "default": 50.0}
+                },
+                "required": ["latitude", "longitude"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_civil_safety_intelligence",
+            "description": "Query location-aware official police open data, verified civic safety alerts, and authoritative civil defense advisories.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "latitude": {"type": "number"},
+                    "longitude": {"type": "number"},
+                    "radius_km": {"type": "number", "default": 50.0},
+                    "country_code": {"type": "string"}
+                },
+                "required": ["latitude", "longitude"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_location_changes",
+            "description": "Evaluate what changed in this city/corridor over the past time window (1h, 6h, 12h, 24h, 7d) against historical baselines.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "latitude": {"type": "number"},
+                    "longitude": {"type": "number"},
+                    "window": {"type": "string", "enum": ["1h", "6h", "12h", "24h", "7d"], "default": "6h"}
+                },
+                "required": ["latitude", "longitude"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "calculate_urbanpulse_score",
+            "description": "Calculate deterministic 0-100 UrbanPulse score with positive/negative factor attribution and historical trend.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "latitude": {"type": "number"},
+                    "longitude": {"type": "number"}
+                },
+                "required": ["latitude", "longitude"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_anomalies",
+            "description": "Detect statistical anomalies (z-score, rolling 7-day diurnal deviations) in traffic delays, air quality, temperature, or hazards.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "latitude": {"type": "number"},
+                    "longitude": {"type": "number"},
+                    "signal": {"type": "string", "enum": ["traffic", "aqi", "weather", "events", "hazards"]}
+                },
+                "required": ["latitude", "longitude"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "simulate_scenario",
+            "description": "Simulate deterministic what-if urban disruption scenarios (heavy_rainfall, major_road_closure, traffic_increase, aqi_deterioration, flood_scenario).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "latitude": {"type": "number"},
+                    "longitude": {"type": "number"},
+                    "scenario_type": {"type": "string", "enum": ["heavy_rainfall", "major_road_closure", "traffic_increase", "aqi_deterioration", "flood_scenario"]},
+                    "parameters": {"type": "object"}
+                },
+                "required": ["latitude", "longitude", "scenario_type"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "compare_locations",
+            "description": "Compare live conditions, air quality, traffic, and scores across 2 to 5 global cities independently.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "cities": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of city names to compare (e.g. ['Mysuru', 'Bengaluru'])"
+                    }
+                },
+                "required": ["cities"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "create_monitor",
+            "description": "Register an active monitoring watch on a location for traffic deterioration, hazard events, or air quality drops.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "latitude": {"type": "number"},
+                    "longitude": {"type": "number"},
+                    "signals": {"type": "array", "items": {"type": "string"}}
+                },
+                "required": ["latitude", "longitude"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "dispatch_map_action",
-            "description": "Issue actions to Google Maps UI (center, toggle traffic layer, toggle aqi halo, open forecast panel, show live updates).",
+            "description": "Issue actions to Google Maps UI (center, toggle traffic layer, toggle aqi halo, open forecast panel, show live updates, highlight changes, show anomalies, show comparison).",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "action_type": {
                         "type": "string",
-                        "enum": ["CENTER_MAP", "SHOW_TRAFFIC_LAYER", "SHOW_AQI_LAYER", "SHOW_EVENTS_LAYER", "SHOW_FORECAST", "SHOW_LIVE_UPDATES"]
+                        "enum": ["CENTER_MAP", "SET_ZOOM", "SHOW_TRAFFIC_LAYER", "SHOW_AQI_LAYER", "SHOW_EVENTS_LAYER", "SHOW_FORECAST", "SHOW_LIVE_UPDATES", "SHOW_CHANGES", "SHOW_SCORE", "SHOW_ANOMALIES", "SHOW_SCENARIO", "SHOW_COMPARISON"]
                     },
                     "payload": {"type": "object"}
                 },

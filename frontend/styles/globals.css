@@ -1,41 +1,53 @@
 :root {
   /* UrbanPulse Light Geospatial Intelligence Theme */
-  --bg-app: #F5F7F8;
+  --bg-app: #F8FAFC;
   --bg-surface: #FFFFFF;
-  --bg-surface-secondary: #F0F3F5;
-  --bg-surface-tertiary: #E8ECEF;
+  --bg-surface-secondary: #F1F5F9;
+  --bg-surface-tertiary: #E2E8F0;
   --bg-surface-elevated: #FFFFFF;
+  --bg-subtle: #F8FAFC;
   
-  --text-primary: #11161B;
-  --text-secondary: #65717D;
-  --text-muted: #8E9BA8;
+  --text-primary: #111827;
+  --text-secondary: #4B5563;
+  --text-muted: #6B7280;
   --text-inverse: #FFFFFF;
   
-  --border-subtle: #E2E8F0;
+  --border: #E5E7EB;
+  --border-subtle: #E5E7EB;
   --border-light: #CBD5E1;
   --border-strong: #94A3B8;
   
-  /* Brand Accents */
-  --accent-primary: #13B887;
-  --accent-primary-light: rgba(19, 184, 135, 0.12);
-  --accent-blue: #367FF2;
-  --accent-blue-light: rgba(54, 127, 242, 0.12);
-  
-  /* Severity Deterministic Palette */
+  /* Brand Accent: Cobalt / Electric Blue */
+  --accent-primary: #2563EB;
+  --accent-primary-hover: #1D4ED8;
+  --accent-primary-light: rgba(37, 99, 235, 0.08);
+  --accent-blue: #2563EB;
+  --accent-blue-hover: #1D4ED8;
+  --accent-blue-light: rgba(37, 99, 235, 0.08);
+
+  /* Semantic Data Status Palette (NOT for general branding) */
+  --status-good: #10B981;
+  --status-good-bg: rgba(16, 185, 129, 0.1);
+  --status-warning: #F59E0B;
+  --status-warning-bg: rgba(245, 158, 11, 0.1);
+  --status-critical: #EF4444;
+  --status-critical-bg: rgba(239, 68, 68, 0.1);
+
   --severity-critical: #EF4444;
   --severity-critical-bg: rgba(239, 68, 68, 0.1);
   --severity-high: #F59E0B;
   --severity-high-bg: rgba(245, 158, 11, 0.1);
-  --severity-moderate: #367FF2;
-  --severity-moderate-bg: rgba(54, 127, 242, 0.1);
-  --severity-low: #13B887;
-  --severity-low-bg: rgba(19, 184, 135, 0.1);
+  --severity-moderate: #2563EB;
+  --severity-moderate-bg: rgba(37, 99, 235, 0.1);
+  --severity-low: #10B981;
+  --severity-low-bg: rgba(16, 185, 129, 0.1);
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
-  --shadow-panel: 0 20px 25px -5px rgba(0, 0, 0, 0.06), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
+  /* Clean Restrained Shadows (Soft neutral shadows, no heavy black or green glows) */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
+  --shadow-panel: 0 20px 25px -5px rgba(0, 0, 0, 0.06), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
 
   --radius-xs: 4px;
   --radius-sm: 8px;
@@ -61,6 +73,7 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color-scheme: light;
 }
 
 a {

@@ -35,11 +35,13 @@ interface GoogleMapViewProps {
 
 // Global loader instance to prevent duplicate script injection across the app
 let globalGoogleLoader: Loader | null = null;
+const DEFAULT_MAPS_KEY = 'AIzaSyDU2vkyVUnqI5lYUOz8aYrKO6mnYtWVSTg';
 
 function getGoogleMapsLoader(apiKey: string): Loader {
-  if (!globalGoogleLoader) {
+  const effectiveKey = apiKey || DEFAULT_MAPS_KEY;
+  if (!globalGoogleLoader || (globalGoogleLoader as any).apiKey !== effectiveKey) {
     globalGoogleLoader = new Loader({
-      apiKey: apiKey || '',
+      apiKey: effectiveKey,
       version: 'weekly',
       libraries: ['places', 'maps', 'marker'],
     });
@@ -67,10 +69,17 @@ export default function GoogleMapView({
 }: GoogleMapViewProps) {
   const apiKey =
     process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
-    (typeof window !== 'undefined' ? (window as any).__UP_GMAPS_KEY : '');
+    (typeof window !== 'undefined' && (window as any).__UP_GMAPS_KEY ? (window as any).__UP_GMAPS_KEY : DEFAULT_MAPS_KEY);
 
   // DOM Container & Google Maps Object References
+  const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const containerCallbackRef = useCallback((node: HTMLDivElement | null) => {
+    mapContainerRef.current = node;
+    setContainerNode(node);
+  }, []);
+
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const trafficLayerRef = useRef<google.maps.TrafficLayer | null>(null);
   const circleRef = useRef<google.maps.Circle | null>(null);
@@ -117,31 +126,45 @@ export default function GoogleMapView({
     return Math.max(5, Math.min(15, 12 - Math.log2(Math.max(radiusKm, 1) / 10)));
   }, [radiusKm, center, zoomOverride]);
 
-
   // Base Map Initialization: Google Maps -> render map immediately
   useEffect(() => {
+    if (!containerNode) return;
     let isCancelled = false;
 
     const initMap = async () => {
       setMapLoading(true);
       setMapError(null);
-      console.log('[UrbanPulse Map] Google Maps loading');
+      console.log('[UrbanPulse Map] Google Maps initializing');
 
       try {
-        const loader = getGoogleMapsLoader(apiKey);
-        const { Map } = (await loader.importLibrary('maps')) as google.maps.MapsLibrary;
+        let MapClass: any = (window as any).google?.maps?.Map;
 
-        if (isCancelled) return;
-        console.log('[UrbanPulse Map] Google Maps loaded');
+        if (!MapClass) {
+          const loader = getGoogleMapsLoader(apiKey);
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(
+              () => reject(new Error('Google Maps script loading timed out. Please verify internet connectivity.')),
+              10000
+            )
+          );
 
-        if (!mapContainerRef.current) {
-          console.warn('[UrbanPulse Map] map container ref unavailable');
-          return;
+          const mapsLib = (await Promise.race([
+            loader.importLibrary('maps'),
+            timeoutPromise,
+          ])) as google.maps.MapsLibrary;
+
+          MapClass = mapsLib.Map || (window as any).google?.maps?.Map;
         }
 
-        // If map instance does not exist yet, create it
+        if (isCancelled) return;
+
+        if (!MapClass) {
+          throw new Error('Google Maps Map constructor is not available.');
+        }
+
+        // If map instance does not exist yet, create it against the mounted container
         if (!mapInstanceRef.current) {
-          const map = new Map(mapContainerRef.current, {
+          const map = new MapClass(containerNode, {
             center: mapCenter,
             zoom,
             mapTypeId: mapMode,
@@ -182,12 +205,14 @@ export default function GoogleMapView({
 
         setMapReady(true);
         setMapLoading(false);
+        setMapError(null);
         console.log('[UrbanPulse Map] ready');
       } catch (err: any) {
         if (isCancelled) return;
         console.error('[UrbanPulse Map] initialization failed:', err);
         setMapError(err?.message || 'Failed to initialize Google Maps.');
         setMapLoading(false);
+        setMapReady(false);
       }
     };
 
@@ -197,7 +222,33 @@ export default function GoogleMapView({
       isCancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiKey, retryKey]);
+  }, [containerNode, apiKey, retryKey]);
+
+  // Handle container resizing (e.g. Map Expansion toggle or window resize) without reinitializing map
+  useEffect(() => {
+    if (!mapInstanceRef.current || !mapReady || !containerNode) return;
+
+    const triggerResize = () => {
+      if (mapInstanceRef.current && (window as any).google?.maps?.event) {
+        (window as any).google.maps.event.trigger(mapInstanceRef.current, 'resize');
+      }
+    };
+
+    window.addEventListener('resize', triggerResize);
+
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(() => {
+        triggerResize();
+      });
+      ro.observe(containerNode);
+    }
+
+    return () => {
+      window.removeEventListener('resize', triggerResize);
+      ro?.disconnect();
+    };
+  }, [containerNode, mapReady]);
 
   // Update map center/zoom on prop changes
   useEffect(() => {
@@ -218,43 +269,48 @@ export default function GoogleMapView({
     if (isTrafficActive) {
       setTrafficLoading(true);
       setTrafficError(false);
-      console.log('[UrbanPulse Traffic] initialization started');
 
-      const loader = getGoogleMapsLoader(apiKey);
-      loader
-        .importLibrary('maps')
-        .then((mapsLib: any) => {
-          if (!isMounted) return;
-          try {
-            if (!trafficLayerRef.current) {
-              const TrafficLayerClass = mapsLib.TrafficLayer || (window as any).google?.maps?.TrafficLayer;
-              if (TrafficLayerClass) {
-                trafficLayerRef.current = new TrafficLayerClass();
-              }
-            }
+      const applyTraffic = (TrafficLayerClass: any) => {
+        if (!isMounted) return;
+        try {
+          if (!trafficLayerRef.current) {
+            trafficLayerRef.current = new TrafficLayerClass();
+          }
+          trafficLayerRef.current?.setMap(map);
+          setTrafficReady(true);
+          setTrafficLoading(false);
+          setTrafficError(false);
+        } catch (err) {
+          console.warn('[UrbanPulse Traffic] failed to attach:', err);
+          setTrafficError(true);
+          setTrafficReady(false);
+          setTrafficLoading(false);
+        }
+      };
 
-            if (trafficLayerRef.current) {
-              trafficLayerRef.current.setMap(map);
-              setTrafficReady(true);
-              setTrafficLoading(false);
-              console.log('[UrbanPulse Traffic] initialized');
+      const existingClass = (window as any).google?.maps?.TrafficLayer;
+      if (existingClass) {
+        applyTraffic(existingClass);
+      } else {
+        const loader = getGoogleMapsLoader(apiKey);
+        loader
+          .importLibrary('maps')
+          .then((mapsLib: any) => {
+            const TrafficLayerClass = mapsLib.TrafficLayer || (window as any).google?.maps?.TrafficLayer;
+            if (TrafficLayerClass) {
+              applyTraffic(TrafficLayerClass);
             } else {
-              throw new Error('TrafficLayer class unavailable in loaded maps library');
+              throw new Error('TrafficLayer unavailable');
             }
-          } catch (err) {
+          })
+          .catch((err) => {
+            if (!isMounted) return;
             console.warn('[UrbanPulse Traffic] failed:', err);
             setTrafficError(true);
             setTrafficReady(false);
             setTrafficLoading(false);
-          }
-        })
-        .catch((err) => {
-          if (!isMounted) return;
-          console.warn('[UrbanPulse Traffic] failed:', err);
-          setTrafficError(true);
-          setTrafficReady(false);
-          setTrafficLoading(false);
-        });
+          });
+      }
     } else {
       if (trafficLayerRef.current) {
         try {
@@ -277,20 +333,17 @@ export default function GoogleMapView({
     if (!map || !mapReady) return;
 
     if (layers?.boundary !== false) {
-      const loader = getGoogleMapsLoader(apiKey);
-      loader.importLibrary('maps').then((mapsLib: any) => {
-        const CircleClass = mapsLib.Circle || (window as any).google?.maps?.Circle;
+      const renderCircle = (CircleClass: any) => {
         if (!CircleClass) return;
-
         if (!circleRef.current) {
           circleRef.current = new CircleClass({
             map,
             center: mapCenter,
             radius: radiusKm * 1000,
-            fillColor: '#13B887',
-            fillOpacity: 0.03,
-            strokeColor: '#13B887',
-            strokeOpacity: 0.5,
+            fillColor: '#2563EB',
+            fillOpacity: 0.04,
+            strokeColor: '#2563EB',
+            strokeOpacity: 0.6,
             strokeWeight: 1.5,
           });
         } else {
@@ -298,7 +351,17 @@ export default function GoogleMapView({
           circleRef.current.setRadius(radiusKm * 1000);
           circleRef.current.setMap(map);
         }
-      });
+      };
+
+      const existingCircle = (window as any).google?.maps?.Circle;
+      if (existingCircle) {
+        renderCircle(existingCircle);
+      } else {
+        const loader = getGoogleMapsLoader(apiKey);
+        loader.importLibrary('maps').then((mapsLib: any) => {
+          renderCircle(mapsLib.Circle || (window as any).google?.maps?.Circle);
+        });
+      }
     } else {
       if (circleRef.current) {
         circleRef.current.setMap(null);
@@ -312,9 +375,7 @@ export default function GoogleMapView({
     if (!map || !mapReady) return;
 
     if (isAqiActive && aqiData && aqiData.value !== undefined && aqiData.value !== null) {
-      const loader = getGoogleMapsLoader(apiKey);
-      loader.importLibrary('maps').then((mapsLib: any) => {
-        const CircleClass = mapsLib.Circle || (window as any).google?.maps?.Circle;
+      const renderAqi = (CircleClass: any) => {
         if (!CircleClass) return;
 
         // Determine standard-aware color
@@ -368,14 +429,23 @@ export default function GoogleMapView({
           });
           aqiCircleRef.current.setMap(map);
         }
-      });
+      };
+
+      const existingCircle = (window as any).google?.maps?.Circle;
+      if (existingCircle) {
+        renderAqi(existingCircle);
+      } else {
+        const loader = getGoogleMapsLoader(apiKey);
+        loader.importLibrary('maps').then((mapsLib: any) => {
+          renderAqi(mapsLib.Circle || (window as any).google?.maps?.Circle);
+        });
+      }
     } else {
       if (aqiCircleRef.current) {
         aqiCircleRef.current.setMap(null);
       }
     }
   }, [mapReady, mapCenter, radiusKm, isAqiActive, aqiData, apiKey]);
-
 
   // UrbanPulse Event Markers Layer
   useEffect(() => {
@@ -390,23 +460,20 @@ export default function GoogleMapView({
     });
     markersRef.current = [];
 
-    const loader = getGoogleMapsLoader(apiKey);
-    loader.importLibrary('marker').then((markerLib: any) => {
-      const MarkerClass = markerLib.Marker || (window as any).google?.maps?.Marker;
+    const renderMarkers = (MarkerClass: any) => {
       if (!MarkerClass) return;
 
       events.forEach((ev) => {
-        // Differentiate marker colors and sizing based on category and eventType
-        let markerColor = ev.severity >= 75 ? '#EF4444' : ev.severity >= 55 ? '#F59E0B' : '#13B887';
+        let markerColor = ev.severity >= 75 ? '#EF4444' : ev.severity >= 55 ? '#F59E0B' : '#10B981';
         let strokeColor = '#FFFFFF';
 
         if (ev.eventType === 'POTHOLE' || ev.eventType === 'ROAD_CLOSURE') {
-          markerColor = '#EA580C'; // Road Hazard Orange
+          markerColor = '#EA580C';
         } else if (ev.eventType === 'POLICE_INCIDENT') {
-          markerColor = '#2563EB'; // Civil Safety Blue
+          markerColor = '#2563EB';
           strokeColor = '#DBEAFE';
         } else if (ev.eventType === 'EARTHQUAKE') {
-          markerColor = '#DC2626'; // Seismic Red
+          markerColor = '#DC2626';
         }
 
         const marker = new MarkerClass({
@@ -429,7 +496,17 @@ export default function GoogleMapView({
 
         markersRef.current.push(marker);
       });
-    });
+    };
+
+    const existingMarker = (window as any).google?.maps?.Marker;
+    if (existingMarker) {
+      renderMarkers(existingMarker);
+    } else {
+      const loader = getGoogleMapsLoader(apiKey);
+      loader.importLibrary('marker').then((markerLib: any) => {
+        renderMarkers(markerLib.Marker || (window as any).google?.maps?.Marker);
+      });
+    }
   }, [mapReady, events, onSelectEvent, apiKey]);
 
   // Candidate Route Polylines and Route Markers
@@ -454,9 +531,7 @@ export default function GoogleMapView({
     const candidateList = routes && routes.length > 0 ? routes : activeRoute ? [activeRoute] : [];
     if (candidateList.length === 0) return;
 
-    const loader = getGoogleMapsLoader(apiKey);
-    loader.importLibrary('maps').then((mapsLib: any) => {
-      const PolylineClass = mapsLib.Polyline || (window as any).google?.maps?.Polyline;
+    const renderRoutes = (PolylineClass: any, MarkerClass: any) => {
       if (!PolylineClass) return;
 
       const activeRouteId = activeRoute?.id || candidateList[0]?.id;
@@ -490,7 +565,7 @@ export default function GoogleMapView({
         });
         polylinesRef.current.push(activePoly);
 
-        // Frame the entire corridor seamlessly within map viewport
+        // Frame corridor seamlessly within map viewport
         try {
           const LatLngBoundsClass = (window as any).google?.maps?.LatLngBounds;
           if (LatLngBoundsClass) {
@@ -502,11 +577,8 @@ export default function GoogleMapView({
           }
         } catch {}
 
-        // Add origin & destination pins
-        loader.importLibrary('marker').then((markerLib: any) => {
-          const MarkerClass = markerLib.Marker || (window as any).google?.maps?.Marker;
-          if (!MarkerClass) return;
-
+        // Add origin & destination pins if MarkerClass available
+        if (MarkerClass) {
           const originMarker = new MarkerClass({
             map,
             position: {
@@ -517,7 +589,7 @@ export default function GoogleMapView({
             icon: {
               path: (window as any).google?.maps?.SymbolPath?.CIRCLE || 0,
               scale: 7,
-              fillColor: '#13B887',
+              fillColor: '#2563EB',
               fillOpacity: 1,
               strokeWeight: 2,
               strokeColor: '#FFFFFF',
@@ -542,9 +614,22 @@ export default function GoogleMapView({
           });
 
           routeMarkersRef.current.push(originMarker, destMarker);
-        });
+        }
       }
-    });
+    };
+
+    const existingPolyline = (window as any).google?.maps?.Polyline;
+    const existingMarker = (window as any).google?.maps?.Marker;
+    if (existingPolyline && existingMarker) {
+      renderRoutes(existingPolyline, existingMarker);
+    } else {
+      const loader = getGoogleMapsLoader(apiKey);
+      Promise.all([loader.importLibrary('maps'), loader.importLibrary('marker')]).then(([mapsLib, markerLib]: any) => {
+        const PolylineClass = mapsLib.Polyline || (window as any).google?.maps?.Polyline;
+        const MarkerClass = markerLib.Marker || (window as any).google?.maps?.Marker;
+        renderRoutes(PolylineClass, MarkerClass);
+      });
+    }
   }, [mapReady, routes, activeRoute, onSelectRoute, apiKey]);
 
   // Clean cleanup on component unmount
@@ -599,7 +684,7 @@ export default function GoogleMapView({
     <div style={{ position: 'relative', width: '100%', height: height ?? '100%', overflow: 'hidden' }}>
       {/* Real Google Maps Container DOM element */}
       <div
-        ref={mapContainerRef}
+        ref={containerCallbackRef}
         style={{
           width: '100%',
           height: '100%',
@@ -651,8 +736,8 @@ export default function GoogleMapView({
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#0E1318',
-            color: '#F87171',
+            backgroundColor: '#FFFFFF',
+            color: '#DC2626',
             padding: '24px',
             textAlign: 'center',
             gap: '14px',
@@ -673,7 +758,7 @@ export default function GoogleMapView({
               fontWeight: 700,
               border: 'none',
               cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(19, 184, 135, 0.3)',
+              boxShadow: 'var(--shadow-sm)',
             }}
           >
             Retry Map Connection
@@ -700,13 +785,13 @@ export default function GoogleMapView({
                 gap: '7px',
                 padding: '5px 11px',
                 borderRadius: 'var(--radius-full)',
-                backgroundColor: 'rgba(17, 22, 27, 0.88)',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
                 backdropFilter: 'blur(8px)',
-                border: '1px solid rgba(19, 184, 135, 0.4)',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.25)',
+                border: '1px solid var(--border-subtle)',
+                boxShadow: 'var(--shadow-sm)',
                 fontSize: '11px',
                 fontWeight: 700,
-                color: '#FFFFFF',
+                color: 'var(--text-primary)',
                 letterSpacing: '0.4px',
               }}
             >
@@ -715,8 +800,8 @@ export default function GoogleMapView({
                   width: '7px',
                   height: '7px',
                   borderRadius: '50%',
-                  backgroundColor: '#13B887',
-                  boxShadow: '0 0 8px #13B887',
+                  backgroundColor: '#10B981',
+                  boxShadow: '0 0 6px rgba(16, 185, 129, 0.6)',
                 }}
               />
               LIVE TRAFFIC
@@ -731,13 +816,13 @@ export default function GoogleMapView({
                 gap: '7px',
                 padding: '5px 11px',
                 borderRadius: 'var(--radius-full)',
-                backgroundColor: 'rgba(17, 22, 27, 0.88)',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
                 backdropFilter: 'blur(8px)',
-                border: '1px solid rgba(239, 68, 68, 0.4)',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.25)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                boxShadow: 'var(--shadow-sm)',
                 fontSize: '11px',
                 fontWeight: 700,
-                color: '#F87171',
+                color: '#DC2626',
               }}
             >
               <span

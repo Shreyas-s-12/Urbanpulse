@@ -279,6 +279,7 @@ async def get_air_quality(
 
 
 @router.get("/roads")
+@router.get("/intelligence/roads")
 async def get_roads(
     coords: CoordinateQuery = Depends(coordinate_query),
     radius_km: Optional[float] = Query(None),
@@ -298,6 +299,7 @@ async def get_roads(
 
 
 @router.get("/civil-safety")
+@router.get("/intelligence/civil-safety")
 async def get_civil_safety(
     coords: CoordinateQuery = Depends(coordinate_query),
     radius_km: Optional[float] = Query(None),
@@ -321,8 +323,20 @@ async def get_civil_safety(
         except Exception:
             pass
 
+    # Gather any verified civic safety events from the radius
+    corridor_events = []
+    try:
+        fusion_result = await EventFusionService.get_live_events_near_location(
+            center_lat=coords.latitude,
+            center_lon=coords.longitude,
+            radius_km=selected_radius,
+        )
+        corridor_events = fusion_result.get("events", [])
+    except Exception:
+        pass
+
     return await CrimeProvider.get_crime_events_async(
-        coords.latitude, coords.longitude, selected_radius, country_code=resolved_country, city=resolved_city
+        coords.latitude, coords.longitude, selected_radius, country_code=resolved_country, city=resolved_city, corridor_events=corridor_events
     )
 
 
@@ -643,3 +657,133 @@ async def get_rag_knowledge(
         coords.latitude, coords.longitude, query=query, city=city, limit=limit
     )
     return {"results": docs, "total": len(docs)}
+
+
+# ==============================================================================
+# 9. Master Intelligence Endpoints
+# ==============================================================================
+
+@router.get("/intelligence/changes")
+async def get_location_changes(
+    coords: CoordinateQuery = Depends(coordinate_query),
+    window: str = Query("24h", pattern="^(1h|6h|12h|24h|7d)$"),
+    city: Optional[str] = Query(None),
+):
+    """
+    Computes deterministic what-changed metrics comparing current live telemetry
+    to windowed historical baselines.
+    """
+    from app.services.change_detection import ChangeDetectionService
+
+    return await ChangeDetectionService.get_location_changes(
+        coords.latitude, coords.longitude, window=window, city=city
+    )
+
+
+@router.get("/intelligence/score")
+async def get_explainable_score(
+    coords: CoordinateQuery = Depends(coordinate_query),
+    city: Optional[str] = Query(None),
+    country_code: Optional[str] = Query(None),
+):
+    """
+    Computes explainable 0-100 UrbanPulse score with deterministic weights,
+    confidence penalties for missing data, positive/negative drivers, and trend.
+    """
+    from app.services.urban_score import ExplainableScoreService
+
+    meta = {"city": city, "countryCode": country_code}
+    return await ExplainableScoreService.calculate_urbanpulse_score(
+        coords.latitude, coords.longitude, location_meta=meta
+    )
+
+
+@router.get("/intelligence/anomalies")
+async def get_anomalies(
+    coords: CoordinateQuery = Depends(coordinate_query),
+    city: Optional[str] = Query(None),
+):
+    """
+    Detects statistical anomalies by comparing current telemetry against 7-day diurnal baselines.
+    """
+    from app.services.anomaly_detection import AnomalyDetectionService
+
+    return await AnomalyDetectionService.detect_anomalies(
+        coords.latitude, coords.longitude, city=city
+    )
+
+
+@router.post("/intelligence/simulate")
+async def simulate_scenario(req: Dict[str, Any]):
+    """
+    Runs deterministic urban scenario simulations (heavy rain, closures, surges).
+    Explicitly labeled as SIMULATION with assumptions and uncertainty intervals.
+    """
+    from app.services.scenario_engine import ScenarioEngineService
+
+    return await ScenarioEngineService.simulate_scenario(req)
+
+
+@router.post("/intelligence/compare")
+async def compare_locations(req: Dict[str, Any]):
+    """
+    Compares 2 to 5 locations side-by-side using real telemetry and standardized scales.
+    Missing metrics formatted as '—' without cross-city cache bleed.
+    """
+    from app.services.comparison import ComparisonService
+
+    locations = req.get("locations") or []
+    if not isinstance(locations, list) or len(locations) < 2:
+        raise HTTPException(status_code=422, detail="At least 2 locations required for comparison")
+    if len(locations) > 5:
+        raise HTTPException(status_code=422, detail="Maximum 5 locations supported for comparison")
+
+    return await ComparisonService.compare_locations(locations)
+
+
+# ==============================================================================
+# 10. Location & Corridor Monitoring Endpoints
+# ==============================================================================
+
+@router.get("/monitoring")
+async def list_monitors():
+    """Returns active monitoring targets for locations and corridors."""
+    from app.services.monitoring import MonitoringService
+
+    return await MonitoringService.list_monitors()
+
+
+@router.post("/monitoring")
+async def create_monitor(req: Dict[str, Any]):
+    """Creates a new monitoring subscription for a point, radius, or corridor."""
+    from app.services.monitoring import MonitoringService
+
+    return await MonitoringService.create_monitor(req)
+
+
+@router.delete("/monitoring/{monitor_id}")
+async def delete_monitor(monitor_id: str):
+    """Deletes an active monitor configuration."""
+    from app.services.monitoring import MonitoringService
+
+    success = await MonitoringService.delete_monitor(monitor_id)
+    return {"success": success, "monitorId": monitor_id}
+
+
+@router.get("/monitoring/alerts")
+async def get_monitor_alerts(limit: int = Query(50, ge=1, le=200)):
+    """Retrieves generated non-intrusive monitoring alerts."""
+    from app.services.monitoring import MonitoringService
+
+    alerts = await MonitoringService.get_alerts(limit=limit)
+    return {"alerts": alerts, "total": len(alerts)}
+
+
+@router.post("/monitoring/evaluate")
+async def evaluate_monitors():
+    """Triggers an evaluation pass over all active monitors against live conditions."""
+    from app.services.monitoring import MonitoringService
+
+    alerts = await MonitoringService.evaluate_monitors()
+    return {"evaluated": True, "newAlerts": alerts, "count": len(alerts)}
+

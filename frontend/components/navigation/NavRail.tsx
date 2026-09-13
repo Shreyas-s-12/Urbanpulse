@@ -107,15 +107,16 @@ export default function NavRail() {
             width: '40px',
             height: '40px',
             borderRadius: '10px',
-            backgroundColor: '#11161B',
+            backgroundColor: '#1E293B',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#13B887',
+            color: '#FFFFFF',
             fontWeight: 800,
-            fontSize: '18px',
-            letterSpacing: '-1px',
+            fontSize: '17px',
+            letterSpacing: '-0.5px',
             position: 'relative',
+            boxShadow: 'var(--shadow-sm)',
           }}
         >
           UP
@@ -128,7 +129,7 @@ export default function NavRail() {
               height: '8px',
               borderRadius: '50%',
               backgroundColor: 'var(--accent-primary)',
-              boxShadow: '0 0 8px #13B887',
+              boxShadow: '0 0 8px rgba(37, 99, 235, 0.7)',
             }}
           />
         </div>
@@ -168,7 +169,7 @@ export default function NavRail() {
               <span
                 style={{
                   fontSize: '10px',
-                  fontWeight: isActive ? 600 : 500,
+                  fontWeight: isActive ? 700 : 500,
                   textAlign: 'center',
                   lineHeight: 1.1,
                 }}
@@ -193,11 +194,11 @@ export default function NavRail() {
         <span
           title="Engine: Operational"
           style={{
-            width: '10px',
-            height: '10px',
+            width: '8px',
+            height: '8px',
             borderRadius: '50%',
             backgroundColor: 'var(--accent-primary)',
-            boxShadow: '0 0 8px rgba(19, 184, 135, 0.6)',
+            boxShadow: '0 0 8px rgba(37, 99, 235, 0.6)',
           }}
         />
         <span style={{ fontSize: '9px', fontWeight: 600, color: 'var(--text-muted)' }}>LIVE</span>

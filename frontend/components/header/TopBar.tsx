@@ -234,7 +234,8 @@ export default function TopBar() {
               fontSize: '12px',
               fontWeight: 600,
               backgroundColor: selectedRadiusKm === r ? 'var(--bg-surface)' : 'transparent',
-              color: selectedRadiusKm === r ? 'var(--text-primary)' : 'var(--text-muted)',
+              color: selectedRadiusKm === r ? 'var(--accent-primary)' : 'var(--text-muted)',
+              border: selectedRadiusKm === r ? '1px solid var(--accent-primary-light)' : '1px solid transparent',
               boxShadow: selectedRadiusKm === r ? 'var(--shadow-sm)' : 'none',
               transition: 'all 0.15s ease',
             }}
@@ -277,7 +278,7 @@ export default function TopBar() {
               borderRadius: 'var(--radius-xs)',
               fontSize: '12px',
               fontWeight: 600,
-              backgroundColor: mode === 'journey' ? 'var(--accent-blue)' : 'transparent',
+              backgroundColor: mode === 'journey' ? 'var(--accent-primary)' : 'transparent',
               color: mode === 'journey' ? '#FFFFFF' : 'var(--text-secondary)',
               transition: 'all 0.15s ease',
             }}
@@ -296,7 +297,7 @@ export default function TopBar() {
             padding: '5px 10px',
             borderRadius: 'var(--radius-full)',
             backgroundColor: 'var(--accent-primary-light)',
-            border: '1px solid rgba(19, 184, 135, 0.3)',
+            border: '1px solid rgba(37, 99, 235, 0.25)',
             fontSize: '11px',
             fontWeight: 700,
             color: 'var(--accent-primary)',
@@ -308,6 +309,7 @@ export default function TopBar() {
               height: '6px',
               borderRadius: '50%',
               backgroundColor: 'var(--accent-primary)',
+              boxShadow: '0 0 6px rgba(37, 99, 235, 0.6)',
             }}
           />
           LIVE DATA

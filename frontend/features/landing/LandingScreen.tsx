@@ -15,8 +15,6 @@ export default function LandingScreen({ onStart, destination = '/copilot' }: Lan
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    if (isNavigating) return;
-    setIsNavigating(true);
 
     try {
       if (typeof window !== 'undefined' && window.sessionStorage) {
@@ -27,15 +25,12 @@ export default function LandingScreen({ onStart, destination = '/copilot' }: Lan
     }
 
     if (onStart) {
-      try {
-        onStart();
-      } catch (err) {
-        console.warn('onStart callback error:', err);
-      }
+      setIsNavigating(true);
+      onStart();
+    } else if (destination) {
+      setIsNavigating(true);
+      router.push(destination);
     }
-
-    // Immediately navigate to the agent route
-    router.push(destination);
   };
 
   return (
@@ -44,8 +39,8 @@ export default function LandingScreen({ onStart, destination = '/copilot' }: Lan
         position: 'fixed',
         inset: 0,
         zIndex: 999,
-        backgroundColor: '#0A0E13',
-        color: '#FFFFFF',
+        backgroundColor: '#FFFFFF',
+        color: '#111827',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -58,25 +53,25 @@ export default function LandingScreen({ onStart, destination = '/copilot' }: Lan
       <div
         style={{
           position: 'absolute',
-          width: '600px',
-          height: '600px',
+          width: '640px',
+          height: '640px',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(19, 184, 135, 0.12) 0%, rgba(10, 14, 19, 0) 70%)',
+          background: 'radial-gradient(circle, rgba(37, 99, 235, 0.05) 0%, rgba(255, 255, 255, 0) 70%)',
           pointerEvents: 'none',
-          filter: 'blur(40px)',
-          transform: 'translate(-10%, -10%)',
+          filter: 'blur(50px)',
+          transform: 'translate(-15%, -15%)',
         }}
       />
       <div
         style={{
           position: 'absolute',
-          width: '450px',
-          height: '450px',
+          width: '500px',
+          height: '500px',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, rgba(10, 14, 19, 0) 70%)',
+          background: 'radial-gradient(circle, rgba(241, 245, 249, 0.8) 0%, rgba(255, 255, 255, 0) 70%)',
           pointerEvents: 'none',
-          filter: 'blur(50px)',
-          transform: 'translate(40%, 30%)',
+          filter: 'blur(60px)',
+          transform: 'translate(35%, 25%)',
         }}
       />
 
@@ -102,9 +97,9 @@ export default function LandingScreen({ onStart, destination = '/copilot' }: Lan
             gap: '8px',
             padding: '6px 14px',
             borderRadius: '9999px',
-            backgroundColor: 'rgba(19, 184, 135, 0.12)',
-            border: '1px solid rgba(19, 184, 135, 0.3)',
-            boxShadow: '0 0 20px rgba(19, 184, 135, 0.15)',
+            backgroundColor: '#FFFFFF',
+            border: '1px solid #E5E7EB',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
           }}
         >
           <span
@@ -112,8 +107,8 @@ export default function LandingScreen({ onStart, destination = '/copilot' }: Lan
               width: '8px',
               height: '8px',
               borderRadius: '50%',
-              backgroundColor: '#13B887',
-              boxShadow: '0 0 10px #13B887',
+              backgroundColor: '#2563EB',
+              boxShadow: '0 0 8px rgba(37, 99, 235, 0.6)',
             }}
           />
           <span
@@ -121,7 +116,7 @@ export default function LandingScreen({ onStart, destination = '/copilot' }: Lan
               fontSize: '12px',
               fontWeight: 700,
               letterSpacing: '2px',
-              color: '#13B887',
+              color: '#2563EB',
               textTransform: 'uppercase',
             }}
           >
@@ -137,7 +132,7 @@ export default function LandingScreen({ onStart, destination = '/copilot' }: Lan
               fontWeight: 800,
               letterSpacing: '-1.5px',
               lineHeight: 1.15,
-              color: '#F1F5F9',
+              color: '#111827',
             }}
           >
             How are you?
@@ -145,8 +140,8 @@ export default function LandingScreen({ onStart, destination = '/copilot' }: Lan
           <p
             style={{
               fontSize: '20px',
-              fontWeight: 400,
-              color: '#94A3B8',
+              fontWeight: 500,
+              color: '#4B5563',
               letterSpacing: '-0.2px',
             }}
           >
@@ -159,7 +154,7 @@ export default function LandingScreen({ onStart, destination = '/copilot' }: Lan
           style={{
             fontSize: '14px',
             lineHeight: 1.6,
-            color: '#64748B',
+            color: '#6B7280',
             maxWidth: '440px',
           }}
         >
@@ -178,11 +173,11 @@ export default function LandingScreen({ onStart, destination = '/copilot' }: Lan
             fontSize: '15px',
             fontWeight: 700,
             borderRadius: '12px',
-            backgroundColor: '#13B887',
-            color: '#0A0E13',
+            backgroundColor: '#2563EB',
+            color: '#FFFFFF',
             border: 'none',
             cursor: isNavigating ? 'default' : 'pointer',
-            boxShadow: '0 4px 20px rgba(19, 184, 135, 0.35)',
+            boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
             display: 'inline-flex',
             alignItems: 'center',
             gap: '10px',
@@ -193,20 +188,22 @@ export default function LandingScreen({ onStart, destination = '/copilot' }: Lan
             outline: 'none',
           }}
           onFocus={(e) => {
-            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(19, 184, 135, 0.5), 0 4px 20px rgba(19, 184, 135, 0.35)';
+            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(37, 99, 235, 0.35), 0 4px 14px rgba(37, 99, 235, 0.3)';
           }}
           onBlur={(e) => {
-            e.currentTarget.style.boxShadow = '0 4px 20px rgba(19, 184, 135, 0.35)';
+            e.currentTarget.style.boxShadow = '0 4px 14px rgba(37, 99, 235, 0.3)';
           }}
           onMouseEnter={(e) => {
             if (!isNavigating) {
+              e.currentTarget.style.backgroundColor = '#1D4ED8';
               e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 28px rgba(19, 184, 135, 0.5)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(37, 99, 235, 0.4)';
             }
           }}
           onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#2563EB';
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 4px 20px rgba(19, 184, 135, 0.35)';
+            e.currentTarget.style.boxShadow = '0 4px 14px rgba(37, 99, 235, 0.3)';
           }}
         >
           <span>{isNavigating ? 'Opening Agent...' : "Let's Get Started"}</span>
@@ -232,18 +229,18 @@ export default function LandingScreen({ onStart, destination = '/copilot' }: Lan
             display: 'flex',
             gap: '20px',
             fontSize: '12px',
-            color: '#475569',
+            color: '#6B7280',
             fontWeight: 500,
           }}
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ color: '#13B887' }}>✓</span> Real Google Traffic
+            <span style={{ color: '#2563EB', fontWeight: 700 }}>✓</span> Real Google Traffic
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ color: '#13B887' }}>✓</span> Standard-Aware AQI
+            <span style={{ color: '#2563EB', fontWeight: 700 }}>✓</span> Standard-Aware AQI
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ color: '#13B887' }}>✓</span> Zero Mock Data
+            <span style={{ color: '#2563EB', fontWeight: 700 }}>✓</span> Zero Mock Data
           </span>
         </div>
       </div>

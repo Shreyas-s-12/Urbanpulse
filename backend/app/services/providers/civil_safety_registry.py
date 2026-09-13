@@ -18,9 +18,64 @@ from app.services.rag.rag_service import LocationAwareRAGService
 logger = logging.getLogger("urbanpulse.civil_safety")
 
 
+CIVIL_SAFETY_PROVIDERS: List[Dict[str, Any]] = [
+    {
+        "name": "data.police.uk (UK Home Office)",
+        "coverage": "Great Britain (England, Wales, Northern Ireland)",
+        "countries": ["GB"],
+        "regions": ["GB"],
+        "dataTypes": ["OFFICIAL_PUBLIC_SAFETY_FEED", "OPEN_CRIME_DATA"],
+        "authority": "Official UK Police Street-Level Crime API",
+        "freshness": "RECENT",
+        "live": True,
+    },
+    {
+        "name": "US Municipal Open Crime Portals",
+        "coverage": "United States Municipalities (Chicago, NYC)",
+        "countries": ["US"],
+        "regions": ["IL", "NY"],
+        "dataTypes": ["OPEN_CRIME_DATA"],
+        "authority": "Municipal Open Data Feeds (Socrata)",
+        "freshness": "RECENT",
+        "live": True,
+    },
+    {
+        "name": "UrbanPulse Public Safety Alert Stream",
+        "coverage": "Global",
+        "countries": ["GLOBAL"],
+        "regions": ["GLOBAL"],
+        "dataTypes": ["PUBLIC_INCIDENT_FEEDS", "EMERGENCY_ALERTS"],
+        "authority": "Verified Civic & Emergency Dispatch Signals",
+        "freshness": "LIVE",
+        "live": True,
+    },
+    {
+        "name": "Location-Aware Civil Defense RAG",
+        "coverage": "Global",
+        "countries": ["GLOBAL"],
+        "regions": ["GLOBAL"],
+        "dataTypes": ["RECENT_PUBLIC_SAFETY_UPDATES"],
+        "authority": "Verified Municipal & Civil Defense Guidelines",
+        "freshness": "RECENT",
+        "live": True,
+    },
+]
+
+
 class CivilSafetyRegistry:
     # In-memory incident cache per location (5-minute TTL)
     _cache: Dict[str, Dict[str, Any]] = {}
+
+    @classmethod
+    def get_eligible_providers(cls, country_code: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Determines which providers can service the given country code."""
+        c_upper = (country_code or "").upper()
+        eligible = []
+        for p in CIVIL_SAFETY_PROVIDERS:
+            countries = p.get("countries", [])
+            if "GLOBAL" in countries or c_upper in countries:
+                eligible.append(p)
+        return eligible
 
     @classmethod
     async def get_civil_safety(
@@ -30,10 +85,18 @@ class CivilSafetyRegistry:
         radius_km: float = 50.0,
         country_code: Optional[str] = None,
         city: Optional[str] = None,
+        corridor_events: Optional[List[Dict[str, Any]]] = None,
     ) -> Dict[str, Any]:
+        """
+        Evaluates real-time civil safety across 4 distinct data types:
+          A. Official Public Safety Feeds (Police API)
+          B. Open Crime Data (Municipal datasets)
+          C. Public Incident Feeds & Alerts (CITY_EVENT public safety / emergency alerts)
+          D. Recent Public-Safety Updates (Authoritative civil defense bulletins via RAG)
+        """
         now_iso = datetime.now(timezone.utc).isoformat()
         now_ts = datetime.now(timezone.utc).timestamp()
-        cache_key = f"{country_code or ''}:{round(latitude, 2)}:{round(longitude, 2)}"
+        cache_key = f"{country_code or ''}:{round(latitude, 2)}:{round(longitude, 2)}:{round(radius_km, 1)}"
 
         cached = cls._cache.get(cache_key)
         if cached and (now_ts - cached.get("_cached_at", 0)) < 300:
@@ -41,6 +104,7 @@ class CivilSafetyRegistry:
 
         c_upper = (country_code or "").upper()
         incidents: List[Dict[str, Any]] = []
+        alerts: List[Dict[str, Any]] = []
         sources: List[Dict[str, Any]] = []
         feed_capability = "NO_COVERAGE"
         status = "NO_COVERAGE"
@@ -48,6 +112,21 @@ class CivilSafetyRegistry:
         message = ""
         confidence = 0.0
 
+        # C. Public Incident Feeds & Alerts from CITY_EVENT
+        events = corridor_events or []
+        safety_events = [
+            e for e in events
+            if e.get("eventType") in ["PUBLIC_SAFETY_ALERT", "POLICE_INCIDENT", "MURDER", "ROBBERY", "THEFT"]
+        ]
+        if safety_events:
+            alerts.extend(safety_events)
+            sources.append({
+                "name": "UrbanPulse Civic Alert Stream",
+                "type": "SENSOR_NETWORK",
+                "authority": "Verified Civic Emergency & Safety Signal",
+            })
+
+        # A & B. Query Official Police Feeds & Open Crime Datasets
         # 1. Great Britain: UK Police Street-Level Crime API
         if c_upper == "GB":
             uk_result = await cls._fetch_uk_police(latitude, longitude)
@@ -76,7 +155,7 @@ class CivilSafetyRegistry:
                 sources.append(us_result["source"])
                 message = f"{incident_count} public safety record(s) indexed via municipal open data."
 
-        # 3. Retrieve Authoritative Civic Safety Bulletins (RAG)
+        # D. Retrieve Authoritative Civic Safety Bulletins (RAG)
         updates: List[Dict[str, Any]] = []
         try:
             rag_docs = await LocationAwareRAGService.retrieve_relevant_knowledge(
@@ -93,25 +172,40 @@ class CivilSafetyRegistry:
                 })
             if updates:
                 sources.append({
-                    "name": "UrbanPulse Location-Aware Civil Defense RAG",
+                    "name": "Location-Aware Civil Defense RAG",
                     "type": "AUTHORITATIVE_BULLETIN",
                     "authority": "Verified Municipal & Civil Defense Guidelines",
                 })
         except Exception as e:
             logger.debug("Civil safety RAG retrieval notice: %s", e)
 
-        # If no direct police API, determine status truthfully
+        # Distinguish states truthfully:
+        # EMPTY_VERIFIED: Connected feed confirms 0 incidents
+        # PARTIAL: Direct police feed unavailable, but official updates or public alerts exist
+        # NO_COVERAGE: No verified public safety feed covers these coordinates
         if feed_capability == "NO_COVERAGE":
-            if updates:
+            if alerts and updates:
                 status = "PARTIAL"
                 feed_capability = "PUBLIC_SAFETY_UPDATE"
-                incident_count = None  # Transparently None!
+                incident_count = None
+                confidence = 0.70
+                message = "Official safety advisories and verified public alerts active. Direct police dispatch API unavailable for this jurisdiction."
+            elif updates:
+                status = "PARTIAL"
+                feed_capability = "PUBLIC_SAFETY_UPDATE"
+                incident_count = None
                 confidence = 0.65
-                message = "No direct public police dispatch API covers this jurisdiction. Authoritative civil defense advisories are active."
+                message = "Official civil defense advisories active. Direct police dispatch API unavailable for this jurisdiction."
+            elif alerts:
+                status = "PARTIAL"
+                feed_capability = "PUBLIC_SAFETY_UPDATE"
+                incident_count = None
+                confidence = 0.60
+                message = f"{len(alerts)} verified public safety alert(s) active. Direct police dispatch API unavailable."
             else:
                 status = "NO_COVERAGE"
                 feed_capability = "NO_COVERAGE"
-                incident_count = None  # Transparently None!
+                incident_count = None  # Transparently None, NEVER fake 0!
                 confidence = 0.0
                 message = "No verified public safety or police dispatch API covers these coordinates."
                 sources.append({
@@ -124,10 +218,14 @@ class CivilSafetyRegistry:
             "status": status,
             "feedCapability": feed_capability,
             "incidentCount": incident_count,
+            "verifiedCount": incident_count,
             "incidents": incidents[:25],
+            "alerts": alerts,
+            "alertCount": len(alerts),
             "updates": updates,
+            "updateCount": len(updates),
             "sources": sources,
-            "coverage": f"Country: {country_code or 'Unknown'}, City: {city or 'Coordinates'}",
+            "coverage": f"Country: {country_code or 'Global'}, City: {city or 'Coordinates'}",
             "observedAt": now_iso,
             "retrievedAt": now_iso,
             "confidence": confidence,

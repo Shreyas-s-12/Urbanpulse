@@ -18,6 +18,7 @@ class CrimeProvider(BaseProvider):
         radius_km: float = 50.0,
         country_code: Optional[str] = None,
         city: Optional[str] = None,
+        corridor_events: Optional[List[Dict[str, Any]]] = None,
     ) -> Dict[str, Any]:
         """
         Asynchronously evaluates jurisdiction and queries available civil safety feeds.
@@ -28,6 +29,7 @@ class CrimeProvider(BaseProvider):
             radius_km=radius_km,
             country_code=country_code,
             city=city,
+            corridor_events=corridor_events,
         )
 
     @classmethod
@@ -42,14 +44,14 @@ class CrimeProvider(BaseProvider):
         """
         Synchronous wrapper checking cache or returning transparent absence of feed.
         """
-        cache_key = f"{country_code or ''}:{round(latitude, 2)}:{round(longitude, 2)}"
+        cache_key = f"{country_code or ''}:{round(latitude, 2)}:{round(longitude, 2)}:{round(radius_km, 1)}"
         cached = CivilSafetyRegistry._cache.get(cache_key)
         if cached:
             return cached["data"]
 
         now_iso = datetime.now(timezone.utc).isoformat()
         return {
-            "status": "NO_COVERAGE",
+            "status": "NO_VERIFIED_FEED",
             "feedCapability": "NO_COVERAGE",
             "message": "No verified public safety or police dispatch API covers these coordinates.",
             "source": cls.provider_name,
@@ -60,7 +62,10 @@ class CrimeProvider(BaseProvider):
             "confidence": 0.0,
             "events": [],
             "incidents": [],
+            "alerts": [],
+            "alertCount": 0,
             "updates": [],
+            "updateCount": 0,
             "sources": [{"name": cls.provider_name, "type": cls.provider_type, "authority": "Official Jurisdictional Station"}],
             "verifiedCount": None,  # Transparently None, NOT 0!
             "incidentCount": None,

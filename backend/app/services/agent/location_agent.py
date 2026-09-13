@@ -32,6 +32,12 @@ from app.services.forecast.forecasting_service import ForecastingService
 from app.pipelines.live_ingestion.event_ingestion import LiveIngestionPipeline
 from app.services.rag.rag_service import LocationAwareRAGService
 from app.services.agent.openai_agent import OpenAIAgentService
+from app.services.change_detection import ChangeDetectionService
+from app.services.urban_score import ExplainableScoreService
+from app.services.anomaly_detection import AnomalyDetectionService
+from app.services.monitoring import MonitoringService
+from app.services.scenario_engine import ScenarioEngineService
+from app.services.comparison import ComparisonService
 
 logger = logging.getLogger("urbanpulse.agent")
 
@@ -46,29 +52,37 @@ class LocationAgentService:
         q = query.strip()
         q_lower = q.lower()
 
-        # 1. Detect comparison (e.g. "compare air quality in Delhi and Mumbai" or "traffic in Mysore vs Bangalore")
-        comp_match = re.search(r"(?:compare|difference between)\s+(.+?)\s+in\s+([a-zA-Z\s.-]+?)\s+(?:and|vs\.?|with)\s+([a-zA-Z\s.-]+)", q, re.IGNORECASE)
-        if not comp_match:
-            comp_match = re.search(r"([a-zA-Z\s.-]+?)\s+(?:and|vs\.?)\s+([a-zA-Z\s.-]+)\s+(?:comparison|traffic|weather|air quality|aqi)", q, re.IGNORECASE)
-
+        # 1. Detect multi-city comparison (e.g. "compare Mysuru and Bengaluru", "compare London, Tokyo and New York", "compare that with Mysore")
+        comp_match = re.search(r"(?:compare|difference between)\s+(.+?)(?:\?|\.|\!|$)", q, re.IGNORECASE)
         if comp_match:
-            loc1 = comp_match.group(2).strip() if comp_match.lastindex and comp_match.lastindex >= 2 else ""
-            loc2 = comp_match.group(3).strip() if comp_match.lastindex and comp_match.lastindex >= 3 else ""
-            if not loc1 and comp_match.lastindex and comp_match.lastindex >= 2:
-                loc1 = comp_match.group(1).strip()
-                loc2 = comp_match.group(2).strip()
-
-            intent = "AIR_QUALITY" if any(w in q_lower for w in ["aqi", "air", "pollution"]) else "TRAFFIC"
-            return ParsedAgentIntent(
-                intent="COMPARISON",
-                comparison_locations=[loc1, loc2],
-                requires_comparison=True,
-                location_query=loc1,
-            )
+            raw_locs = comp_match.group(1).strip()
+            raw_locs = re.sub(r"(?:air quality|traffic|weather|conditions?|scores?|ratings?)\s+(?:in|between|of)\s+", "", raw_locs, flags=re.IGNORECASE)
+            parts = re.split(r",\s*|\s+and\s+|\s+vs\.?\s+", raw_locs, flags=re.IGNORECASE)
+            parts = [p.strip() for p in parts if p.strip() and len(p.strip()) > 2 and p.strip().lower() not in ["that", "both", "cities", "the", "them"]]
+            if ("that" in q_lower or "with" in q_lower) and current_loc and len(parts) == 1:
+                curr_name = current_loc.get("city") or current_loc.get("displayName") or "Current Location"
+                parts = [curr_name, parts[0]]
+            if len(parts) >= 2:
+                return ParsedAgentIntent(
+                    intent="COMPARISON",
+                    comparison_locations=parts[:5],
+                    requires_comparison=True,
+                    location_query=parts[0],
+                )
 
         # 2. Domain classification
         intent = "GENERAL_INTELLIGENCE"
-        if any(w in q_lower for w in ["monthly outlook", "30 day", "30-day", "long range", "next month", "climatology"]):
+        if any(w in q_lower for w in ["what changed", "what's changed", "what has changed", "different from yesterday", "changes in", "changed in", "last 6 hours", "last 24 hours", "today vs yesterday", "changed today", "changed here", "what's different"]):
+            intent = "WHAT_CHANGED"
+        elif any(w in q_lower for w in ["why is the score", "why is score", "why score", "why did the score", "why rating", "explain score", "factors behind score", "why is"]) and any(w in q_lower for w in ["score", "rating", "fall", "low", "high", "drop", "76", "78", "80", "85", "70", "65", "60", "90"]):
+            intent = "WHY_SCORE"
+        elif any(w in q_lower for w in ["simulate", "what happens if", "what if", "scenario", "what would happen"]):
+            intent = "SIMULATE"
+        elif any(w in q_lower for w in ["unusual", "anything unusual", "anomaly", "anomalies", "abnormal", "is anything strange", "something strange"]):
+            intent = "ANOMALY"
+        elif any(w in q_lower for w in ["monitor", "keep an eye on", "watch this location", "watch this area", "stop monitoring", "track this area"]):
+            intent = "MONITOR"
+        elif any(w in q_lower for w in ["monthly outlook", "30 day", "30-day", "long range", "next month", "climatology"]):
             intent = "MONTHLY_OUTLOOK"
         elif any(w in q_lower for w in ["forecast", "7 day", "7-day", "next week", "upcoming week", "outlook"]):
             intent = "FORECAST"
@@ -82,7 +96,11 @@ class LocationAgentService:
             intent = "AIR_QUALITY"
         elif any(w in q_lower for w in ["rating", "score", "overall", "condition", "status of", "health", "livability"]):
             intent = "OVERALL_RATING"
-        elif any(w in q_lower for w in ["hazard", "pothole", "asphalt", "danger", "road condition"]):
+        elif any(w in q_lower for w in ["road", "roads", "pothole", "potholes", "pavement", "asphalt", "road surface", "road condition", "road closures", "closure", "closures", "street condition"]):
+            intent = "ROADS"
+        elif any(w in q_lower for w in ["police", "crime", "public safety", "safety incident", "safety incidents", "safety alert", "safety alerts", "civil safety", "law enforcement", "dispatch"]):
+            intent = "CIVIL_SAFETY"
+        elif any(w in q_lower for w in ["hazard", "danger"]):
             intent = "HAZARDS"
         elif any(w in q_lower for w in ["event", "incident", "happening", "activity", "alert", "quake", "earthquake"]):
             intent = "EVENTS"
@@ -91,10 +109,10 @@ class LocationAgentService:
 
         # 3. Location extraction
         loc_patterns = [
-            r"(?:show me|tell me|what is|how is|what's|give me|what are)\s+(?:the\s+)?(?:current\s+)?(?:traffic|weather|air quality|aqi|rating|overall rating|forecast|outlook|updates|live updates|road conditions|road hazards|public safety alerts|safety alerts|hazards|roads)\s+\b(?:in|for|at|around|near|of)\s+([a-zA-Z\s.,'-]+?)(?:\?|\.|\!|$)",
-            r"(?:forecast|outlook|updates|traffic|weather|aqi|air quality|rating|condition|road conditions|road hazards|safety alerts|public safety)\s+\b(?:for|in|at|around|near|of)\s+([a-zA-Z\s.,'-]+?)(?:\?|\.|\!|$)",
+            r"(?:show me|tell me|what is|how is|what's|give me|what are)\s+(?:the\s+)?(?:current\s+)?(?:traffic|weather|air quality|aqi|rating|overall rating|forecast|outlook|updates|live updates|road conditions|road hazards|road surface|roads|potholes|public safety alerts|safety alerts|safety incidents|civil safety|hazards)\s+\b(?:in|for|at|around|near|of)\s+([a-zA-Z\s.,'-]+?)(?:\?|\.|\!|$)",
+            r"(?:forecast|outlook|updates|traffic|weather|aqi|air quality|rating|condition|road conditions|road hazards|road surface|roads|potholes|safety alerts|public safety|safety incidents|civil safety)\s+\b(?:for|in|at|around|near|of)\s+([a-zA-Z\s.,'-]+?)(?:\?|\.|\!|$)",
             r"\b(?:in|at|around|for|near|of|to|check)\s+([a-zA-Z\s.,'-]+?)(?:\?|\.|\!|$)",
-            r"^([a-zA-Z\s.,'-]+?)\s+(?:traffic|weather|aqi|air quality|rating|overall rating|condition|forecast|outlook|updates|roads|road conditions|safety alerts)",
+            r"^([a-zA-Z\s.,'-]+?)\s+(?:traffic|weather|aqi|air quality|rating|overall rating|condition|forecast|outlook|updates|roads|road conditions|road surface|potholes|safety alerts|civil safety)",
         ]
 
         extracted_loc: Optional[str] = None
@@ -274,69 +292,86 @@ class LocationAgentService:
         parsed = await cls.extract_intent(query, current_loc)
         intent = parsed.intent
 
-        # Handle Comparison Requests (e.g. Delhi vs Mumbai Air Quality)
+        # Handle Multi-City Comparison Requests (2 to 5 locations)
         if parsed.intent == "COMPARISON" and parsed.comparison_locations and len(parsed.comparison_locations) >= 2:
-            loc_a_name, loc_b_name = parsed.comparison_locations[0], parsed.comparison_locations[1]
-            all_activities.append(AgentToolActivity(step=f"Comparing '{loc_a_name}' and '{loc_b_name}'", status="IN_PROGRESS"))
+            loc_names = parsed.comparison_locations[:5]
+            all_activities.append(AgentToolActivity(step=f"Comparing {', '.join(loc_names)}", status="IN_PROGRESS"))
 
-            res_a_list = await GeocodingProvider.search(loc_a_name)
-            res_b_list = await GeocodingProvider.search(loc_b_name)
+            comp_res = await ComparisonService.compare_locations(
+                locations=[{"name": name} for name in loc_names], radius_km=radius_km
+            )
 
-            if res_a_list and res_b_list:
-                loc_a, loc_b = res_a_list[0], res_b_list[0]
-                # Concurrently fetch AQI for both
-                aqi_a, aqi_b = await asyncio.gather(
-                    AirQualityProvider.get_air_quality(loc_a["latitude"], loc_a["longitude"], country_code=loc_a.get("countryCode")),
-                    AirQualityProvider.get_air_quality(loc_b["latitude"], loc_b["longitude"], country_code=loc_b.get("countryCode")),
-                )
-                val_a = aqi_a.get("value")
-                val_b = aqi_b.get("value")
-                scale_a = aqi_a.get("scale", "AQI")
-                cat_a = aqi_a.get("category", "Unknown")
-                cat_b = aqi_b.get("category", "Unknown")
+            if comp_res.get("cities") and len(comp_res["cities"]) >= 2:
+                primary_loc = comp_res["cities"][0]["location"]
 
+                # Render markdown comparison table
+                cities_header = " | ".join(c["cityName"] for c in comp_res["cities"])
+                separator = " | ".join("---" for _ in comp_res["cities"])
+                table_lines = [f"| Metric | {cities_header} |", f"| --- | {separator} |"]
+
+                for row in comp_res.get("matrix", []):
+                    row_vals = " | ".join(str(row["values"].get(c["cityName"], "—")) for c in comp_res["cities"])
+                    table_lines.append(f"| **{row['signal']}** | {row_vals} |")
+
+                table_md = "\n".join(table_lines)
+                title_prefix = "Air Quality Comparison" if any(w in query.lower() for w in ["air", "aqi", "pollution", "smog"]) else "Urban Intelligence Comparison"
                 msg = (
-                    f"**Air Quality Comparison** between **{loc_a.get('city', loc_a_name)}** and **{loc_b.get('city', loc_b_name)}**:\n\n"
-                    f"• **{loc_a.get('city', loc_a_name)}**: {val_a} ({cat_a}, scale: {scale_a}) via {aqi_a.get('source')}\n"
-                    f"• **{loc_b.get('city', loc_b_name)}**: {val_b} ({cat_b}, scale: {aqi_b.get('scale', 'AQI')}) via {aqi_b.get('source')}\n\n"
+                    f"### {title_prefix}\n\n"
+                    f"{table_md}\n\n"
+                    f"**Comparative Verdict**:\n{comp_res['verdict']}\n\n"
+                    f"*Note: Domain metrics are independently gathered with standardized regional scales. Missing feeds are indicated with '—' rather than zero.*"
                 )
-                if val_a is not None and val_b is not None:
-                    if val_a < val_b:
-                        msg += f"**{loc_a.get('city', loc_a_name)}** currently has cleaner air than **{loc_b.get('city', loc_b_name)}**."
-                    elif val_b < val_a:
-                        msg += f"**{loc_b.get('city', loc_b_name)}** currently has cleaner air than **{loc_a.get('city', loc_a_name)}**."
-                    else:
-                        msg += f"Both cities report identical air quality indices ({val_a})."
 
-                all_activities.append(AgentToolActivity(step="Comparison complete", status="COMPLETED"))
+                all_activities.append(AgentToolActivity(step="Multi-city comparison complete", status="COMPLETED"))
 
-                # Center on the primary location and show AQI layer
                 actions = [
-                    AgentMapAction(type="CENTER_MAP", payload={"latitude": loc_a["latitude"], "longitude": loc_a["longitude"], "zoom": 11}),
-                    AgentMapAction(type="SHOW_AQI_LAYER", payload={"latitude": loc_a["latitude"], "longitude": loc_a["longitude"], "data": aqi_a}),
+                    AgentMapAction(type="CENTER_MAP", payload={"latitude": primary_loc["latitude"], "longitude": primary_loc["longitude"], "zoom": 5}),
+                    AgentMapAction(type="SHOW_COMPARISON", payload={"cities": [c["location"] for c in comp_res["cities"]]}),
                 ]
+
+                sources = [
+                    {"type": "City Comparison", "source": "UrbanPulse Multi-City Engine", "detail": f"{len(comp_res['cities'])} cities evaluated independently"}
+                ]
+
+                # Backward compatibility payload for 2-city comparison consumers
+                legacy_comp = None
+                if len(comp_res["cities"]) >= 2:
+                    c0 = comp_res["cities"][0]
+                    c1 = comp_res["cities"][1]
+                    val0 = c0.get("aqiScore") if "air" in query.lower() or "aqi" in query.lower() else c0.get("urbanPulseScore")
+                    val1 = c1.get("aqiScore") if "air" in query.lower() or "aqi" in query.lower() else c1.get("urbanPulseScore")
+                    legacy_comp = {
+                        "locationA": {
+                            "city": c0["cityName"],
+                            "location": c0["location"],
+                            "summary": {"value": val0, "status": c0.get("aqiMetric") or "Score"},
+                        },
+                        "locationB": {
+                            "city": c1["cityName"],
+                            "location": c1["location"],
+                            "summary": {"value": val1, "status": c1.get("aqiMetric") or "Score"},
+                        },
+                        "verdict": comp_res.get("verdict", ""),
+                    }
+
+                resp_data = {"cityComparison": comp_res}
+                if legacy_comp:
+                    resp_data["comparison"] = legacy_comp
 
                 return {
                     "id": f"AGENT-{int(datetime.now(timezone.utc).timestamp())}",
                     "message": msg,
                     "intent": "COMPARISON",
-                    "location": loc_a,
-                    "data": {
-                        "comparison": {
-                            "locationA": {"location": loc_a, "summary": aqi_a},
-                            "locationB": {"location": loc_b, "summary": aqi_b},
-                            "verdict": msg,
-                        }
-                    },
-                    "sources": [
-                        {"type": "Air Quality", "source": aqi_a.get("source", "Open-Meteo"), "detail": f"{loc_a.get('city')}: {val_a}"},
-                        {"type": "Air Quality", "source": aqi_b.get("source", "Open-Meteo"), "detail": f"{loc_b.get('city')}: {val_b}"},
-                    ],
-                    "confidence": 0.90,
+                    "location": primary_loc,
+                    "data": resp_data,
+                    "sources": sources,
+                    "confidence": comp_res.get("confidence", 0.88),
                     "actions": [a.model_dump() for a in actions],
                     "tool_activities": [a.model_dump() for a in all_activities],
                     "timestamp": now_iso,
                 }
+
+
 
         # Step 2: Location Resolution
         target_loc, res_activities = await cls.resolve_target_location(parsed.location_query, current_loc)
@@ -476,8 +511,8 @@ class LocationAgentService:
                 all_activities.append(AgentToolActivity(step="No verified AQI feed", status="COMPLETED"))
                 confidence = 0.5
 
-        elif intent == "OVERALL_RATING":
-            all_activities.append(AgentToolActivity(step=f"Evaluating full UrbanPulse condition for {city_display}", status="IN_PROGRESS"))
+        elif intent in ("WHY_SCORE", "OVERALL_RATING"):
+            all_activities.append(AgentToolActivity(step=f"Analyzing explainable UrbanPulse score and factor attribution for {city_display}", status="IN_PROGRESS"))
             intel = await UrbanIntelService.get_full_intelligence(lat, lon, radius_km=radius_km)
             cond = intel.get("condition", {})
             weather_data = intel.get("weather", {})
@@ -493,82 +528,232 @@ class LocationAgentService:
             data_payload["roads"] = roads_data
             data_payload["events"] = events_data
 
-            score = cond.get("overallScore")
-            score_txt = f"**{score} / 100** ({cond.get('label', 'FAVORABLE')})" if score is not None else "Unavailable"
-            conf_val = cond.get("confidence", 0.7)
-            known = cond.get("knownSignals", 4)
-            missing = cond.get("missingSignals", 2)
+            score_res = await ExplainableScoreService.calculate_urbanpulse_score(lat, lon, radius_km=radius_km, location_meta=target_loc)
+            data_payload["explainableScore"] = score_res
+
+            sc = score_res.get("score")
+            conf_val = score_res.get("confidence", cond.get("confidence", 0.8))
+            known = score_res.get("knownSignals", cond.get("knownSignals", 5))
+            missing = score_res.get("missingSignals", cond.get("missingSignals", 1))
+            comps = score_res.get("components", {})
+            trend = score_res.get("trend", "STABLE")
+            trend_symbol = "↑ Improving" if trend == "IMPROVING" else ("↓ Deteriorating" if trend == "DETERIORATING" else "→ Stable")
+
+            comp_lines = []
+            for dom, detail in comps.items():
+                val_txt = f"{detail['score']} / 100" if detail['score'] is not None else "— (Unmonitored)"
+                comp_lines.append(f"• **{detail['name']}**: {val_txt} ({detail['status']}) — *{detail['metric']}*")
+
+            comp_txt = "\n".join(comp_lines)
 
             message = (
-                f"**UrbanPulse Rating for {city_display}**: {score_txt}\n\n"
-                f"• **Confidence**: {int(conf_val * 100)}% ({known} active signals verified, {missing} municipal feeds missing)\n"
-                f"• **Traffic**: {traffic_data.get('trafficStatus', 'Normal')} ({traffic_data.get('detail', 'Flowing')})\n"
-                f"• **Air Quality**: {aqi_data.get('category', 'Moderate')} ({aqi_data.get('scale', 'AQI')} {aqi_data.get('value', '--')})\n"
-                f"• **Weather**: {weather_data.get('current', {}).get('temperatureC', '--')} ({weather_data.get('current', {}).get('conditionLabel', '--')})\n"
-                f"• **Road Surface**: {roads_data.get('roadConditionStatus', 'No Verified Feed')}\n"
-                f"• **Active Incidents**: {len(events_data)} logged in {radius_km} km radius"
+                f"### UrbanPulse Score for {city_display}: {sc} / 100 ({trend_symbol})\n\n"
+                f"**Factor Attribution**:\n"
+                f"• **Main positive factors**: {', '.join(score_res.get('positiveFactors', [])) or 'None above 75'}\n"
+                f"• **Main negative factors**: {', '.join(score_res.get('negativeFactors', [])) or 'None below 70'}\n\n"
+                f"**Domain Breakdown**:\n"
+                f"{comp_txt}\n\n"
+                f"**Why this score?**\n{score_res.get('explanation')}\n\n"
+                f"*Confidence is {int(conf_val * 100)}% based on {known} verified domain feeds and {missing} missing feeds.*"
             )
 
+            actions.append(AgentMapAction(type="SHOW_SCORE", payload={"score": score_res}))
             actions.append(AgentMapAction(type="SHOW_EVENTS_LAYER"))
             if traffic_data.get("status") == "AVAILABLE":
                 actions.append(AgentMapAction(type="SHOW_TRAFFIC_LAYER"))
 
-            sources.append({"type": "Urban Condition", "source": "UrbanPulse Deterministic Scoring Engine", "detail": f"Score {score}/100"})
-            all_activities.append(AgentToolActivity(step="Rating and pillar breakdown calculated", status="COMPLETED"))
+            sources.append({"type": "Urban Score", "source": "UrbanPulse Deterministic Scoring Engine", "detail": f"Score {sc}/100"})
+            all_activities.append(AgentToolActivity(step="Explainable score factor attribution calculated", status="COMPLETED"))
             confidence = conf_val
 
-        elif intent in ("EVENTS", "HAZARDS"):
+        elif intent == "WHAT_CHANGED":
+            window = "6h"
+            for w_cand in ["1h", "6h", "12h", "24h", "7d"]:
+                if w_cand in query_lower or w_cand.replace("h", " hours") in query_lower or w_cand.replace("d", " days") in query_lower:
+                    window = w_cand
+                    break
+            if "yesterday" in query_lower:
+                window = "24h"
+
+            all_activities.append(AgentToolActivity(step=f"Comparing conditions for {city_display} over the last {window}", status="IN_PROGRESS"))
+            changes_res = await ChangeDetectionService.get_location_changes(lat, lon, window=window, radius_km=radius_km, location_meta=target_loc)
+            data_payload["changes"] = changes_res
+
+            meaningful = changes_res.get("meaningfulChanges", [])
+            m_count = changes_res.get("meaningfulCount", 0)
+
+            change_bullets = []
+            for c in changes_res.get("changes", []):
+                dir_arrow = "↑" if c["direction"] == "UP" else ("↓" if c["direction"] == "DOWN" else "→")
+                delta_desc = f"{dir_arrow} {abs(c['percentChange']):.0f}%" if c.get("percentChange") is not None else f"{dir_arrow} {c['delta']}"
+                sig_badge = " [Significant]" if c.get("isMeaningful") else ""
+                change_bullets.append(f"• **{c['label']}**: {delta_desc}{sig_badge} — {c['description']}")
+
+            bullet_txt = "\n".join(change_bullets)
+            message = (
+                f"### What Changed in {city_display} (Last {window})\n\n"
+                f"**{m_count} meaningful change(s)** detected against baseline:\n\n"
+                f"{bullet_txt}\n\n"
+                f"**MAIN CHANGE**:\n{changes_res.get('mainChange')}\n\n"
+                f"*Data grounded in Open-Meteo hourly archives, Google Traffic delay ratios, and verified corridor event streams.*"
+            )
+
+            actions.append(AgentMapAction(type="SHOW_CHANGES", payload={"changes": changes_res}))
+            sources.append({"type": "Change Detection", "source": "Open-Meteo & Google Routes Historical Baseline", "detail": f"Window: {window}"})
+            all_activities.append(AgentToolActivity(step="Change detection baseline evaluation complete", status="COMPLETED"))
+            confidence = changes_res.get("confidence", 0.88)
+
+        elif intent == "ANOMALY":
+            all_activities.append(AgentToolActivity(step=f"Evaluating statistical anomaly departures for {city_display}", status="IN_PROGRESS"))
+            anom_res = await AnomalyDetectionService.detect_anomalies(lat, lon, radius_km=radius_km, location_meta=target_loc)
+            data_payload["anomalies"] = anom_res
+
+            anom_list = anom_res.get("anomalies", [])
+            if anom_list:
+                anom_lines = []
+                for a in anom_list:
+                    anom_lines.append(f"• **{a['signal']}** [{a['anomalyType']} - {a['severity']}]: {a['currentValue']} (Expected: {a['expectedBaseline']}) — {a['explanation']}")
+                anom_txt = "\n".join(anom_lines)
+                message = (
+                    f"### Anomaly Alert for {city_display}\n\n"
+                    f"Detected **{len(anom_list)} statistical anomaly(s)** departing from 7-day diurnal baselines:\n\n"
+                    f"{anom_txt}\n\n"
+                    f"*Statistical anomalies are computed via 7-day diurnal rolling mean, standard deviation (z-score), and verified event clusters.*"
+                )
+            else:
+                message = (
+                    f"### Baseline Normal for {city_display}\n\n"
+                    f"No statistically significant anomalies detected in traffic delays, air quality, meteorological variables, or hazard frequency over the last 24 hours. "
+                    f"All monitored signals are tracking their expected diurnal baselines."
+                )
+
+            actions.append(AgentMapAction(type="SHOW_ANOMALIES", payload={"anomalies": anom_res}))
+            sources.append({"type": "Anomaly Engine", "source": "Open-Meteo & Google Routes 7-Day Baseline", "detail": f"{len(anom_list)} anomalies"})
+            all_activities.append(AgentToolActivity(step="Anomaly detection completed", status="COMPLETED"))
+            confidence = anom_res.get("confidence", 0.88)
+
+        elif intent == "SIMULATE":
+            all_activities.append(AgentToolActivity(step=f"Running deterministic scenario simulation for {city_display}", status="IN_PROGRESS"))
+            s_type = "heavy_rainfall"
+            if any(w in query_lower for w in ["road closure", "closure", "closed"]):
+                s_type = "major_road_closure"
+            elif any(w in query_lower for w in ["traffic", "congestion", "surge"]):
+                s_type = "traffic_increase"
+            elif any(w in query_lower for w in ["pollution", "aqi", "smog", "air"]):
+                s_type = "aqi_deterioration"
+            elif any(w in query_lower for w in ["flood", "inundation"]):
+                s_type = "flood_scenario"
+
+            sim_res = await ScenarioEngineService.simulate_scenario(lat, lon, scenario_type=s_type, radius_km=radius_km, location_meta=target_loc)
+            data_payload["scenario"] = sim_res
+
+            assump_txt = "\n".join(f"- {a}" for a in sim_res.get("assumptions", []))
+            limit_txt = "\n".join(f"- {l}" for l in sim_res.get("limitations", []))
+
+            message = (
+                f"### **[SIMULATION]** {sim_res.get('scenarioTitle')} for {city_display}\n\n"
+                f"> **Important**: This output is a **SIMULATION** model projection, NOT a live observation or guaranteed prediction.\n\n"
+                f"• **Baseline UrbanPulse Score**: {sim_res.get('baselineScore')} / 100\n"
+                f"• **Projected Score Range**: **{sim_res['projectedScoreRange'][0]} – {sim_res['projectedScoreRange'][1]} / 100**\n"
+                f"• **Projected Mobility Impact**: {sim_res.get('projectedTrafficImpact')}\n"
+                f"• **Projected Flood Risk**: {sim_res.get('projectedFloodRisk')}\n\n"
+                f"**Key Model Assumptions**:\n{assump_txt}\n\n"
+                f"**Model Limitations**:\n{limit_txt}\n\n"
+                f"*Confidence: {int(sim_res.get('confidence', 0.65) * 100)}%*"
+            )
+
+            actions.append(AgentMapAction(type="SHOW_SCENARIO", payload={"scenario": sim_res}))
+            sources.append({"type": "Simulation", "source": "UrbanPulse Deterministic Scenario Engine", "detail": sim_res.get("scenarioTitle")})
+            all_activities.append(AgentToolActivity(step="Deterministic simulation model completed", status="COMPLETED"))
+            confidence = sim_res.get("confidence", 0.68)
+
+        elif intent == "MONITOR":
+            all_activities.append(AgentToolActivity(step=f"Configuring location monitor for {city_display}", status="IN_PROGRESS"))
+            if any(w in query_lower for w in ["stop", "pause", "disable", "cancel", "delete"]):
+                mons = MonitoringService.list_monitors()
+                for m in mons:
+                    MonitoringService.delete_monitor(m["id"])
+                message = f"Location monitoring has been **deactivated** for **{city_display}**."
+            else:
+                signals = ["traffic", "hazards", "aqi", "events"]
+                if "traffic" in query_lower:
+                    signals = ["traffic"]
+                elif "aqi" in query_lower or "air" in query_lower:
+                    signals = ["aqi"]
+                elif "flood" in query_lower or "hazard" in query_lower:
+                    signals = ["hazards", "events"]
+
+                mon = MonitoringService.create_monitor(target_loc, radius_km=radius_km, signals=signals)
+                data_payload["monitors"] = [mon]
+                message = (
+                    f"### Location Monitor Armed: {city_display}\n\n"
+                    f"• **Monitor ID**: `{mon['id']}`\n"
+                    f"• **Coverage Radius**: {radius_km:.0f} km\n"
+                    f"• **Monitored Signals**: {', '.join(s.upper() for s in signals)}\n"
+                    f"• **Trigger Rules**: Evaluates background data against local diurnal baselines; non-intrusive alert issued upon verified deterioration.\n"
+                    f"• **Status**: Active and tracking."
+                )
+
+            sources.append({"type": "Monitoring", "source": "UrbanPulse Monitoring & Alert Engine", "detail": f"Active Watch: {city_display}"})
+            all_activities.append(AgentToolActivity(step="Monitoring configuration saved", status="COMPLETED"))
+            confidence = 0.95
+
+        elif intent in ("ROADS", "CIVIL_SAFETY", "EVENTS", "HAZARDS"):
             all_activities.append(AgentToolActivity(step=f"Scanning live events and infrastructure feeds within {radius_km} km of {city_display}", status="IN_PROGRESS"))
             fusion_res = await EventFusionService.get_live_events_near_location(lat, lon, radius_km, city_name=city_display)
             events = fusion_res.get("events", [])
             data_payload["events"] = events
             actions.append(AgentMapAction(type="SHOW_EVENTS_LAYER"))
 
-            is_road_query = any(w in query_lower for w in ["road", "pothole", "asphalt", "pavement", "street condition"])
-            is_civil_query = any(w in query_lower for w in ["police", "crime", "safety alert", "public safety", "dispatch"])
+            is_road_query = intent == "ROADS" or any(w in query_lower for w in ["road", "pothole", "asphalt", "pavement", "street condition"])
+            is_civil_query = intent == "CIVIL_SAFETY" or any(w in query_lower for w in ["police", "crime", "safety alert", "public safety", "dispatch"])
 
             if is_road_query:
                 road_info = await RoadProvider.get_road_status_async(lat, lon, radius_km, events)
                 data_payload["roads"] = road_info
                 pothole_count = road_info.get("condition", {}).get("potholeCount", 0)
                 surface_type = road_info.get("surface", {}).get("material", "Asphalt / Paved")
+                surface_label = road_info.get("surface", {}).get("type", "ASPHALT")
                 meas_type = road_info.get("surface", {}).get("measurementType", "MAPPED_ATTRIBUTE")
 
                 message = (
                     f"**Road Surface & Infrastructure for {city_display}** ({radius_km} km radius):\n\n"
                     f"- **Network Mapping**: {road_info.get('roadNetworkStatus', 'AVAILABLE')} (Primary/secondary corridors mapped)\n"
-                    f"- **Surface Material**: **{surface_type}** (*source: OpenStreetMap mapped attributes*)\n"
+                    f"- **Surface Material**: **{surface_label}** (*source: OpenStreetMap mapped attributes*)\n"
                     f"- **Pavement Condition**: {road_info.get('condition', {}).get('message', 'No continuous sensor feed')}\n"
                     f"- **Active Road Hazards**: {pothole_count} verified alert(s) in active radius\n\n"
                     f"*Note: UrbanPulse clearly distinguishes mapped road geometry from physical pavement roughness inspection.*"
                 )
                 for s in road_info.get("sources", []):
-                    sources.append({"type": "Roads", "source": s.get("name"), "detail": s.get("role")})
+                    sources.append({"type": "Roads", "source": s.get("name"), "detail": s.get("role", "Road Telemetry")})
             elif is_civil_query:
                 safety_info = await CrimeProvider.get_crime_events_async(
-                    lat, lon, radius_km, country_code=target_loc.get("countryCode"), city=city_display
+                    lat, lon, radius_km, country_code=target_loc.get("countryCode"), city=city_display, corridor_events=events
                 )
                 data_payload["civilSafety"] = safety_info
                 incidents = safety_info.get("incidents", [])
                 updates = safety_info.get("updates", [])
+                alerts = safety_info.get("alerts", [])
 
                 if safety_info.get("feedCapability") in ("OFFICIAL_PUBLIC_SAFETY_FEED", "OPEN_CRIME_DATA"):
                     message = (
                         f"**Civil Safety & Public Feeds for {city_display}**:\n\n"
                         f"- **Feed Status**: **{safety_info.get('status')}** ({safety_info.get('sources', [{}])[0].get('name')})\n"
                         f"- **Verified Incidents**: **{safety_info.get('incidentCount', 0)}** record(s) indexed\n"
-                        f"- **Active Advisories**: {len(updates)} civic safety protocol(s)\n\n"
+                        f"- **Public Safety Alerts**: {len(alerts)} verified alert(s)\n"
+                        f"- **Active Advisories**: {len(updates)} civic safety advisory(s)\n\n"
                         f"*Law enforcement open data connected for this jurisdiction.*"
                     )
                 else:
                     message = (
                         f"**Civil Safety & Public Feeds for {city_display}**:\n\n"
                         f"- **Feed Status**: {safety_info.get('message', 'No verified public safety feed covers this location.')}\n"
+                        f"- **Public Safety Alerts**: {len(alerts)} verified alert(s)\n"
                         f"- **Authoritative Advisories**: {len(updates)} civil defense bulletin(s) active\n\n"
                         f"*UrbanPulse strictly refrains from reporting '0 crimes' or false safety guarantees in the absence of verified law enforcement feeds.*"
                     )
                 for s in safety_info.get("sources", []):
-                    sources.append({"type": "Civil Safety", "source": s.get("name"), "detail": s.get("authority")})
+                    sources.append({"type": "Civil Safety", "source": s.get("name"), "detail": s.get("authority", "Public Safety")})
             elif events:
                 top_ev = events[0]
                 message = (

@@ -219,7 +219,7 @@ export default function LiveUpdatesDrawer() {
             }}
           >
             <span>Authoritative Civic Protocols ({bulletins.length})</span>
-            <span style={{ fontSize: '11px', color: 'var(--accent-blue)' }}>Civic & Civil Defense RAG</span>
+            <span style={{ fontSize: '11px', color: 'var(--accent-primary, #2563EB)' }}>Civic & Civil Defense RAG</span>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -244,8 +244,8 @@ export default function LiveUpdatesDrawer() {
                       fontWeight: 700,
                       padding: '2px 6px',
                       borderRadius: 'var(--radius-xs, 4px)',
-                      backgroundColor: 'rgba(54, 127, 242, 0.1)',
-                      color: 'var(--accent-blue)',
+                      backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                      color: 'var(--accent-primary, #2563EB)',
                     }}
                   >
                     {doc.category || 'CIVIC PROTOCOL'}

@@ -92,9 +92,9 @@ export default function SpatialMap({
     // Draw 50 km Geographic Intelligence Radius Boundary
     ctx.beginPath();
     ctx.arc(cx, cy, maxPixelRadius, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(19, 184, 135, 0.03)';
+    ctx.fillStyle = 'rgba(37, 99, 235, 0.04)';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(19, 184, 135, 0.5)';
+    ctx.strokeStyle = 'rgba(37, 99, 235, 0.6)';
     ctx.lineWidth = 1.5;
     ctx.setLineDash([6, 6]);
     ctx.stroke();
@@ -104,7 +104,7 @@ export default function SpatialMap({
     const pulseRadius = (animationTick % 120) * (maxPixelRadius / 120);
     ctx.beginPath();
     ctx.arc(cx, cy, pulseRadius, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(19, 184, 135, ${Math.max(0, 0.35 - pulseRadius / maxPixelRadius)})`;
+    ctx.strokeStyle = `rgba(37, 99, 235, ${Math.max(0, 0.35 - pulseRadius / maxPixelRadius)})`;
     ctx.lineWidth = 1;
     ctx.stroke();
 
@@ -170,7 +170,7 @@ export default function SpatialMap({
       const dotRadius = isHovered ? 9 : 6.5;
       ctx.arc(px, py, dotRadius, 0, Math.PI * 2);
 
-      let color = '#13B887';
+      let color = '#10B981';
       if (ev.severity >= 75) color = '#EF4444';
       else if (ev.severity >= 55) color = '#F59E0B';
       else if (ev.severity >= 35) color = '#367FF2';

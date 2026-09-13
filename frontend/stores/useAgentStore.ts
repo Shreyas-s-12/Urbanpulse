@@ -5,6 +5,13 @@ import {
   AgentToolActivity,
   AgentMapAction,
   AirQualitySummary,
+  LocationChangesResponse,
+  ExplainableUrbanScore,
+  AnomalyDetectionResponse,
+  ScenarioSimulationResult,
+  CityComparisonResponse,
+  LocationMonitor,
+  MonitorAlert,
 } from '@shared/types';
 import { agentService } from '@/services/agentService';
 import { useLocationStore } from './useLocationStore';
@@ -49,15 +56,44 @@ interface AgentState {
   ragBulletins: any[] | null;
   showLiveUpdatesDrawer: boolean;
 
+  // Master Intelligence Features
+  activeChanges: LocationChangesResponse | null;
+  showChangesModal: boolean;
+  activeScore: ExplainableUrbanScore | null;
+  showScoreModal: boolean;
+  activeAnomalies: AnomalyDetectionResponse | null;
+  showAnomaliesModal: boolean;
+  activeScenario: ScenarioSimulationResult | null;
+  showScenarioModal: boolean;
+  activeComparison: CityComparisonResponse | null;
+  showComparisonModal: boolean;
+  activeMonitors: LocationMonitor[];
+  monitorAlerts: MonitorAlert[];
+  showMonitoringDrawer: boolean;
+
+  // Layout Mode
+  isMapExpanded: boolean;
+
   // Actions
+  setIsMapExpanded: (expanded: boolean) => void;
+  toggleMapExpanded: () => void;
   sendMessage: (query: string) => Promise<void>;
   setActiveLocation: (loc: ResolvedLocation | null) => void;
   setLayer: (layer: 'traffic' | 'aqi' | 'events' | 'boundary', enabled: boolean) => void;
   setShowForecastPanel: (open: boolean) => void;
   setShowLiveUpdatesDrawer: (open: boolean) => void;
+  setShowChangesModal: (open: boolean) => void;
+  setShowScoreModal: (open: boolean) => void;
+  setShowAnomaliesModal: (open: boolean) => void;
+  setShowScenarioModal: (open: boolean) => void;
+  setShowComparisonModal: (open: boolean) => void;
+  setShowMonitoringDrawer: (open: boolean) => void;
+  fetchMonitors: () => Promise<void>;
+  fetchMonitorAlerts: () => Promise<void>;
   clearMessages: () => void;
   resetContext: () => void;
 }
+
 
 export const useAgentStore = create<AgentState>((set, get) => ({
   messages: [],
@@ -80,8 +116,50 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   ragBulletins: null,
   showLiveUpdatesDrawer: false,
 
+  activeChanges: null,
+  showChangesModal: false,
+  activeScore: null,
+  showScoreModal: false,
+  activeAnomalies: null,
+  showAnomaliesModal: false,
+  activeScenario: null,
+  showScenarioModal: false,
+  activeComparison: null,
+  showComparisonModal: false,
+  activeMonitors: [],
+  monitorAlerts: [],
+  showMonitoringDrawer: false,
+
+  isMapExpanded: false,
+  setIsMapExpanded: (expanded: boolean) => set({ isMapExpanded: expanded }),
+  toggleMapExpanded: () => set((state) => ({ isMapExpanded: !state.isMapExpanded })),
+
   setShowForecastPanel: (open: boolean) => set({ showForecastPanel: open }),
   setShowLiveUpdatesDrawer: (open: boolean) => set({ showLiveUpdatesDrawer: open }),
+  setShowChangesModal: (open: boolean) => set({ showChangesModal: open }),
+  setShowScoreModal: (open: boolean) => set({ showScoreModal: open }),
+  setShowAnomaliesModal: (open: boolean) => set({ showAnomaliesModal: open }),
+  setShowScenarioModal: (open: boolean) => set({ showScenarioModal: open }),
+  setShowComparisonModal: (open: boolean) => set({ showComparisonModal: open }),
+  setShowMonitoringDrawer: (open: boolean) => set({ showMonitoringDrawer: open }),
+
+  fetchMonitors: async () => {
+    try {
+      const monitors = await agentService.getMonitors();
+      set({ activeMonitors: monitors });
+    } catch (e) {
+      console.error('Failed to fetch monitors:', e);
+    }
+  },
+
+  fetchMonitorAlerts: async () => {
+    try {
+      const res = await agentService.getMonitorAlerts();
+      set({ monitorAlerts: res.alerts || [] });
+    } catch (e) {
+      console.error('Failed to fetch monitor alerts:', e);
+    }
+  },
 
   setActiveLocation: (loc) => {
     set({ activeLocation: loc });
@@ -198,6 +276,31 @@ export const useAgentStore = create<AgentState>((set, get) => ({
             });
           } else if (action.type === 'SET_ZOOM' && action.payload?.zoom) {
             set({ mapZoom: action.payload.zoom });
+          } else if (action.type === 'SHOW_CHANGES') {
+            set({
+              activeChanges: (action.payload as any)?.changes || res.data?.changes || null,
+              showChangesModal: true,
+            });
+          } else if (action.type === 'SHOW_SCORE') {
+            set({
+              activeScore: (action.payload as any)?.score || res.data?.explainableScore || null,
+              showScoreModal: true,
+            });
+          } else if (action.type === 'SHOW_ANOMALIES') {
+            set({
+              activeAnomalies: (action.payload as any)?.anomalies || res.data?.anomalies || null,
+              showAnomaliesModal: true,
+            });
+          } else if (action.type === 'SHOW_SCENARIO') {
+            set({
+              activeScenario: (action.payload as any)?.simulation || res.data?.scenario || (res.data as any)?.simulation || null,
+              showScenarioModal: true,
+            });
+          } else if (action.type === 'SHOW_COMPARISON') {
+            set({
+              activeComparison: (action.payload as any)?.comparison || res.data?.cityComparison || null,
+              showComparisonModal: true,
+            });
           }
         });
       }

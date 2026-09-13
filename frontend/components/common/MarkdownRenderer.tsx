@@ -98,7 +98,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           ),
           // Links
           a: ({href, children}) => (
-            <a href={href} target="_blank" rel="noopener noreferrer" style={{color: isUser ? '#FFFFFF' : 'var(--accent-blue)', textDecoration: 'underline', fontWeight: 600}}>
+            <a href={href} target="_blank" rel="noopener noreferrer" style={{color: isUser ? '#FFFFFF' : 'var(--accent-primary)', textDecoration: 'underline', fontWeight: 600}}>
               {children}
             </a>
           ),

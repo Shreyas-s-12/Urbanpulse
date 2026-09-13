@@ -24,11 +24,67 @@ class RoadCapability:
     ROAD_CONDITION_FEED_AVAILABLE = "ROAD_CONDITION_FEED_AVAILABLE"
     PAVEMENT_TELEMETRY_AVAILABLE = "PAVEMENT_TELEMETRY_AVAILABLE"
     NO_VERIFIED_FEED = "NO_VERIFIED_FEED"
+    NO_COVERAGE = "NO_COVERAGE"
+
+
+ROAD_PROVIDERS: List[Dict[str, Any]] = [
+    {
+        "name": "Google Roads API",
+        "coverageCountries": ["GLOBAL"],
+        "coverageRegions": ["GLOBAL"],
+        "supportedDataTypes": ["ROAD_NETWORK", "GEOMETRY_SNAPPING"],
+        "authority": "COMMERCIAL_MAPPING",
+        "freshness": "LIVE",
+        "live": True,
+        "requiresKey": True,
+    },
+    {
+        "name": "OpenStreetMap Overpass",
+        "coverageCountries": ["GLOBAL"],
+        "coverageRegions": ["GLOBAL"],
+        "supportedDataTypes": ["ROAD_NETWORK", "ROAD_SURFACE", "LANES", "HIGHWAY_CLASSIFICATION"],
+        "authority": "CROWDSOURCED_COLLABORATIVE",
+        "freshness": "RECENT",
+        "live": True,
+        "requiresKey": False,
+    },
+    {
+        "name": "UrbanPulse Hazard Stream",
+        "coverageCountries": ["GLOBAL"],
+        "coverageRegions": ["GLOBAL"],
+        "supportedDataTypes": ["ROAD_HAZARDS", "POTHOLES", "CLOSURES"],
+        "authority": "VERIFIED_CITIZEN_SENSOR",
+        "freshness": "LIVE",
+        "live": True,
+        "requiresKey": False,
+    },
+    {
+        "name": "Municipal Physical Pavement Sensor",
+        "coverageCountries": [],
+        "coverageRegions": [],
+        "supportedDataTypes": ["ROAD_CONDITION", "ROUGHNESS_INDEX"],
+        "authority": "MUNICIPAL_TELEMETRY",
+        "freshness": "UNAVAILABLE",
+        "live": False,
+        "requiresKey": True,
+    },
+]
 
 
 class RoadProviderRegistry:
     # In-memory short-term cache for external network and surface metadata (30-minute TTL)
     _cache: Dict[str, Dict[str, Any]] = {}
+
+    @classmethod
+    def get_eligible_providers(cls, country_code: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Returns registered providers eligible for the given country code."""
+        c_code = (country_code or "").upper()
+        eligible = []
+        for p in ROAD_PROVIDERS:
+            countries = p.get("coverageCountries", [])
+            if "GLOBAL" in countries or c_code in countries:
+                eligible.append(p)
+        return eligible
 
     @classmethod
     async def get_road_intelligence(
@@ -37,15 +93,17 @@ class RoadProviderRegistry:
         longitude: float,
         radius_km: float = 50.0,
         corridor_events: Optional[List[Dict[str, Any]]] = None,
+        country_code: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
-        Gathers road intelligence across providers:
-          1. Overpass API (OpenStreetMap) -> highway classes and surface tags
-          2. Google Roads API (if key available) -> snapped road coordinates and place IDs
-          3. EventFusion corridor events -> verified POTHOLE, ROAD_CLOSURE, ACCIDENT incidents
+        Gathers road intelligence across 4 distinct capabilities:
+          A. Road Network (Google Roads / OSM Overpass)
+          B. Road Surface Attributes (OSM tags: asphalt, concrete, paved)
+          C. Physical Road Condition (Sensor telemetry / cavity tracking)
+          D. Road Hazards (Verified potholes, closures, accidents from CITY_EVENT)
         """
         now_iso = datetime.now(timezone.utc).isoformat()
-        cache_key = f"{round(latitude, 2)}:{round(longitude, 2)}"
+        cache_key = f"{round(latitude, 2)}:{round(longitude, 2)}:{round(radius_km, 1)}"
 
         # Check cache for network/surface metadata
         cached = cls._cache.get(cache_key)
@@ -64,18 +122,18 @@ class RoadProviderRegistry:
                 "_cached_at": now_ts,
             }
 
-        # Correlate live road hazard incidents from EventFusion
+        # D. Correlate live road hazard incidents from EventFusion / CITY_EVENT
         events = corridor_events or []
         road_hazards = [
             e for e in events
-            if e.get("eventType") in ["POTHOLE", "ROAD_CLOSURE", "ACCIDENT", "FLOOD", "FALLEN_TREE"]
+            if e.get("eventType") in ["POTHOLE", "ROAD_CLOSURE", "ACCIDENT", "FLOOD", "FALLEN_TREE", "LANDSLIDE"]
         ]
         potholes = [e for e in road_hazards if e.get("eventType") == "POTHOLE"]
 
-        # Determine physical road condition status truthfully
+        # C. Determine physical road condition status truthfully
         if potholes:
             condition_status = "AVAILABLE"
-            condition_message = f"{len(potholes)} verified pavement cavity alert(s) reported in active radius."
+            condition_message = f"{len(potholes)} verified road cavity / pothole hazard(s) active in radius."
             condition_source = "UrbanPulse Verified Road Hazard Ingestion"
             measurement_type = "MEASURED"
             sources.append({
@@ -85,7 +143,7 @@ class RoadProviderRegistry:
             })
         else:
             condition_status = "NO_VERIFIED_FEED"
-            condition_message = "No physical pavement telemetry or continuous roughness sensor feed covers these coordinates."
+            condition_message = "No continuous physical pavement roughness telemetry feed active for these coordinates."
             condition_source = "No physical pavement telemetry feed active"
             measurement_type = "NONE"
 
@@ -103,8 +161,12 @@ class RoadProviderRegistry:
             status = "PARTIAL"
             confidence = 0.60
         else:
-            status = "NO_VERIFIED_FEED"
+            status = "NO_COVERAGE"
             confidence = 0.20
+
+        surface_type = road_surface.get("material", "Asphalt")
+        if surface_type and "/" in surface_type:
+            surface_type = surface_type.split("/")[0].strip()
 
         return {
             "status": status,
@@ -113,15 +175,33 @@ class RoadProviderRegistry:
             "roadConditionSource": condition_source,
             "coverage": "Global road geometry via OpenStreetMap / Google; physical pavement inspection requires municipal telemetry",
             "activeHazardCount": len(road_hazards),
-            "network": road_network,
-            "surface": road_surface,
+            "network": {
+                "status": road_network.get("status", "AVAILABLE"),
+                "roadTypes": road_network.get("roadTypes", ["primary", "secondary", "residential"]),
+                "sampleWaysCount": road_network.get("sampleWaysCount", 0),
+                "sampleHighwayName": road_network.get("sampleHighwayName"),
+                "source": "OpenStreetMap / Google Roads",
+                "authority": "MAPPED_ATTRIBUTE",
+            },
+            "surface": {
+                "status": road_surface.get("status", "AVAILABLE"),
+                "type": surface_type.upper(),
+                "material": road_surface.get("material", "Asphalt / Paved"),
+                "allReportedSurfaces": road_surface.get("allReportedSurfaces", ["Asphalt"]),
+                "measurementType": road_surface.get("measurementType", "MAPPED_ATTRIBUTE"),
+                "source": "OpenStreetMap",
+            },
             "condition": {
                 "status": condition_status,
                 "message": condition_message,
                 "potholeCount": len(potholes),
                 "measurementType": measurement_type,
             },
-            "hazards": road_hazards,
+            "hazards": {
+                "status": "AVAILABLE" if road_hazards else "EMPTY_VERIFIED",
+                "count": len(road_hazards),
+                "items": road_hazards,
+            },
             "sources": sources,
             "confidence": confidence,
             "observedAt": now_iso,

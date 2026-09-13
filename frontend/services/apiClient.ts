@@ -102,4 +102,11 @@ export const apiClient = {
       body: JSON.stringify(body),
     });
   },
+
+  delete: <T>(endpoint: string) => {
+    return apiFetch<T>(endpoint, {
+      method: 'DELETE',
+    });
+  },
 };
+
