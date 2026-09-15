@@ -67,9 +67,28 @@ interface AgentState {
   showScenarioModal: boolean;
   activeComparison: CityComparisonResponse | null;
   showComparisonModal: boolean;
+  activeRisk: any | null;
+  showRiskModal: boolean;
   activeMonitors: LocationMonitor[];
   monitorAlerts: MonitorAlert[];
   showMonitoringDrawer: boolean;
+
+  // Phase 3 Predictive & Decision Engines
+  activeMission: any | null;
+  showMissionModal: boolean;
+  activeSmartRoutes: any | null;
+  activeRiskHorizon: string;
+
+  // Canonical Phase 1 Context
+  nexusContextVersion: number;
+  selectedMapEntity: {
+    type: 'POI' | 'EVENT' | 'COORDINATE' | 'NONE';
+    id?: string;
+    name?: string;
+    coordinates?: { latitude: number; longitude: number };
+    meta?: Record<string, any>;
+  } | null;
+  activeFilter: 'ALL' | 'CRIME' | 'WEATHER' | 'TRAFFIC' | 'HAZARD' | 'MUNICIPAL' | 'LIVE' | 'RECENT' | 'FORECAST' | 'ALERTS';
 
   // Layout Mode
   isMapExpanded: boolean;
@@ -79,6 +98,8 @@ interface AgentState {
   toggleMapExpanded: () => void;
   sendMessage: (query: string) => Promise<void>;
   setActiveLocation: (loc: ResolvedLocation | null) => void;
+  setSelectedMapEntity: (entity: any | null) => void;
+  setActiveFilter: (filter: 'ALL' | 'CRIME' | 'WEATHER' | 'TRAFFIC' | 'HAZARD' | 'MUNICIPAL' | 'LIVE' | 'RECENT' | 'FORECAST' | 'ALERTS') => void;
   setLayer: (layer: 'traffic' | 'aqi' | 'events' | 'boundary', enabled: boolean) => void;
   setShowForecastPanel: (open: boolean) => void;
   setShowLiveUpdatesDrawer: (open: boolean) => void;
@@ -87,9 +108,16 @@ interface AgentState {
   setShowAnomaliesModal: (open: boolean) => void;
   setShowScenarioModal: (open: boolean) => void;
   setShowComparisonModal: (open: boolean) => void;
+  setShowRiskModal: (open: boolean) => void;
   setShowMonitoringDrawer: (open: boolean) => void;
+  setShowMissionModal: (open: boolean) => void;
+  setActiveMission: (mission: any | null) => void;
+  setActiveSmartRoutes: (routes: any | null) => void;
+  setActiveRiskHorizon: (horizon: string) => void;
   fetchMonitors: () => Promise<void>;
   fetchMonitorAlerts: () => Promise<void>;
+  acknowledgeAlert: (alertId: string) => Promise<void>;
+  resolveAlert: (alertId: string) => Promise<void>;
   clearMessages: () => void;
   resetContext: () => void;
 }
@@ -126,9 +154,22 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   showScenarioModal: false,
   activeComparison: null,
   showComparisonModal: false,
+  activeRisk: null,
+  showRiskModal: false,
   activeMonitors: [],
   monitorAlerts: [],
   showMonitoringDrawer: false,
+
+  // Phase 3 State
+  activeMission: null,
+  showMissionModal: false,
+  activeSmartRoutes: null,
+  activeRiskHorizon: 'NOW',
+
+  // Canonical Phase 1 Context
+  nexusContextVersion: 1,
+  selectedMapEntity: null,
+  activeFilter: 'ALL',
 
   isMapExpanded: false,
   setIsMapExpanded: (expanded: boolean) => set({ isMapExpanded: expanded }),
@@ -141,7 +182,26 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   setShowAnomaliesModal: (open: boolean) => set({ showAnomaliesModal: open }),
   setShowScenarioModal: (open: boolean) => set({ showScenarioModal: open }),
   setShowComparisonModal: (open: boolean) => set({ showComparisonModal: open }),
+  setShowRiskModal: (open: boolean) => set({ showRiskModal: open }),
   setShowMonitoringDrawer: (open: boolean) => set({ showMonitoringDrawer: open }),
+  setShowMissionModal: (open: boolean) => set({ showMissionModal: open }),
+  setActiveMission: (mission) => set({ activeMission: mission }),
+  setActiveSmartRoutes: (routes) => set({ activeSmartRoutes: routes }),
+  setActiveRiskHorizon: (horizon) => set({ activeRiskHorizon: horizon }),
+
+  setSelectedMapEntity: (entity) => {
+    set((state) => ({
+      selectedMapEntity: entity,
+      nexusContextVersion: state.nexusContextVersion + 1,
+    }));
+  },
+
+  setActiveFilter: (filter) => {
+    set((state) => ({
+      activeFilter: filter,
+      nexusContextVersion: state.nexusContextVersion + 1,
+    }));
+  },
 
   fetchMonitors: async () => {
     try {
@@ -161,8 +221,37 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     }
   },
 
+  acknowledgeAlert: async (alertId: string) => {
+    try {
+      await agentService.updateAlertStatus(alertId, 'ACKNOWLEDGED');
+      set((state) => ({
+        monitorAlerts: state.monitorAlerts.map((a: any) =>
+          a.id === alertId ? { ...a, state: 'ACKNOWLEDGED' } : a
+        ),
+      }));
+    } catch (e) {
+      console.error('Failed to acknowledge alert:', e);
+    }
+  },
+
+  resolveAlert: async (alertId: string) => {
+    try {
+      await agentService.updateAlertStatus(alertId, 'RESOLVED');
+      set((state) => ({
+        monitorAlerts: state.monitorAlerts.map((a: any) =>
+          a.id === alertId ? { ...a, state: 'RESOLVED' } : a
+        ),
+      }));
+    } catch (e) {
+      console.error('Failed to resolve alert:', e);
+    }
+  },
+
   setActiveLocation: (loc) => {
-    set({ activeLocation: loc });
+    set((state) => ({
+      activeLocation: loc,
+      nexusContextVersion: state.nexusContextVersion + 1,
+    }));
     if (loc) {
       useLocationStore.getState().setCurrentLocation(loc);
     }
@@ -212,14 +301,21 @@ export const useAgentStore = create<AgentState>((set, get) => ({
     }));
 
     try {
-      const { activeLocation } = get();
+      const { activeLocation, selectedMapEntity, activeFilter, nexusContextVersion } = get();
       const locationStore = useLocationStore.getState();
-      const currentLoc = activeLocation || locationStore.currentLocation;
+      const baseLoc = activeLocation || locationStore.currentLocation;
+      const currentLoc = {
+        ...(baseLoc || {}),
+        selectedMapEntity: selectedMapEntity,
+        activeFilter: activeFilter,
+      };
 
       const history = get().messages.map((m) => ({
         sender: m.sender,
         content: m.content,
       }));
+
+      const sendVersion = nexusContextVersion;
 
       const res: AgentInteractionResponse = await agentService.interact({
         query: q,
@@ -227,6 +323,11 @@ export const useAgentStore = create<AgentState>((set, get) => ({
         selectedRadiusKm: locationStore.selectedRadiusKm,
         conversationHistory: history,
       });
+
+      // Discard response if location or entity context was switched while in-flight
+      if (get().nexusContextVersion !== sendVersion) {
+        return;
+      }
 
       // Update active activities
       set({ toolActivities: res.toolActivities || (res as any).tool_activities || [] });
@@ -301,6 +402,38 @@ export const useAgentStore = create<AgentState>((set, get) => ({
               activeComparison: (action.payload as any)?.comparison || res.data?.cityComparison || null,
               showComparisonModal: true,
             });
+          } else if (action.type === 'SHOW_RISK') {
+            set({
+              activeRisk: (action.payload as any)?.riskReport || res.data?.riskRadar || null,
+              showRiskModal: true,
+            });
+          } else if (action.type === 'SHOW_RISK_FORECAST') {
+            set({
+              activeRisk: (action.payload as any)?.data || (action.payload as any)?.riskReport || (res.data as any)?.riskForecast || null,
+              showRiskModal: true,
+            });
+          } else if (action.type === 'SHOW_ROUTE' || action.type === 'SHOW_ALTERNATIVE_ROUTES') {
+            set({
+              activeSmartRoutes: (action.payload as any)?.data || (res.data as any)?.smartRoutes || null,
+            });
+          } else if (action.type === 'OPEN_MISSION') {
+            set({
+              activeMission: (action.payload as any)?.data || (res.data as any)?.mission || null,
+              showMissionModal: true,
+            });
+          } else if (action.type === 'OPEN_MONITOR') {
+            set({ showMonitoringDrawer: true });
+          } else if (action.type === 'FOCUS_ALERT') {
+            if (action.payload?.latitude && action.payload?.longitude) {
+              set({
+                mapCenter: { lat: action.payload.latitude, lng: action.payload.longitude },
+                mapZoom: 15,
+              });
+            }
+          } else if (action.type === 'SET_RADIUS' && action.payload?.radiusKm) {
+            useLocationStore.getState().setSelectedRadiusKm(action.payload.radiusKm as any);
+          } else if (action.type === 'SET_EVENT_FILTER' && action.payload?.filter) {
+            set({ activeFilter: action.payload.filter as any });
           }
         });
       }

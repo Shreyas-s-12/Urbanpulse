@@ -1,15 +1,69 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAgentStore } from '@/stores/useAgentStore';
+import { useLocationStore } from '@/stores/useLocationStore';
+import { agentService } from '@/services/agentService';
+import { AnomalyDetectionResponse } from '@shared/types';
+import { ZapIcon, CloseIcon, CheckIcon } from '@/components/common/Icons';
 
 export default function AnomalyAlertModal() {
   const { showAnomaliesModal, setShowAnomaliesModal, activeAnomalies, activeLocation } = useAgentStore();
+  const { currentLocation } = useLocationStore();
+  const [localAnomalies, setLocalAnomalies] = useState<AnomalyDetectionResponse | null>(activeAnomalies);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  if (!showAnomaliesModal || !activeAnomalies) return null;
+  const loc = activeLocation || currentLocation;
 
-  const anomaliesList = activeAnomalies.anomalies || [];
-  const locName = activeAnomalies.location?.city || activeAnomalies.location?.displayName || activeLocation?.city || 'Selected Location';
+  const fetchAnomalies = async () => {
+    if (!loc || loc.latitude == null || loc.longitude == null) {
+      setLocalAnomalies(null);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const lat = loc.latitude;
+      const lng = loc.longitude;
+      const city = loc.city || loc.displayName || 'Active Location';
+      const data = await agentService.getAnomalies(lat, lng, city);
+      setLocalAnomalies(data);
+    } catch (err) {
+      console.warn('Failed to fetch anomalies:', err);
+      setLocalAnomalies({
+        anomalies: [],
+        severityScore: 0,
+        detectedCount: 0,
+        evaluatedAt: new Date().toISOString(),
+        location: {
+          latitude: loc.latitude,
+          longitude: loc.longitude,
+          city: loc.city || 'Active Location',
+          displayName: loc.displayName || 'Active Location',
+          country: loc.country || null,
+          isUserLocation: loc.isUserLocation || false,
+        },
+      } as any);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showAnomaliesModal) {
+      if (activeAnomalies) {
+        setLocalAnomalies(activeAnomalies);
+      } else if (!localAnomalies) {
+        fetchAnomalies();
+      }
+    }
+  }, [showAnomaliesModal, activeAnomalies]);
+
+  if (!showAnomaliesModal) return null;
+
+  const currentAnom = localAnomalies || activeAnomalies;
+  const anomaliesList = currentAnom?.anomalies || [];
+  const locName = currentAnom?.location?.city || currentAnom?.location?.displayName || loc?.city || 'Active Location';
 
   return (
     <div
@@ -55,7 +109,7 @@ export default function AnomalyAlertModal() {
         >
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '22px' }}>⚡</span>
+              <ZapIcon size={20} color="var(--accent-primary)" />
               <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
                 Statistical Anomalies — {locName}
               </h2>
@@ -71,12 +125,16 @@ export default function AnomalyAlertModal() {
               background: 'none',
               border: 'none',
               color: 'var(--text-muted)',
-              fontSize: '20px',
               cursor: 'pointer',
-              padding: '4px 8px',
+              padding: '6px',
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
+            title="Dismiss"
           >
-            ✕
+            <CloseIcon size={18} />
           </button>
         </div>
 
@@ -92,7 +150,9 @@ export default function AnomalyAlertModal() {
                 border: '1px solid rgba(16, 185, 129, 0.2)',
               }}
             >
-              <div style={{ fontSize: '32px', marginBottom: '10px', color: '#10B981' }}>✓</div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+                <CheckIcon size={32} color="#10B981" />
+              </div>
               <div style={{ fontSize: '16px', fontWeight: 700, color: '#047857' }}>
                 All Signals Tracking Expected Baselines
               </div>

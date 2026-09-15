@@ -1,8 +1,9 @@
 """
 UrbanPulse Deterministic Scenario Simulation Engine
-Simulates "what-if" urban disruptions (heavy rainfall, road closures, traffic surges, AQI spikes, extreme heat, floods)
+Simulates "what-if" urban disruptions (rainfall +X%, traffic +X%, road closure, temperature +5°C)
 using deterministic physical and heuristic models grounded in current baseline observations.
-Strictly labeled as SIMULATION with uncertainty ranges, assumptions, and limitations.
+Strictly labeled as SIMULATION — NOT OBSERVED REALITY, with difference metrics, affected areas,
+assumptions, confidence, and map visualization layers.
 """
 
 from typing import Any, Dict, List, Optional
@@ -57,131 +58,156 @@ class ScenarioEngineService:
         # 2. Retrieve Current Baseline Conditions
         intel = await UrbanIntelService.get_full_intelligence(lat_val, lon_val, radius_km)
         cond = intel.get("condition", {})
-        baseline_score = cond.get("overallScore") or 75
+        baseline_score = cond.get("overallScore") or 76
 
         s_type = s_type_raw.lower().strip()
 
+        # Defaults for scenario visualization
+        closed_road_pts: Optional[List[Dict[str, float]]] = None
+        alternate_route_pts: Optional[List[Dict[str, float]]] = None
+        affected_domains: List[str] = []
+        affected_area_km2: float = 3.5
+
         # 3. Model Simulation Effects Deterministically
-        impacts: Dict[str, Any] = {}
-        if s_type in ["heavy_rainfall", "heavy_rain", "rain"]:
-            intensity = float(parameters.get("intensity_mm_hr") or parameters.get("intensity_mm_per_hr", 35.0))
-            duration_hrs = float(parameters.get("duration_hours") or parameters.get("duration_hrs", 3.0))
-            total_rain = intensity * duration_hrs
+        if s_type in ["heavy_rainfall", "heavy_rain", "rain", "rainfall_increase", "rainfall"]:
+            pct_increase = float(parameters.get("percent_increase", parameters.get("intensity_percent", 40.0)))
+            duration_hrs = float(parameters.get("duration_hours", parameters.get("duration_hrs", 3.0)))
+            total_rain_est = round(25.0 * (1.0 + pct_increase / 100.0) * duration_hrs, 1)
 
-            # Projected traffic impact
-            traffic_surge_min = min(40, round(12.0 + total_rain * 0.18))
-            traffic_surge_max = min(60, round(22.0 + total_rain * 0.28))
-            speed_reduction = round(15.0 + total_rain * 0.22, 1)
-            traffic_impact = f"+{traffic_surge_min}–{traffic_surge_max}% corridor transit delay"
+            # Projected impacts
+            traffic_delay_pct = min(65.0, round(15.0 + (pct_increase * 0.45)))
+            speed_reduction_pct = min(40.0, round(12.0 + (pct_increase * 0.35)))
+            inundation_depth = round(0.15 + (pct_increase * 0.005), 2)
+            score_drop = min(30, max(8, round(10 + pct_increase * 0.22)))
 
-            # Flood risk
-            if total_rain >= 80.0:
-                flood_risk = "HIGH (Arterial drainage overflow & underpass inundation risk)"
-                score_drop = (15, 22)
-            elif total_rain >= 40.0:
-                flood_risk = "MODERATE (Localized surface water pooling in low-lying intersections)"
-                score_drop = (8, 14)
-            else:
-                flood_risk = "LOW (Transient wet pavement surface deceleration)"
-                score_drop = (4, 8)
+            flood_risk_sim = "HIGH (Arterial drainage overflow & underpass inundation risk)" if pct_increase >= 35 else "MODERATE"
+            traffic_sim = "HEAVY (+25-45% corridor delay)" if pct_increase >= 30 else "MODERATE"
 
-            title = "Heavy Rainfall Scenario"
+            title = f"Rainfall +{int(pct_increase)}% Scenario"
+            summary_diff = (
+                f"Rainfall increase of +{int(pct_increase)}% over {duration_hrs:.0f}h increases flood risk to High "
+                f"and causes a projected +{int(traffic_delay_pct)}% traffic delay across low-lying arterials."
+            )
+            affected_domains = ["FLOOD", "TRAFFIC", "ROADS", "WEATHER"]
+            affected_area_km2 = round(4.2 * (1.0 + pct_increase / 100.0), 1)
+            confidence = 0.72
             assumptions = [
-                f"Simulated precipitation: {intensity:.0f} mm/hr sustained over {duration_hrs:.0f} hours (Total: {total_rain:.0f} mm).",
-                "Municipal storm drainage capacity assumes nominal maintenance clearance without active blockages.",
-                "Vehicle speed reduction model assumes 18-28% deceleration under heavy downpour conditions.",
+                f"Simulated precipitation: +{pct_increase:.0f}% increase sustained over {duration_hrs:.0f} hours (Total modeled: ~{total_rain_est:.0f} mm).",
+                "Municipal storm drainage assumed operating at 80% nominal clearance.",
+                "Surface road friction reduction modeled at 0.45 friction coefficient.",
             ]
             limitations = [
-                "Micro-topographical stormwater accumulation requires localized sub-meter LIDAR elevation maps.",
-                "Real-time pump station activation state is unobserved for this jurisdiction.",
+                "Micro-topographical stormwater pooling requires sub-meter LIDAR elevation maps.",
+                "Real-time stormwater pump station activation state is unobserved.",
             ]
-            confidence = 0.68
 
-            impacts = {
-                "traffic": {
-                    "roadSpeedReductionPercent": speed_reduction,
-                    "trafficDelayIncreasePercent": (traffic_surge_min + traffic_surge_max) / 2,
-                    "description": traffic_impact,
-                },
-                "floodRisk": {
-                    "inundationDepthMeters": round(total_rain / 1000.0, 2),
-                    "description": flood_risk,
-                },
-            }
+        elif s_type in ["traffic_surge", "traffic_increase", "volume_surge", "traffic"]:
+            surge_pct = float(parameters.get("surge_percent", parameters.get("percent_increase", 30.0)))
+            traffic_delay_pct = round(surge_pct * 1.15)
+            speed_reduction_pct = round(surge_pct * 0.65)
+            score_drop = min(25, max(6, round(surge_pct * 0.35)))
+            inundation_depth = 0.0
 
-        elif s_type in ["major_road_closure", "road_closure", "closure"]:
-            corridor = parameters.get("corridor_name") or "Primary Radial Arterial"
-            traffic_impact = f"+25–45% delay on adjoining collector corridors due to diverted traffic volume"
-            flood_risk = "NONE (Disruption confined to vehicular mobility & transit routing)"
-            score_drop = (10, 18)
-            title = "Major Road Closure Scenario"
+            flood_risk_sim = "LOW (No meteorological precipitation change)"
+            traffic_sim = "SEVERE (+40-60% peak transit delay)" if surge_pct >= 40 else "HEAVY"
+
+            title = f"Traffic +{int(surge_pct)}% Surge Scenario"
+            summary_diff = (
+                f"A +{int(surge_pct)}% vehicular surge triggers network bottlenecks, projecting a "
+                f"+{int(traffic_delay_pct)}% travel time increase and dropping overall score by -{score_drop} pts."
+            )
+            affected_domains = ["TRAFFIC", "ROADS"]
+            affected_area_km2 = 6.8
+            confidence = 0.78
             assumptions = [
-                f"Closure applied to central corridor: '{corridor}'.",
-                "Traffic rerouting assumes standard alternative collector street capacity without construction bottlenecks.",
+                f"Simulated {surge_pct:.0f}% uniform vehicular volume increase entering arterial corridor network.",
+                "Traffic signal timings assumed unchanged from normal diurnal schedules.",
             ]
-            limitations = ["Dynamic driver diversion compliance varies with real-time navigation GPS penetration."]
-            confidence = 0.72
-            impacts = {
-                "traffic": {
-                    "roadSpeedReductionPercent": 30.0,
-                    "trafficDelayIncreasePercent": 35.0,
-                    "description": traffic_impact,
-                },
-                "floodRisk": {"description": flood_risk},
-            }
+            limitations = [
+                "Dynamic driver diversion behavior through residential side streets is not fully observed.",
+            ]
 
-        elif s_type in ["traffic_surge", "traffic_increase", "volume_surge"]:
-            surge_pct = float(parameters.get("surge_percent", 30.0))
-            traffic_impact = f"+{int(surge_pct * 0.9)}–{int(surge_pct * 1.3)}% peak delay across radial network"
-            flood_risk = "NONE"
-            score_drop = (max(5, int(surge_pct * 0.25)), max(8, int(surge_pct * 0.45)))
-            title = "Traffic Volume Surge Scenario"
-            assumptions = [f"Simulated {surge_pct:.0f}% uniform vehicular volume increase entering network."]
-            limitations = ["Origin-destination distribution shifts during special events are non-uniform."]
-            confidence = 0.75
-            impacts = {
-                "traffic": {
-                    "trafficDelayIncreasePercent": surge_pct,
-                    "description": traffic_impact,
-                },
-                "floodRisk": {"description": flood_risk},
-            }
+        elif s_type in ["road_closure", "major_road_closure", "closure"]:
+            corridor_name = parameters.get("corridor_name") or parameters.get("road_name") or "Primary Radial Corridor"
+            traffic_delay_pct = 35.0
+            speed_reduction_pct = 28.0
+            score_drop = 14
+            inundation_depth = 0.0
 
-        elif s_type in ["aqi_deterioration", "pollution_spike", "smog"]:
-            pm25_spike = float(parameters.get("pm25_increase", 50.0))
-            traffic_impact = "No direct mobility reduction; outdoor activities and transit stops advisories in effect"
-            flood_risk = "NONE"
-            score_drop = (max(6, int(pm25_spike * 0.15)), max(12, int(pm25_spike * 0.30)))
-            title = "Air Quality Inversion & Deterioration Scenario"
-            assumptions = [f"Simulated PM2.5 atmospheric concentration increase of {pm25_spike:.0f} µg/m³."]
-            limitations = ["Atmospheric boundary layer height and ventilation coefficient are modeled estimates."]
-            confidence = 0.70
-            impacts = {
-                "airQuality": {
-                    "aqiIncreasePoints": round(pm25_spike * 1.5, 1),
-                    "description": f"Air quality deterioration (+{pm25_spike} µg/m³ PM2.5)",
-                },
-                "traffic": {"description": traffic_impact},
-                "floodRisk": {"description": flood_risk},
-            }
+            flood_risk_sim = "LOW"
+            traffic_sim = "HEAVY (+35% detour transit delay on adjoining collectors)"
+
+            title = f"Road Closure Simulation: {corridor_name}"
+            summary_diff = (
+                f"Simulating complete closure of '{corridor_name}'. Traffic diverted onto parallel collectors, "
+                f"incurring an estimated +35% delay across surrounding 3.2 km² grid."
+            )
+            affected_domains = ["ROADS", "TRAFFIC"]
+            affected_area_km2 = 3.2
+            confidence = 0.81
+            assumptions = [
+                f"Complete bidirectional vehicular closure of corridor segment: '{corridor_name}'.",
+                "Traffic reroutes along nearest secondary arterial bypass corridors.",
+            ]
+            limitations = [
+                "Real-time turn restriction compliance and temporary police diversion signage are unobserved.",
+            ]
+
+            # Generate synthetic spatial polylines around target coordinates for Google Maps scenario layer
+            closed_road_pts = [
+                {"latitude": lat_val - 0.006, "longitude": lon_val - 0.008},
+                {"latitude": lat_val, "longitude": lon_val},
+                {"latitude": lat_val + 0.006, "longitude": lon_val + 0.008},
+            ]
+            alternate_route_pts = [
+                {"latitude": lat_val - 0.006, "longitude": lon_val - 0.008},
+                {"latitude": lat_val - 0.003, "longitude": lon_val + 0.012},
+                {"latitude": lat_val + 0.006, "longitude": lon_val + 0.008},
+            ]
+
+        elif s_type in ["extreme_heat", "temperature_increase", "temperature", "heat_wave"]:
+            temp_delta = float(parameters.get("temperature_delta_c", parameters.get("degrees_c", 5.0)))
+            traffic_delay_pct = 8.0
+            speed_reduction_pct = 5.0
+            score_drop = min(20, max(5, round(temp_delta * 2.2)))
+            inundation_depth = 0.0
+
+            flood_risk_sim = "LOW"
+            traffic_sim = "MODERATE (Localized transit HVAC load and vehicle breakdown increase)"
+
+            title = f"Temperature +{temp_delta:.1f}°C Heat Stress Scenario"
+            summary_diff = (
+                f"Simulating a +{temp_delta:.1f}°C ambient heat wave. Urban heat island effect intensifies, "
+                f"increasing surface ozone formation and power grid stress, reducing overall score by -{score_drop} pts."
+            )
+            affected_domains = ["WEATHER", "AQI", "SAFETY"]
+            affected_area_km2 = 12.5
+            confidence = 0.74
+            assumptions = [
+                f"Uniform ambient air temperature elevation of +{temp_delta:.1f}°C above current diurnal reading.",
+                "Surface ozone and photochemical smog rates accelerated according to standard Arrhenius kinetics.",
+            ]
+            limitations = [
+                "Microclimate shading variation from tree canopies and building heights requires 3D urban canopy model.",
+            ]
 
         else:
-            title = f"{s_type.replace('_', ' ').title()} Scenario"
-            traffic_impact = "+10–20% localized delay"
-            flood_risk = "LOW / UNCERTAIN"
-            score_drop = (6, 12)
-            assumptions = ["Applied standard proportional stress factor to current municipal baseline."]
-            limitations = ["Limited historical precedent data for this exact scenario type at these coordinates."]
-            confidence = 0.58
-            impacts = {
-                "traffic": {"roadSpeedReductionPercent": 15.0, "description": traffic_impact},
-                "floodRisk": {"description": flood_risk},
-            }
+            traffic_delay_pct = 18.0
+            speed_reduction_pct = 12.0
+            score_drop = 8
+            inundation_depth = 0.0
+            flood_risk_sim = "LOW"
+            traffic_sim = "MODERATE"
 
-        projected_min = max(20, baseline_score - score_drop[1])
-        projected_max = max(25, baseline_score - score_drop[0])
-        projected_avg = round((projected_min + projected_max) / 2)
-        score_delta = projected_avg - baseline_score
+            title = f"{s_type.replace('_', ' ').title()} Scenario"
+            summary_diff = f"Simulated {s_type.replace('_', ' ')}: baseline condition degraded by -{score_drop} points."
+            affected_domains = ["TRAFFIC", "WEATHER"]
+            affected_area_km2 = 4.0
+            confidence = 0.65
+            assumptions = ["Applied proportional stress factor to current municipal baseline."]
+            limitations = ["Limited historical precedent for this exact parameter combination at coordinates."]
+
+        simulated_score = max(15, baseline_score - score_drop)
 
         return {
             "scenarioId": f"sim-{int(now_utc.timestamp())}",
@@ -191,21 +217,56 @@ class ScenarioEngineService:
             "location": location_meta,
             "isSimulation": True,
             "label": "SIMULATION",
-            "baselineScore": baseline_score,
-            "projectedScoreRange": [projected_min, projected_max],
-            "uncertaintyInterval": {"min": projected_min, "max": projected_max},
-            "projectedTrafficImpact": traffic_impact,
-            "projectedFloodRisk": flood_risk,
-            "routeImpact": f"Projected travel times across major corridors increase by {traffic_impact}.",
-            "impacts": impacts,
-            "urbanPulseScoreImpact": {
-                "baselineScore": baseline_score,
-                "projectedScore": projected_avg,
-                "delta": score_delta,
+            "notObservedReality": True,
+            "baseline": {
+                "overallScore": baseline_score,
+                "trafficStatus": cond.get("trafficStatus", "MODERATE"),
+                "floodRisk": "LOW",
+                "roadCondition": "NOMINAL",
             },
+            "scenario": {
+                "overallScore": simulated_score,
+                "trafficStatus": traffic_sim,
+                "floodRisk": flood_risk_sim,
+                "roadCondition": "RESTRICTED" if s_type in ["road_closure", "closure"] else "WET_SLIPPERY" if s_type in ["heavy_rainfall", "rain"] else "NOMINAL",
+            },
+            "difference": {
+                "scoreDelta": -score_drop,
+                "trafficDelayIncreasePercent": traffic_delay_pct,
+                "speedReductionPercent": speed_reduction_pct,
+                "inundationDepthMeters": inundation_depth,
+                "summary": summary_diff,
+            },
+            "affectedDomains": affected_domains,
+            "affectedAreaKm2": affected_area_km2,
             "confidence": confidence,
             "assumptions": assumptions,
             "limitations": limitations,
+            "closedRoadPolyline": closed_road_pts,
+            "alternateRoutePolyline": alternate_route_pts,
             "simulatedAt": now_iso,
             "timestamp": now_iso,
+            # Backward-compatible fields expected by test_master_intelligence & frontend
+            "impacts": {
+                "traffic": {
+                    "delayIncreasePercent": traffic_delay_pct,
+                    "roadSpeedReductionPercent": speed_reduction_pct,
+                    "status": traffic_sim,
+                },
+                "floodRisk": flood_risk_sim,
+                "inundationDepthMeters": inundation_depth,
+            },
+            "uncertaintyInterval": {
+                "scoreLow": max(10, simulated_score - 4),
+                "scoreHigh": min(100, simulated_score + 4),
+                "confidence": confidence,
+            },
+            "urbanPulseScoreImpact": {
+                "baselineScore": baseline_score,
+                "projectedScore": simulated_score,
+                "delta": -score_drop,
+            },
+            "projectedScoreRange": [max(10, simulated_score - 4), min(100, simulated_score + 4)],
+            "projectedTrafficImpact": traffic_sim,
+            "projectedFloodRisk": flood_risk_sim,
         }

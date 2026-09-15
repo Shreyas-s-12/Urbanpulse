@@ -85,5 +85,100 @@ export const agentService = {
   async getMonitorAlerts(limit: number = 50): Promise<{ alerts: MonitorAlert[]; total: number }> {
     return apiClient.get<{ alerts: MonitorAlert[]; total: number }>('/monitoring/alerts', { limit });
   },
+
+  async getRiskReport(
+    lat: number,
+    lng: number,
+    radiusKm: number = 50,
+    city?: string | null,
+    countryCode?: string | null
+  ): Promise<any> {
+    return apiClient.get('/intelligence/risk', {
+      lat,
+      lng,
+      radius_km: radiusKm,
+      city: city || undefined,
+      country_code: countryCode || undefined,
+    });
+  },
+
+  async getPredictiveTraffic(lat: number, lng: number, radiusKm: number = 25): Promise<any> {
+    return apiClient.get('/forecast/traffic', { lat, lng, radius_km: radiusKm });
+  },
+
+  async getRiskForecast(
+    lat: number,
+    lng: number,
+    radiusKm: number = 50,
+    city?: string,
+    countryCode?: string
+  ): Promise<any> {
+    return apiClient.get('/forecast/risk', {
+      lat,
+      lng,
+      radius_km: radiusKm,
+      city: city || undefined,
+      country_code: countryCode || undefined,
+    });
+  },
+
+  async computeSmartRoutes(
+    origin: { latitude: number; longitude: number; city?: string },
+    destination: { latitude: number; longitude: number; city?: string },
+    travelMode: string = 'drive',
+    departureTime: string = 'Immediate'
+  ): Promise<any> {
+    return apiClient.post('/routes/smart', {
+      origin,
+      destination,
+      travel_mode: travelMode,
+      departure_time: departureTime,
+    });
+  },
+
+  async planMission(
+    origin: string,
+    destination: string,
+    preference: string = 'BALANCED',
+    departureWindowStart?: string,
+    departureWindowEnd?: string
+  ): Promise<any> {
+    return apiClient.post('/missions/plan', {
+      origin,
+      destination,
+      preference,
+      departureWindowStart,
+      departureWindowEnd,
+    });
+  },
+
+  async recommendPlaces(
+    lat: number,
+    lng: number,
+    intent: string = 'peaceful',
+    radiusKm: number = 15,
+    limit: number = 5
+  ): Promise<{ places: any[]; count: number; intent: string }> {
+    return apiClient.get('/places/recommend', {
+      lat,
+      lng,
+      intent,
+      radius_km: radiusKm,
+      limit,
+    });
+  },
+
+  async detectCascades(lat: number, lng: number, radiusKm: number = 30, city?: string): Promise<any> {
+    return apiClient.get('/cascade/chains', {
+      lat,
+      lng,
+      radius_km: radiusKm,
+      city,
+    });
+  },
+
+  async updateAlertStatus(alertId: string, state: string): Promise<any> {
+    return apiClient.patch(`/monitoring/alerts/${alertId}`, { state });
+  },
 };
 

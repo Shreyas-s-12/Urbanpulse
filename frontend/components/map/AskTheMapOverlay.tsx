@@ -4,18 +4,33 @@ import React from 'react';
 import { useLocationStore } from '@/stores/useLocationStore';
 import { useAgentStore } from '@/stores/useAgentStore';
 import { locationService } from '@/services/locationService';
+import {
+  TrafficIcon,
+  WeatherSunIcon,
+  LeafIcon,
+  AlertTriangleIcon,
+  ShieldCheckIcon,
+  RoadIcon,
+  TargetScoreIcon,
+  SparklesIcon,
+  HistoryClockIcon,
+  ZapIcon,
+  PinIcon,
+  CloseIcon,
+} from '@/components/common/Icons';
 
 const QUICK_ACTIONS = [
-  { label: 'Traffic Around Here', query: 'Traffic around here', icon: '🚦' },
-  { label: 'Weather At This Point', query: 'Weather at this point', icon: '🌤️' },
-  { label: 'Air Quality', query: 'Air quality at this point', icon: '🍃' },
-  { label: 'Nearby Hazards', query: 'Any hazards nearby?', icon: '⚠️' },
-  { label: 'Civil Safety', query: 'Is this area safe?', icon: '🛡️' },
-  { label: 'Road Conditions', query: 'Road conditions', icon: '🛣️' },
-  { label: 'UrbanPulse Score', query: 'What is the UrbanPulse score here?', icon: '💯' },
-  { label: '7-Day Forecast', query: '7-day forecast for this location', icon: '🔮' },
-  { label: 'What Changed?', query: 'What changed here in the last 24h?', icon: '📈' },
-  { label: 'Detect Anomalies', query: 'Are there any anomalies here?', icon: '⚡' },
+  { label: 'Traffic Around Here', query: 'Traffic around here', Icon: TrafficIcon },
+  { label: 'Weather At This Point', query: 'Weather at this point', Icon: WeatherSunIcon },
+  { label: 'Air Quality', query: 'Air quality at this point', Icon: LeafIcon },
+  { label: 'Nearby Hazards', query: 'Any hazards nearby?', Icon: AlertTriangleIcon },
+  { label: 'Civil Safety', query: 'Is this area safe?', Icon: ShieldCheckIcon },
+  { label: 'Risk Radar', query: 'What is the multi-domain risk radar here?', Icon: ShieldCheckIcon },
+  { label: 'Road Conditions', query: 'Road conditions', Icon: RoadIcon },
+  { label: 'UrbanPulse Score', query: 'What is the UrbanPulse score here?', Icon: TargetScoreIcon },
+  { label: '7-Day Forecast', query: '7-day forecast for this location', Icon: SparklesIcon },
+  { label: 'What Changed?', query: 'What changed here in the last 24h?', Icon: HistoryClockIcon },
+  { label: 'Detect Anomalies', query: 'Are there any anomalies here?', Icon: ZapIcon },
 ];
 
 export default function AskTheMapOverlay() {
@@ -31,9 +46,19 @@ export default function AskTheMapOverlay() {
         selectedMapPoint.longitude
       );
       setActiveLocation(resolved);
+      useAgentStore.getState().setSelectedMapEntity({
+        type: 'COORDINATE',
+        coordinates: { latitude: selectedMapPoint.latitude, longitude: selectedMapPoint.longitude },
+        name: resolved.city || resolved.displayName,
+      });
       const placeName = resolved.city || resolved.displayName || `${selectedMapPoint.latitude.toFixed(3)}, ${selectedMapPoint.longitude.toFixed(3)}`;
       sendMessage(`${promptQuery} in ${placeName}`);
     } catch {
+      useAgentStore.getState().setSelectedMapEntity({
+        type: 'COORDINATE',
+        coordinates: { latitude: selectedMapPoint.latitude, longitude: selectedMapPoint.longitude },
+        name: `${selectedMapPoint.latitude.toFixed(4)}, ${selectedMapPoint.longitude.toFixed(4)}`,
+      });
       sendMessage(`${promptQuery} at coordinates (${selectedMapPoint.latitude.toFixed(4)}, ${selectedMapPoint.longitude.toFixed(4)})`);
     }
     setSelectedMapPoint(null);
@@ -74,7 +99,7 @@ export default function AskTheMapOverlay() {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '18px' }}>📍</span>
+          <PinIcon size={18} color="var(--accent-primary)" />
           <div>
             <div style={{ fontSize: '11px', color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>
               Ask-The-Map Location Context
@@ -92,13 +117,15 @@ export default function AskTheMapOverlay() {
             border: 'none',
             color: 'var(--text-muted)',
             cursor: 'pointer',
-            fontSize: '18px',
             padding: '4px 8px',
             borderRadius: '6px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
           title="Dismiss"
         >
-          ✕
+          <CloseIcon size={16} />
         </button>
       </div>
 
@@ -113,38 +140,41 @@ export default function AskTheMapOverlay() {
           gap: '6px',
         }}
       >
-        {QUICK_ACTIONS.map((action, idx) => (
-          <button
-            key={idx}
-            onClick={() => handleAction(action.query)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              backgroundColor: 'var(--bg-app)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: '20px',
-              padding: '6px 12px',
-              fontSize: '12px',
-              color: 'var(--text-primary)',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--accent-primary-light)';
-              e.currentTarget.style.borderColor = 'var(--accent-primary)';
-              e.currentTarget.style.color = 'var(--accent-primary)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--bg-app)';
-              e.currentTarget.style.borderColor = 'var(--border-subtle)';
-              e.currentTarget.style.color = 'var(--text-primary)';
-            }}
-          >
-            <span>{action.icon}</span>
-            <span>{action.label}</span>
-          </button>
-        ))}
+        {QUICK_ACTIONS.map((action, idx) => {
+          const IconComp = action.Icon;
+          return (
+            <button
+              key={idx}
+              onClick={() => handleAction(action.query)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                backgroundColor: 'var(--bg-app)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '20px',
+                padding: '6px 12px',
+                fontSize: '12px',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--accent-primary-light)';
+                e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                e.currentTarget.style.color = 'var(--accent-primary)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--bg-app)';
+                e.currentTarget.style.borderColor = 'var(--border-subtle)';
+                e.currentTarget.style.color = 'var(--text-primary)';
+              }}
+            >
+              <IconComp size={14} color="currentColor" />
+              <span>{action.label}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

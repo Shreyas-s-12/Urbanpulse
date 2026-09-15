@@ -1,17 +1,19 @@
-import { ResolvedLocation, RoutePlan, TravelMode } from '@shared/types';
+import { ResolvedLocation, RoutePlan, TravelMode, TrafficRoutingPreference } from '@shared/types';
 import { apiClient } from './apiClient';
 
 export const routeService = {
   /**
    * Calls the FastAPI backend /routes/analyze endpoint for authentic Google Routes API routing.
    * Derives real Google traffic conditions and separate UrbanPulse hazard risks.
+   * Supports normal TRAFFIC_AWARE and highest-quality TRAFFIC_AWARE_OPTIMAL routing.
    * Does NOT substitute mock routes if Google Routes API fails.
    */
   async calculateRoutes(
     from: ResolvedLocation,
     to: ResolvedLocation,
     mode: TravelMode = 'drive',
-    departureTime: string = 'Immediate'
+    departureTime: string = 'Immediate',
+    routingPreference: TrafficRoutingPreference = 'TRAFFIC_AWARE'
   ): Promise<RoutePlan> {
     if (!from || !to) {
       throw new Error('Origin and destination coordinates are required.');
@@ -23,6 +25,7 @@ export const routeService = {
         to_location: to,
         travel_mode: mode,
         departure_time: departureTime,
+        routing_preference: routingPreference,
       });
 
       if (plan && plan.candidateRoutes && plan.candidateRoutes.length > 0) {

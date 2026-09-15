@@ -112,18 +112,18 @@ class ExplainableScoreService:
 
             components[domain] = {
                 "name": domain.replace("_", " ").title(),
-                "score": score,
+                "score": score if is_valid else None,
                 "weight": default_weight,
                 "weightedScore": None,
                 "dataStatus": data_status,
-                "status": status_desc,
-                "metric": metric_desc,
+                "status": status_desc if is_valid else "NO_COVERAGE",
+                "metric": metric_desc if is_valid else "No continuous physical telemetry",
                 "source": source,
             }
 
         # Normalize weights among available domains
         total_available_weight = sum(active_weights[d] for d in available_domains)
-        if total_available_weight > 0:
+        if len(available_domains) >= 2 and total_available_weight > 0:
             for domain in available_domains:
                 normalized_weight = active_weights[domain] / total_available_weight
                 components[domain]["weight"] = round(normalized_weight, 3)
@@ -131,8 +131,13 @@ class ExplainableScoreService:
                 components[domain]["weightedScore"] = round(score_val * normalized_weight, 1)
 
             final_score = round(sum(components[d]["weightedScore"] for d in available_domains))
+            score_status = "AVAILABLE"
+        elif len(available_domains) == 1 and total_available_weight > 0:
+            final_score = round(components[available_domains[0]]["score"])
+            score_status = "PARTIAL"
         else:
-            final_score = 50  # Neutral fallback
+            final_score = None  # Honest null, rendered as '—'
+            score_status = "INSUFFICIENT_DATA"
 
         known_signals = len(available_domains)
         missing_signals = len(missing_domains)
@@ -161,19 +166,21 @@ class ExplainableScoreService:
 
         missing_note = f" Note: {len(missing_domains)} domain signal(s) ({', '.join(d.replace('_', ' ') for d in missing_domains)}) are currently unmonitored or lacking continuous physical telemetry, lowering confidence to {confidence:.2f}." if missing_domains else ""
 
+        score_display = f"{final_score}/100" if final_score is not None else "— (Insufficient Telemetry Coverage)"
         explanation = (
-            f"UrbanPulse rating for {city_name} is {final_score}/100.\n\n"
+            f"UrbanPulse rating for {city_name} is {score_display}.\n\n"
             f"• Main positive factors: {pos_str}\n"
             f"• Main negative factors: {neg_str}\n\n"
             f"The rating reflects that {reason}.{missing_note}"
         )
 
         # 5. History and Trend Calculation
-        history = cls._get_or_record_history(latitude, longitude, final_score, confidence)
-        trend = cls._compute_trend(history)
+        history = cls._get_or_record_history(latitude, longitude, final_score or 50, confidence)
+        trend = cls._compute_trend(history) if final_score is not None else "STABLE"
 
         return {
             "score": final_score,
+            "status": score_status,
             "confidence": confidence,
             "components": components,
             "knownSignals": known_signals,

@@ -8,6 +8,7 @@ import { UnifiedCityEvent } from '@shared/types';
 import { useMapContext } from '@/context/MapContext';
 
 import { locationService } from '@/services/locationService';
+import { CloseIcon } from '@/components/common/Icons';
 
 export default function MapPage() {
   const { currentLocation, setCurrentLocation, selectedRadiusKm } = useLocationStore();
@@ -217,9 +218,10 @@ export default function MapPage() {
             </span>
             <button
               onClick={() => setSelectedEvent(null)}
-              style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 600 }}
+              aria-label="Close event details"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
             >
-              ✕
+              <CloseIcon size={14} />
             </button>
           </div>
           <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>

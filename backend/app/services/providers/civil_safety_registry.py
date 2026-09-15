@@ -155,13 +155,15 @@ class CivilSafetyRegistry:
                 sources.append(us_result["source"])
                 message = f"{incident_count} public safety record(s) indexed via municipal open data."
 
-        # D. Retrieve Authoritative Civic Safety Bulletins (RAG)
+        # D. Retrieve Authoritative Civic Safety Bulletins & Guidance via RAG
         updates: List[Dict[str, Any]] = []
+        guidance: List[Dict[str, Any]] = []
         try:
-            rag_docs = await LocationAwareRAGService.retrieve_relevant_knowledge(
-                latitude, longitude, query="safety alert protocol civil defense", city=city, limit=3
+            # 1. Recent time-bound municipal/precinct bulletins
+            recent_docs = await LocationAwareRAGService.retrieve_relevant_knowledge(
+                latitude, longitude, query="safety alert protocol civil defense", city=city, country=country_code, doc_type="RECENT_UPDATE", limit=3
             )
-            for doc in rag_docs:
+            for doc in recent_docs:
                 updates.append({
                     "id": doc.get("id"),
                     "title": doc.get("title"),
@@ -170,49 +172,67 @@ class CivilSafetyRegistry:
                     "source": doc.get("source", "Civil Defense Authority"),
                     "authorityScore": doc.get("authorityScore", 0.95),
                 })
-            if updates:
-                sources.append({
-                    "name": "Location-Aware Civil Defense RAG",
-                    "type": "AUTHORITATIVE_BULLETIN",
-                    "authority": "Verified Municipal & Civil Defense Guidelines",
+                # Add authentic publisher source
+                pub_name = doc.get("source", "Municipal Authority")
+                if not any(s.get("name") == pub_name for s in sources):
+                    sources.append({
+                        "name": pub_name,
+                        "type": "AUTHORITATIVE_BULLETIN",
+                        "authority": "Verified Regional Authority",
+                    })
+
+            # 2. Stable civil defense reference protocols (does NOT inflate update count)
+            guidance_docs = await LocationAwareRAGService.retrieve_relevant_knowledge(
+                latitude, longitude, query="safety protocol civil defense procedure", doc_type="STABLE_KNOWLEDGE", limit=3
+            )
+            for doc in guidance_docs:
+                guidance.append({
+                    "id": doc.get("id"),
+                    "title": doc.get("title"),
+                    "content": doc.get("content"),
+                    "category": "CIVIL_DEFENSE_GUIDANCE",
+                    "source": doc.get("source", "Civil Defense Standards"),
+                    "authorityScore": doc.get("authorityScore", 0.95),
                 })
         except Exception as e:
             logger.debug("Civil safety RAG retrieval notice: %s", e)
 
         # Distinguish states truthfully:
-        # EMPTY_VERIFIED: Connected feed confirms 0 incidents
-        # PARTIAL: Direct police feed unavailable, but official updates or public alerts exist
-        # NO_COVERAGE: No verified public safety feed covers these coordinates
+        # AVAILABLE: Connected police feed active with verified incidents
+        # EMPTY_VERIFIED: Connected feed explicitly confirms 0 incidents
+        # PARTIAL: Direct police feed unavailable, but live emergency alerts or recent municipal bulletins exist
+        # NO_COVERAGE: No verified public safety feed covers these coordinates (guidance protocols are reference only)
         if feed_capability == "NO_COVERAGE":
             if alerts and updates:
                 status = "PARTIAL"
                 feed_capability = "PUBLIC_SAFETY_UPDATE"
                 incident_count = None
                 confidence = 0.70
-                message = "Official safety advisories and verified public alerts active. Direct police dispatch API unavailable for this jurisdiction."
-            elif updates:
-                status = "PARTIAL"
-                feed_capability = "PUBLIC_SAFETY_UPDATE"
-                incident_count = None
-                confidence = 0.65
-                message = "Official civil defense advisories active. Direct police dispatch API unavailable for this jurisdiction."
+                message = f"Active emergency alerts and {len(updates)} regional advisory(s) logged. Direct police dispatch API unavailable for this jurisdiction."
             elif alerts:
                 status = "PARTIAL"
                 feed_capability = "PUBLIC_SAFETY_UPDATE"
                 incident_count = None
-                confidence = 0.60
+                confidence = 0.65
                 message = f"{len(alerts)} verified public safety alert(s) active. Direct police dispatch API unavailable."
+            elif updates:
+                status = "PARTIAL"
+                feed_capability = "PUBLIC_SAFETY_UPDATE"
+                incident_count = None
+                confidence = 0.60
+                message = f"{len(updates)} authoritative municipal bulletin(s) active. Direct police dispatch API unavailable."
             else:
                 status = "NO_COVERAGE"
                 feed_capability = "NO_COVERAGE"
                 incident_count = None  # Transparently None, NEVER fake 0!
                 confidence = 0.0
                 message = "No verified public safety or police dispatch API covers these coordinates."
-                sources.append({
-                    "name": "Official Police Feeds",
-                    "type": "GOVERNMENT_STATION",
-                    "authority": "Jurisdiction-Dependent Open Data Feed",
-                })
+                if not sources:
+                    sources.append({
+                        "name": "Official Police Feeds",
+                        "type": "GOVERNMENT_STATION",
+                        "authority": "Jurisdiction-Dependent Open Data Feed",
+                    })
 
         result = {
             "status": status,
@@ -224,6 +244,8 @@ class CivilSafetyRegistry:
             "alertCount": len(alerts),
             "updates": updates,
             "updateCount": len(updates),
+            "guidance": guidance,
+            "guidanceCount": len(guidance),
             "sources": sources,
             "coverage": f"Country: {country_code or 'Global'}, City: {city or 'Coordinates'}",
             "observedAt": now_iso,

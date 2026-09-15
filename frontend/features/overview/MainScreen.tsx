@@ -424,20 +424,7 @@ export default function MainScreen() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Link
-            href="/routes"
-            style={{
-              padding: '8px 16px',
-              borderRadius: 'var(--radius-sm)',
-              backgroundColor: 'var(--accent-primary)',
-              color: '#FFFFFF',
-              fontSize: '12px',
-              fontWeight: 600,
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
-            Plan a Journey
-          </Link>
+
           <Link
             href="/copilot"
             style={{
@@ -450,7 +437,7 @@ export default function MainScreen() {
               fontWeight: 600,
             }}
           >
-            Ask Copilot
+            Ask Nexus
           </Link>
         </div>
       </div>

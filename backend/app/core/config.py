@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "urbanpulse-development-secret-key"
 
     # Database & Cache
-    DATABASE_URL: str = "postgresql+asyncpg://urbanpulse_admin:urbanpulse_secret@localhost:5432/urbanpulse_db"
+    DATABASE_URL: str = "sqlite+aiosqlite:///./test.db"
     REDIS_URL: str = "redis://localhost:6379/0"
 
     # Supabase

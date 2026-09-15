@@ -3,6 +3,7 @@
 import React from 'react';
 import { useAgentStore } from '@/stores/useAgentStore';
 import MarkdownRenderer from '@/components/common/MarkdownRenderer';
+import { SatelliteDishIcon, CloseIcon } from '@/components/common/Icons';
 
 export default function LiveUpdatesDrawer() {
   const {
@@ -62,7 +63,7 @@ export default function LiveUpdatesDrawer() {
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '1.1rem' }}>📡</span>
+            <SatelliteDishIcon size={18} color="var(--accent-primary)" />
             <span style={{ fontWeight: 700, fontSize: '0.95rem', letterSpacing: '-0.01em', color: 'var(--text-primary)' }}>
               Live Updates & Civic RAG
             </span>
@@ -92,15 +93,16 @@ export default function LiveUpdatesDrawer() {
             cursor: 'pointer',
             padding: '6px',
             borderRadius: '6px',
-            fontSize: '1.1rem',
-            lineHeight: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             transition: 'color 0.15s ease',
           }}
           title="Close Drawer"
           onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
           onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
         >
-          ✕
+          <CloseIcon size={16} />
         </button>
       </div>
 

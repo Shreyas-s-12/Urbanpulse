@@ -29,9 +29,18 @@ AgentIntent = Literal[
     "ANOMALY",
     "SIMULATE",
     "ASK_THE_MAP",
+    "ACTIVITIES",
+    "RISK_RADAR",
+    "PREDICT",
+    "RISK_FORECAST",
+    "SMART_ROUTE",
+    "MISSION_MODE",
+    "RECOMMEND_PLACE",
+    "CASCADE",
+    "WHERE_AM_I",
 ]
 
-AgentTimeQualifier = Literal["CURRENT", "FORECAST", "HISTORICAL"]
+AgentTimeQualifier = Literal["CURRENT", "FORECAST", "HISTORICAL", "SIMULATION"]
 
 AgentMapActionType = Literal[
     "CENTER_MAP",
@@ -51,6 +60,18 @@ AgentMapActionType = Literal[
     "SHOW_ANOMALIES",
     "SHOW_SCENARIO",
     "SHOW_COMPARISON",
+    "SHOW_RISK",
+    "SET_RADIUS",
+    "SELECT_EVENT",
+    "SELECT_PLACE",
+    "SET_EVENT_FILTER",
+    "SHOW_RISK_FORECAST",
+    "SHOW_ROUTE",
+    "SHOW_ALTERNATIVE_ROUTES",
+    "FOCUS_ALERT",
+    "OPEN_MISSION",
+    "OPEN_MONITOR",
+    "SHOW_CASCADE",
 ]
 
 

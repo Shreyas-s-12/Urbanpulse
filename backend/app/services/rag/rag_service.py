@@ -28,6 +28,7 @@ KNOWLEDGE_STORE: List[Dict[str, Any]] = [
         "location": None,
         "country": None,
         "category": "STABLE",
+        "docType": "STABLE_KNOWLEDGE",
         "eventType": "EARTHQUAKE",
         "source": "USGS & Global Civil Defense Consortium",
         "authorityScore": 0.98,
@@ -45,6 +46,7 @@ KNOWLEDGE_STORE: List[Dict[str, Any]] = [
         "location": None,
         "country": None,
         "category": "STABLE",
+        "docType": "STABLE_KNOWLEDGE",
         "eventType": "FLOOD",
         "source": "World Meteorological Organization Emergency Guidance",
         "authorityScore": 0.96,
@@ -63,6 +65,7 @@ KNOWLEDGE_STORE: List[Dict[str, Any]] = [
         "location": None,
         "country": None,
         "category": "STABLE",
+        "docType": "STABLE_KNOWLEDGE",
         "eventType": "AIR_QUALITY",
         "source": "WHO Air Quality Guidelines",
         "authorityScore": 0.97,
@@ -81,6 +84,7 @@ KNOWLEDGE_STORE: List[Dict[str, Any]] = [
         "location": "Bengaluru",
         "country": "India",
         "category": "RECENT",
+        "docType": "RECENT_UPDATE",
         "eventType": "TRAFFIC",
         "source": "Bengaluru Traffic Police Official Dispatch",
         "authorityScore": 0.94,
@@ -98,6 +102,7 @@ KNOWLEDGE_STORE: List[Dict[str, Any]] = [
         "location": "Delhi",
         "country": "India",
         "category": "RECENT",
+        "docType": "RECENT_UPDATE",
         "eventType": "AIR_QUALITY",
         "source": "Commission for Air Quality Management (CAQM)",
         "authorityScore": 0.95,
@@ -115,6 +120,7 @@ KNOWLEDGE_STORE: List[Dict[str, Any]] = [
         "location": "New York",
         "country": "United States",
         "category": "RECENT",
+        "docType": "RECENT_UPDATE",
         "eventType": "TRAFFIC",
         "source": "Metropolitan Transportation Authority (MTA)",
         "authorityScore": 0.93,
@@ -132,6 +138,7 @@ KNOWLEDGE_STORE: List[Dict[str, Any]] = [
         "location": "London",
         "country": "United Kingdom",
         "category": "RECENT",
+        "docType": "RECENT_UPDATE",
         "eventType": "TRAFFIC",
         "source": "Transport for London (TfL)",
         "authorityScore": 0.94,
@@ -149,6 +156,7 @@ KNOWLEDGE_STORE: List[Dict[str, Any]] = [
         "location": "Tokyo",
         "country": "Japan",
         "category": "RECENT",
+        "docType": "RECENT_UPDATE",
         "eventType": "HAZARDS",
         "source": "Tokyo Metropolitan Government Disaster Management",
         "authorityScore": 0.96,
@@ -166,16 +174,18 @@ class LocationAwareRAGService:
         query: str,
         location_meta: Optional[Dict[str, Any]] = None,
         event_type: Optional[str] = None,
+        doc_type: Optional[str] = None,
         limit: int = 4,
     ) -> List[Dict[str, Any]]:
         """
         Performs location-aware semantic & metadata retrieval:
         1. Filters out expired alerts
-        2. Scores documents by:
+        2. Optionally filters by doc_type ('STABLE_KNOWLEDGE' vs 'RECENT_UPDATE' vs 'LIVE_ALERT')
+        3. Scores documents by:
            - Geographic relevance (same city > same country > global)
            - Domain / intent match
            - Authority score
-        3. Returns ranked knowledge chunks with source provenance
+        4. Returns ranked knowledge chunks with source provenance
         """
         location_meta = location_meta or {}
         target_city = (location_meta.get("city") or "").lower()
@@ -186,6 +196,10 @@ class LocationAwareRAGService:
         ranked_results: List[tuple[float, Dict[str, Any]]] = []
 
         for doc in KNOWLEDGE_STORE:
+            # Check docType filter
+            if doc_type and doc.get("docType") != doc_type and doc.get("category") != doc_type:
+                continue
+
             # Check expiration
             expires_at = doc.get("expiresAt")
             if expires_at and expires_at < now_iso:
@@ -202,7 +216,8 @@ class LocationAwareRAGService:
             elif doc_country and target_country and doc_country in target_country:
                 score += 25.0  # Same country match
             elif not doc_loc and not doc_country:
-                score += 15.0  # Global authoritative guidance
+                # Global authoritative guidance
+                score += 15.0 if not doc_type or doc_type == "STABLE_KNOWLEDGE" else 0.0
             else:
                 score -= 30.0  # Different location penalty (prevents unrelated city pollution)
 
@@ -239,10 +254,11 @@ class LocationAwareRAGService:
         query: str = "safety civil defense",
         city: Optional[str] = None,
         country: Optional[str] = None,
+        doc_type: Optional[str] = None,
         limit: int = 4,
     ) -> List[Dict[str, Any]]:
         """
         Async interface for location-aware RAG retrieval.
         """
         location_meta = {"city": city, "country": country, "latitude": latitude, "longitude": longitude}
-        return cls.search_knowledge(query=query, location_meta=location_meta, limit=limit)
+        return cls.search_knowledge(query=query, location_meta=location_meta, doc_type=doc_type, limit=limit)

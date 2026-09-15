@@ -1,40 +1,48 @@
-'use client';
-
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { TrafficConditionSummary } from '@shared/types';
 import { trafficService } from '@/services/trafficService';
 
-export function useTraffic(latitude?: number, longitude?: number, radiusKm: number = 50) {
+export function useTraffic(
+  latitude: number | null | undefined,
+  longitude: number | null | undefined,
+  radiusKm: number = 50
+) {
   const [traffic, setTraffic] = useState<TrafficConditionSummary | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTraffic = useCallback(async () => {
-    if (latitude === undefined || longitude === undefined) {
-      setTraffic(null);
+  useEffect(() => {
+    // Reset state immediately on coordinates change to avoid showing stale data from previous city
+    setTraffic(null);
+    setError(null);
+
+    if (latitude === null || latitude === undefined || longitude === null || longitude === undefined) {
       setLoading(false);
       return;
     }
 
-    // Immediately reset previous traffic to avoid stale data leakage
-    setTraffic(null);
+    let isMounted = true;
     setLoading(true);
-    setError(null);
 
-    try {
-      const summary = await trafficService.getTrafficSummary(latitude, longitude, radiusKm);
-      setTraffic(summary);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to load traffic conditions.');
-      setTraffic(null);
-    } finally {
-      setLoading(false);
-    }
+    trafficService
+      .getTrafficSummary(latitude, longitude, radiusKm)
+      .then((data) => {
+        if (isMounted) {
+          setTraffic(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (isMounted) {
+          setError(err?.message || 'Failed to fetch traffic summary');
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, [latitude, longitude, radiusKm]);
 
-  useEffect(() => {
-    fetchTraffic();
-  }, [fetchTraffic]);
-
-  return { traffic, loading, error, refresh: fetchTraffic };
+  return { traffic, loading, error };
 }

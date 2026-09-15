@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocationStore } from '@/stores/useLocationStore';
 import { routeService } from '@/services/routeService';
 import { locationService } from '@/services/locationService';
-import { CandidateRoute, ResolvedLocation, RoutePlan, TravelMode } from '@shared/types';
+import { CandidateRoute, ResolvedLocation, RoutePlan, TravelMode, TrafficRoutingPreference } from '@shared/types';
 import GoogleMapView from '@/components/map/GoogleMapView';
 
 export default function RoutePlanningView() {
@@ -32,6 +32,7 @@ export default function RoutePlanningView() {
   const [fromQuery, setFromQuery] = useState(defaultOrigin.city ? `${defaultOrigin.city} Center` : (currentLocation?.displayName || ''));
   const [toQuery, setToQuery] = useState(defaultOrigin.city ? `Destination in ${defaultOrigin.city}` : '');
   const [travelMode, setTravelMode] = useState<TravelMode>('drive');
+  const [routingPreference, setRoutingPreference] = useState<TrafficRoutingPreference>('TRAFFIC_AWARE');
   const [selectedRoute, setSelectedRoute] = useState<CandidateRoute | null>(null);
   const [routePlan, setRoutePlan] = useState<RoutePlan | null>(null);
   const [loading, setLoading] = useState(false);
@@ -76,7 +77,7 @@ export default function RoutePlanningView() {
     setRouteError(null);
 
     routeService
-      .calculateRoutes(fromLoc, toLoc, travelMode)
+      .calculateRoutes(fromLoc, toLoc, travelMode, 'Immediate', routingPreference)
       .then((plan) => {
         if (isMounted) {
           setRoutePlan(plan);
@@ -86,7 +87,7 @@ export default function RoutePlanningView() {
       })
       .catch((err: any) => {
         if (isMounted) {
-          setRouteError(err.message || 'Routes API error. Unable to load traffic-aware routes.');
+          setRouteError(err.message || 'Unable to compute traffic-aware routes for this corridor.');
           setRoutePlan(null);
           setSelectedRoute(null);
           setLoading(false);
@@ -96,7 +97,7 @@ export default function RoutePlanningView() {
     return () => {
       isMounted = false;
     };
-  }, [fromLoc.latitude, fromLoc.longitude, toLoc.latitude, toLoc.longitude, travelMode]);
+  }, [fromLoc.latitude, fromLoc.longitude, toLoc.latitude, toLoc.longitude, travelMode, routingPreference]);
 
   // Handle origin search debounce
   useEffect(() => {
@@ -190,7 +191,17 @@ export default function RoutePlanningView() {
     try {
       setLoading(true);
       const loc = await locationService.requestDeviceLocation();
-      setFromLoc(loc);
+      const resolvedFrom: ResolvedLocation = {
+        latitude: loc.latitude,
+        longitude: loc.longitude,
+        city: loc.city ?? null,
+        displayName: loc.displayName || loc.city || 'Current Device Location',
+        isUserLocation: true,
+        country: loc.country ?? null,
+        source: loc.source,
+        accuracy: loc.accuracyMeters,
+      };
+      setFromLoc(resolvedFrom);
       setFromQuery(loc.city ? `${loc.city} Center` : loc.displayName);
     } catch {
       if (currentLocation) {
@@ -207,20 +218,20 @@ export default function RoutePlanningView() {
       {/* Route Control Sidebar */}
       <div
         style={{
-          width: '420px',
+          width: '380px',
           backgroundColor: 'var(--bg-surface)',
           borderRight: '1px solid var(--border-subtle)',
           display: 'flex',
           flexDirection: 'column',
           overflowY: 'auto',
-          padding: '24px',
-          gap: '20px',
+          padding: 'var(--space-5)',
+          gap: 'var(--space-4)',
           flexShrink: 0,
         }}
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase' }}>
+            <span style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
               REAL-TIME TRAFFIC & ROUTE INTELLIGENCE
             </span>
             <span
@@ -229,17 +240,17 @@ export default function RoutePlanningView() {
                 fontWeight: 700,
                 padding: '2px 6px',
                 borderRadius: 'var(--radius-xs)',
-                backgroundColor: 'rgba(54, 127, 242, 0.1)',
+                backgroundColor: 'rgba(37, 99, 235, 0.08)',
                 color: 'var(--accent-primary)',
               }}
             >
               GOOGLE ROUTES V2
             </span>
           </div>
-          <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>
             Plan a Journey
           </h2>
-          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: 1.4 }}>
             Google live traffic congestion, genuine route ETA, and verified UrbanPulse incident risks.
           </p>
         </div>
@@ -294,13 +305,15 @@ export default function RoutePlanningView() {
               placeholder="Search origin city, address, or coordinates..."
               style={{
                 width: '100%',
-                padding: '8px 12px',
-                borderRadius: 'var(--radius-sm)',
+                height: '38px',
+                padding: '0 12px',
+                borderRadius: 'var(--radius-md)',
                 border: '1px solid var(--border-subtle)',
                 backgroundColor: 'var(--bg-app)',
                 fontSize: '13px',
                 marginTop: '4px',
                 color: 'var(--text-primary)',
+                outline: 'none',
               }}
             />
 
@@ -309,14 +322,14 @@ export default function RoutePlanningView() {
               <div
                 style={{
                   position: 'absolute',
-                  top: '64px',
+                  top: '44px',
                   left: 0,
                   right: 0,
                   backgroundColor: 'var(--bg-surface)',
-                  borderRadius: 'var(--radius-sm)',
+                  borderRadius: 'var(--radius-md)',
                   border: '1px solid var(--border-subtle)',
                   boxShadow: 'var(--shadow-panel)',
-                  padding: '6px 0',
+                  padding: '4px 0',
                   zIndex: 110,
                   maxHeight: '220px',
                   overflowY: 'auto',
@@ -407,13 +420,15 @@ export default function RoutePlanningView() {
               placeholder="Search destination city, landmark, or coordinates..."
               style={{
                 width: '100%',
-                padding: '8px 12px',
-                borderRadius: 'var(--radius-sm)',
+                height: '38px',
+                padding: '0 12px',
+                borderRadius: 'var(--radius-md)',
                 border: '1px solid var(--border-subtle)',
                 backgroundColor: 'var(--bg-app)',
                 fontSize: '13px',
                 marginTop: '4px',
                 color: 'var(--text-primary)',
+                outline: 'none',
               }}
             />
 
@@ -422,14 +437,14 @@ export default function RoutePlanningView() {
               <div
                 style={{
                   position: 'absolute',
-                  top: '64px',
+                  top: '44px',
                   left: 0,
                   right: 0,
                   backgroundColor: 'var(--bg-surface)',
-                  borderRadius: 'var(--radius-sm)',
+                  borderRadius: 'var(--radius-md)',
                   border: '1px solid var(--border-subtle)',
                   boxShadow: 'var(--shadow-panel)',
-                  padding: '6px 0',
+                  padding: '4px 0',
                   zIndex: 100,
                   maxHeight: '220px',
                   overflowY: 'auto',
@@ -466,11 +481,12 @@ export default function RoutePlanningView() {
                 key={item.mode}
                 onClick={() => setTravelMode(item.mode)}
                 style={{
-                  padding: '6px 12px',
+                  height: '32px',
+                  padding: '0 12px',
                   borderRadius: 'var(--radius-sm)',
                   fontSize: '12px',
                   fontWeight: 600,
-                  backgroundColor: travelMode === item.mode ? 'var(--accent-blue)' : 'var(--bg-app)',
+                  backgroundColor: travelMode === item.mode ? 'var(--accent-primary)' : 'var(--bg-app)',
                   color: travelMode === item.mode ? '#FFFFFF' : 'var(--text-secondary)',
                   border: '1px solid var(--border-subtle)',
                   transition: 'all 0.15s ease',
@@ -482,6 +498,60 @@ export default function RoutePlanningView() {
             ))}
           </div>
         </div>
+
+        {/* Routing Optimization / Preference Selector */}
+        {travelMode === 'drive' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>
+                ROUTING OPTIMIZATION
+              </label>
+              <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+                {routingPreference}
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
+              <button
+                type="button"
+                onClick={() => setRoutingPreference('TRAFFIC_AWARE')}
+                style={{
+                  flex: 1,
+                  height: '32px',
+                  padding: '0 10px',
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  backgroundColor: routingPreference === 'TRAFFIC_AWARE' ? 'var(--accent-primary)' : 'var(--bg-app)',
+                  color: routingPreference === 'TRAFFIC_AWARE' ? '#FFFFFF' : 'var(--text-secondary)',
+                  border: '1px solid var(--border-subtle)',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                Standard (Traffic-Aware)
+              </button>
+              <button
+                type="button"
+                onClick={() => setRoutingPreference('TRAFFIC_AWARE_OPTIMAL')}
+                style={{
+                  flex: 1,
+                  height: '32px',
+                  padding: '0 10px',
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  backgroundColor: routingPreference === 'TRAFFIC_AWARE_OPTIMAL' ? 'var(--accent-primary)' : 'var(--bg-app)',
+                  color: routingPreference === 'TRAFFIC_AWARE_OPTIMAL' ? '#FFFFFF' : 'var(--text-secondary)',
+                  border: '1px solid var(--border-subtle)',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                Optimal (Deep Google AI)
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Copilot Advisory Banner */}
         <div
@@ -495,21 +565,23 @@ export default function RoutePlanningView() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--accent-blue)' }} />
             <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent-blue)' }}>
-              LIVE ROUTE COPILOT
+              LIVE ROUTE NEXUS
             </span>
           </div>
           <div style={{ fontSize: '12px', color: 'var(--text-primary)', lineHeight: 1.4 }}>
             {loading ? (
-              'Querying Google Routes API with TRAFFIC_AWARE_OPTIMAL and evaluating corridor risks...'
+              `Calculating live traffic-aware route (${routingPreference === 'TRAFFIC_AWARE_OPTIMAL' ? 'Optimal' : 'Standard'})...`
             ) : routeError ? (
-              <span style={{ color: '#EF4444' }}>{routeError}</span>
+              <span style={{ color: '#EF4444' }}>
+                {routeError.replace(/Google Routes API/gi, 'Route Service').replace(/\bAPI\b/gi, 'service')}
+              </span>
             ) : (
               routePlan?.copilotAdvisory || 'All candidate transit corridors operational.'
             )}
           </div>
         </div>
 
-        {/* Error Notification if Google Routes API failed */}
+        {/* Error Notification if route calculation failed */}
         {routeError && (
           <div
             style={{
@@ -522,9 +594,10 @@ export default function RoutePlanningView() {
               lineHeight: 1.4,
             }}
           >
-            <strong>Routes API Error:</strong> {routeError}
+            <strong>Route Notice:</strong>{' '}
+            {routeError.replace(/Google Routes API/gi, 'Route Service').replace(/\bAPI\b/gi, 'service')}
             <div style={{ marginTop: '6px', fontSize: '11px', color: 'var(--text-muted)' }}>
-              UrbanPulse strictly refuses to substitute fake or simulated routes.
+              The interactive map and live traffic layers remain fully functional. UrbanPulse strictly refrains from fabricating synthetic routes.
             </div>
           </div>
         )}
@@ -600,6 +673,21 @@ export default function RoutePlanningView() {
                           FASTEST
                         </span>
                       )}
+                      {route.speedReadingIntervals && route.speedReadingIntervals.length > 0 && (
+                        <span
+                          style={{
+                            fontSize: '9px',
+                            padding: '2px 6px',
+                            borderRadius: 'var(--radius-xs)',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            color: '#10B981',
+                            fontWeight: 700,
+                          }}
+                          title="Traffic-aware polyline speed intervals based on live traffic telemetry"
+                        >
+                          LIVE SPEEDS
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -616,8 +704,9 @@ export default function RoutePlanningView() {
                         fontWeight: 600,
                         color: hasDelay ? '#F59E0B' : 'var(--accent-primary)',
                       }}
+                      title="Calculated strictly from duration - staticDuration"
                     >
-                      {hasDelay ? `+${route.trafficDelayMinutes}m traffic delay` : 'Free-flowing'}
+                      {hasDelay ? `+${route.trafficDelayMinutes}m delay` : 'Free-flowing'}
                     </span>
                   </div>
 

@@ -12,13 +12,17 @@
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.8",
     "@react-google-maps/api": "^2.20.8",
+    "@react-three/drei": "^9.121.5",
+    "@react-three/fiber": "^8.17.10",
     "@supabase/ssr": "^0.3.0",
     "@supabase/supabase-js": "^2.43.0",
+    "@types/three": "^0.160.0",
     "next": "^14.2.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
+    "three": "^0.160.1",
     "zustand": "^4.5.2"
   },
   "devDependencies": {

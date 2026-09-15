@@ -103,6 +103,13 @@ export const apiClient = {
     });
   },
 
+  patch: <T>(endpoint: string, body: any) => {
+    return apiFetch<T>(endpoint, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    });
+  },
+
   delete: <T>(endpoint: string) => {
     return apiFetch<T>(endpoint, {
       method: 'DELETE',

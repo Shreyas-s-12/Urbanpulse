@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useLocationStore } from '@/stores/useLocationStore';
 import { useEventHistory } from '@/hooks/useEventHistory';
 import { UnifiedCityEvent } from '@shared/types';
+import { AlertTriangleIcon, SatelliteDishIcon, MapIcon, CheckIcon } from '@/components/common/Icons';
 
 function matchesCategory(eventType: string, filter: string): boolean {
   if (!filter || filter === 'ALL') return true;
@@ -129,14 +130,17 @@ export default function EventsTimelineView() {
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <div
             style={{
-              padding: '8px 16px',
+              height: '32px',
+              padding: '0 12px',
               borderRadius: 'var(--radius-sm)',
               backgroundColor: 'var(--bg-surface)',
               border: '1px solid var(--border-subtle)',
-              fontSize: '13px',
+              fontSize: '12px',
               fontWeight: 700,
               color: 'var(--text-primary)',
               boxShadow: 'var(--shadow-xs)',
+              display: 'inline-flex',
+              alignItems: 'center',
             }}
           >
             {filteredEvents.length} {filteredEvents.length === 1 ? 'Event' : 'Events'} Logged
@@ -153,7 +157,8 @@ export default function EventsTimelineView() {
               key={tab}
               onClick={() => setSelectedFilter(tab)}
               style={{
-                padding: '8px 16px',
+                height: '32px',
+                padding: '0 14px',
                 borderRadius: 'var(--radius-full)',
                 fontSize: '12px',
                 fontWeight: 600,
@@ -162,6 +167,8 @@ export default function EventsTimelineView() {
                 border: isSelected ? '1px solid var(--text-primary)' : '1px solid var(--border-subtle)',
                 whiteSpace: 'nowrap',
                 cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
                 transition: 'all 0.15s ease',
               }}
             >
@@ -220,7 +227,7 @@ export default function EventsTimelineView() {
               gap: '8px',
             }}
           >
-            <div style={{ fontSize: '24px' }}>⚠️</div>
+            <AlertTriangleIcon size={26} color="#EF4444" />
             <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#EF4444' }}>
               Unable to Retrieve Event Telemetry
             </h3>
@@ -243,7 +250,7 @@ export default function EventsTimelineView() {
               gap: '10px',
             }}
           >
-            <div style={{ fontSize: '24px' }}>📡</div>
+            <SatelliteDishIcon size={26} color="var(--accent-primary)" />
             <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
               No Verified Event Feed Currently Covers This Location
             </h3>
@@ -273,14 +280,15 @@ export default function EventsTimelineView() {
                 gap: '6px',
                 padding: '4px 12px',
                 borderRadius: 'var(--radius-full)',
-                backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                color: '#16A34A',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                color: '#10B981',
                 fontSize: '11px',
                 fontWeight: 700,
                 letterSpacing: '0.04em',
               }}
             >
-              ✓ 24-HOUR AUDIT VERIFIED
+              <CheckIcon size={12} color="#10B981" />
+              <span>24-HOUR AUDIT VERIFIED</span>
             </div>
 
             <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)' }}>
@@ -303,6 +311,7 @@ export default function EventsTimelineView() {
                   flexWrap: 'wrap',
                   gap: '8px',
                   justifyContent: 'center',
+                  alignItems: 'center',
                   fontSize: '11px',
                   color: 'var(--text-muted)',
                 }}
@@ -312,6 +321,9 @@ export default function EventsTimelineView() {
                   <span
                     key={provider}
                     style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
                       padding: '2px 8px',
                       borderRadius: 'var(--radius-xs)',
                       backgroundColor: 'var(--bg-app)',
@@ -319,7 +331,8 @@ export default function EventsTimelineView() {
                       fontWeight: 500,
                     }}
                   >
-                    ✓ {provider}
+                    <CheckIcon size={11} color="#10B981" />
+                    <span>{provider}</span>
                   </span>
                 ))}
               </div>
@@ -552,20 +565,23 @@ export default function EventsTimelineView() {
                     <button
                       onClick={() => handleViewOnMap(ev)}
                       style={{
-                        padding: '4px 10px',
-                        borderRadius: 'var(--radius-xs)',
+                        height: '28px',
+                        padding: '0 10px',
+                        borderRadius: 'var(--radius-sm)',
                         backgroundColor: 'var(--bg-app)',
                         border: '1px solid var(--border-subtle)',
                         fontSize: '11px',
                         fontWeight: 600,
                         color: 'var(--text-primary)',
                         cursor: 'pointer',
-                        display: 'flex',
+                        display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '4px',
+                        gap: '5px',
+                        transition: 'all 0.15s ease',
                       }}
                     >
-                      🗺️ View on Map
+                      <MapIcon size={12} color="var(--accent-primary)" />
+                      <span>View on Map</span>
                     </button>
                   </div>
                 </div>

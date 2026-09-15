@@ -76,7 +76,7 @@ export const copilotService = {
       } else {
         answer = 'All primary arteries around ' + cityName + ' are free-flowing within typical commute margins. No high-risk roadblocks or multi-lane closures observed.';
         citations.push({ type: 'Traffic Flow', source: 'Google Maps / Sensors', detail: 'Normal flow rates' });
-        suggestedActions = ['Plan a Journey', 'Review weather forecasts along your route'];
+        suggestedActions = ['Review live traffic telemetry', 'Inspect active road sensors'];
       }
     } else if (q.includes('weather') || q.includes('rain') || q.includes('flood') || q.includes('storm')) {
       answer = 'Current atmospheric conditions in ' + cityName + ': ' + (weatherSummary || 'Clear Sky') + '. Atmospheric telemetry is synchronized with Open-Meteo.';
@@ -92,7 +92,7 @@ export const copilotService = {
       events.slice(0, 2).forEach((e) => {
         citations.push({ type: e.eventType, source: e.source, detail: e.title });
       });
-      suggestedActions = ['Evaluate Route Safety', 'Explore Around Me', 'Inspect Urban Condition breakdown'];
+      suggestedActions = ['Explore Around Me', 'Inspect Urban Condition breakdown', 'View Active Incidents'];
     }
 
     return {

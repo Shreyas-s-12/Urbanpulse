@@ -1,26 +1,76 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAgentStore } from '@/stores/useAgentStore';
+import { useLocationStore } from '@/stores/useLocationStore';
+import { agentService } from '@/services/agentService';
+import { ExplainableUrbanScore } from '@shared/types';
+import {
+  TargetScoreIcon,
+  AlertTriangleIcon,
+  CheckIcon,
+  CloseIcon,
+} from '@/components/common/Icons';
 
 export default function ScoreExplainabilityModal() {
-  const { showScoreModal, setShowScoreModal, activeScore } = useAgentStore();
+  const { showScoreModal, setShowScoreModal, activeScore, activeLocation } = useAgentStore();
+  const { currentLocation } = useLocationStore();
+  const [localScore, setLocalScore] = useState<ExplainableUrbanScore | null>(activeScore);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!showScoreModal || !activeScore) return null;
+  const loc = activeLocation || currentLocation;
 
-  const score = activeScore.score;
-  const trend = activeScore.trend || 'STABLE';
+  const fetchScoreData = async () => {
+    if (!loc || loc.latitude == null || loc.longitude == null) {
+      setError('No active location. Please acquire device location or search for a city.');
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const lat = loc.latitude;
+      const lng = loc.longitude;
+      const city = loc.city || loc.displayName || 'Active Location';
+      const countryCode = loc.countryCode || undefined;
+
+      const data = await agentService.getScore(lat, lng, city, countryCode);
+      setLocalScore(data);
+    } catch (err: any) {
+      console.warn('Failed to fetch score:', err);
+      setError('Unable to fetch live score telemetry from server.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showScoreModal) {
+      if (activeScore) {
+        setLocalScore(activeScore);
+      } else if (!localScore) {
+        fetchScoreData();
+      }
+    }
+  }, [showScoreModal, activeScore]);
+
+  if (!showScoreModal) return null;
+
+  const currentScore = localScore || activeScore;
+  const score = currentScore?.score ?? null;
+  const trend = currentScore?.trend || 'STABLE';
   const trendSymbol = trend === 'IMPROVING' ? '↑ Improving' : (trend === 'DETERIORATING' ? '↓ Deteriorating' : '→ Stable');
   const trendColor = trend === 'IMPROVING' ? '#4ade80' : (trend === 'DETERIORATING' ? '#f87171' : '#94a3b8');
 
-  const confPercent = Math.round((activeScore.confidence || 0.8) * 100);
-  const knownSignals = activeScore.knownSignals || 5;
-  const missingSignals = activeScore.missingSignals || 1;
+  const confPercent = Math.round((currentScore?.confidence || 0.8) * 100);
+  const knownSignals = currentScore?.knownSignals || 0;
+  const missingSignals = currentScore?.missingSignals || 0;
 
   const scoreColor =
-    score >= 80 ? '#22c55e' : score >= 65 ? '#eab308' : score >= 45 ? '#f97316' : '#ef4444';
+    score === null ? '#94a3b8' : score >= 80 ? '#22c55e' : score >= 65 ? '#eab308' : score >= 45 ? '#f97316' : '#ef4444';
 
-  const components = activeScore.components || {};
+  const components = currentScore?.components || {};
 
   return (
     <div
@@ -66,7 +116,7 @@ export default function ScoreExplainabilityModal() {
         >
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '22px' }}>💯</span>
+              <TargetScoreIcon size={20} color="var(--accent-primary)" />
               <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
                 UrbanPulse Explainable Score Breakdown
               </h2>
@@ -82,12 +132,14 @@ export default function ScoreExplainabilityModal() {
               background: 'none',
               border: 'none',
               color: 'var(--text-muted)',
-              fontSize: '20px',
               cursor: 'pointer',
               padding: '4px 8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            ✕
+            <CloseIcon size={16} />
           </button>
         </div>
 
@@ -122,9 +174,11 @@ export default function ScoreExplainabilityModal() {
                 }}
               >
                 <span style={{ fontSize: '28px', fontWeight: 800, color: scoreColor, lineHeight: 1 }}>
-                  {score}
+                  {score !== null ? score : '—'}
                 </span>
-                <span style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>/ 100</span>
+                <span style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  {score !== null ? '/ 100' : 'No Coverage'}
+                </span>
               </div>
 
               <div>
@@ -190,9 +244,9 @@ export default function ScoreExplainabilityModal() {
                 gap: '8px',
               }}
             >
-              <span>⚠️</span>
+              <AlertTriangleIcon size={14} color="#D97706" />
               <span>
-                <strong>Confidence penalized</strong>: {missingSignals} signal domain(s) lack public verified APIs for this area. Score weights were re-normalized rather than assuming 100.
+                <strong>Confidence penalized</strong>: {missingSignals} signal domain(s) lack public verified feeds for this area. Score weights were re-normalized rather than assuming 100.
               </span>
             </div>
           )}
@@ -207,12 +261,12 @@ export default function ScoreExplainabilityModal() {
                 padding: '14px',
               }}
             >
-              <div style={{ fontSize: '11px', fontWeight: 700, color: '#047857', textTransform: 'uppercase', marginBottom: '6px' }}>
-                ✓ Key Positive Drivers
+              <div style={{ fontSize: '11px', fontWeight: 700, color: '#047857', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <CheckIcon size={13} color="#047857" /> Key Positive Drivers
               </div>
-              {activeScore.positiveFactors && activeScore.positiveFactors.length > 0 ? (
+              {currentScore?.positiveFactors && currentScore.positiveFactors.length > 0 ? (
                 <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '12px', color: '#065F46' }}>
-                  {activeScore.positiveFactors.map((f, i) => (
+                  {currentScore.positiveFactors.map((f, i) => (
                     <li key={i}>{f}</li>
                   ))}
                 </ul>
@@ -229,12 +283,12 @@ export default function ScoreExplainabilityModal() {
                 padding: '14px',
               }}
             >
-              <div style={{ fontSize: '11px', fontWeight: 700, color: '#B91C1C', textTransform: 'uppercase', marginBottom: '6px' }}>
-                ✕ Key Negative Drivers
+              <div style={{ fontSize: '11px', fontWeight: 700, color: '#B91C1C', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <CloseIcon size={13} color="#B91C1C" /> Key Negative Drivers
               </div>
-              {activeScore.negativeFactors && activeScore.negativeFactors.length > 0 ? (
+              {currentScore?.negativeFactors && currentScore.negativeFactors.length > 0 ? (
                 <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '12px', color: '#991B1B' }}>
-                  {activeScore.negativeFactors.map((f, i) => (
+                  {currentScore.negativeFactors.map((f, i) => (
                     <li key={i}>{f}</li>
                   ))}
                 </ul>
@@ -296,7 +350,7 @@ export default function ScoreExplainabilityModal() {
               Attribution Narrative
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-              {activeScore.explanation}
+              {currentScore?.explanation || 'Deterministic weighted evaluation of real-time sensory feeds across urban transit, atmospheric dispersion, and meteorological conditions.'}
             </div>
           </div>
         </div>

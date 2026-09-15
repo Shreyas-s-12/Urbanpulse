@@ -3,20 +3,21 @@
  * Tagline: Real-Time Intelligence for the World Around You
  * Global location-aware urban and environmental intelligence platform.
  */
-
 export interface Coordinates {
   latitude: number;
   longitude: number;
 }
-
 export interface BoundingBox {
   minLatitude: number;
   maxLatitude: number;
   minLongitude: number;
   maxLongitude: number;
 }
-
 export interface ResolvedLocation {
+  type?: 'COORDINATES' | 'CITY' | 'PLACE';
+  placeId?: string | null;
+  name?: string | null;
+  address?: string | null;
   latitude: number;
   longitude: number;
   accuracy?: number | null; // meters
@@ -31,20 +32,157 @@ export interface ResolvedLocation {
   radius?: number | null;
   displayName: string;
   isUserLocation: boolean;
+  source?: LocationSource;
+  accuracyTier?: LocationAccuracyTier;
+  timestamp?: number;
+  rawLatitude?: number;
+  rawLongitude?: number;
 }
-
+export type LocationSource =
+  | 'BROWSER_GEOLOCATION'
+  | 'DEVICE_GPS'
+  | 'DEVICE_LOCATION'
+  | 'NETWORK'
+  | 'MANUAL'
+  | 'MANUAL_ADJUSTMENT'
+  | 'SEARCH'
+  | 'POI'
+  | 'MAP_CLICK'
+  | 'PLACE'
+  | 'ROUTE'
+  | 'LAST_KNOWN';
+export type ActiveLocationMode = 'DEVICE' | 'SEARCH' | 'POI' | 'MAP_CLICK' | 'MANUAL';
+export type MapFollowMode = 'EXPLORE' | 'MY_LOCATION' | 'LOCKED_ON_USER';
+export type LocationConfidenceTier = 'HIGH' | 'GOOD' | 'APPROXIMATE' | 'LOW';
+export type PlaceCategoryType =
+  | 'COUNTRY'
+  | 'REGION'
+  | 'CITY'
+  | 'TOWN'
+  | 'DISTRICT'
+  | 'NEIGHBORHOOD'
+  | 'AREA'
+  | 'STREET'
+  | 'ADDRESS'
+  | 'LANDMARK'
+  | 'POI';
+export type LocationSearchConfidence = 'HIGH' | 'MODERATE' | 'LOW';
+export interface SavedFavoriteLocation {
+  id: string;
+  label: 'HOME' | 'WORK' | 'COLLEGE' | 'FAVORITE' | 'CUSTOM';
+  customName?: string;
+  latitude: number;
+  longitude: number;
+  displayName: string;
+  formattedAddress?: string;
+  placeId?: string;
+  categoryType?: PlaceCategoryType;
+  createdAt: number;
+}
+export type LocationEventType =
+  | 'LOCATION_REQUESTED'
+  | 'LOCATION_READING_RECEIVED'
+  | 'LOCATION_IMPROVED'
+  | 'LOCATION_LOCKED'
+  | 'LOCATION_DEGRADED'
+  | 'LOCATION_CONFLICT'
+  | 'LOCATION_STALE'
+  | 'LOCATION_FAILED'
+  | 'LOCATION_COORDINATE_MISMATCH';
+export interface LocationConflictStatus {
+  hasConflict: boolean;
+  message?: string;
+  divergentDistanceMeters?: number;
+  detectedAt?: number;
+}
+export interface AddressMetadata {
+  houseNumber?: string | null;
+  street?: string | null;
+  neighborhood?: string | null;
+  locality?: string | null;
+  district?: string | null;
+  city?: string | null;
+  state?: string | null;
+  country?: string | null;
+  countryCode?: string | null;
+  postalCode?: string | null;
+  formattedAddress?: string;
+  reverseGeocodeCoordinate?: { latitude: number; longitude: number };
+}
+export interface RawDeviceLocation {
+  latitude: number;
+  longitude: number;
+  accuracyMeters: number;
+  timestamp: number;
+  source: 'BROWSER_GEOLOCATION';
+  addressMetadata?: AddressMetadata;
+}
+export interface SelectedSearchLocation {
+  latitude: number;
+  longitude: number;
+  displayName: string;
+  formattedAddress?: string;
+  placeId?: string;
+  city?: string | null;
+  locality?: string | null;
+  neighborhood?: string | null;
+  district?: string | null;
+  state?: string | null;
+  country?: string | null;
+  countryCode?: string | null;
+  types?: string[];
+  categoryType?: PlaceCategoryType;
+  confidence?: LocationSearchConfidence;
+  source: 'SEARCH' | 'MANUAL_ADJUSTMENT' | 'MAP_CLICK';
+  timestamp?: number;
+}
+export interface SelectedPoiLocation {
+  placeId: string;
+  latitude: number;
+  longitude: number;
+  displayName: string;
+  formattedAddress?: string;
+  rating?: number;
+  userRatingsTotal?: number;
+  photos?: string[];
+  types?: string[];
+  source: 'POI';
+}
+export interface MapClickLocation {
+  latitude: number;
+  longitude: number;
+  source: 'MAP_CLICK';
+  addressMetadata?: AddressMetadata;
+}
+export type LocationAccuracyTier = 'EXCELLENT' | 'GOOD' | 'MODERATE' | 'LOW' | 'VERY_LOW';
+export type LocationAccuracyState = 'IDLE' | 'LOCATING' | 'IMPROVING' | 'LOCKED' | 'APPROXIMATE' | 'UNAVAILABLE' | 'STALE';
+export interface LocationContext extends ResolvedLocation {
+  source: LocationSource;
+  accuracyTier?: LocationAccuracyTier;
+  timestamp?: number;
+  rawLatitude?: number;
+  rawLongitude?: number;
+  ageSeconds?: number;
+  accuracyMeters?: number;
+  addressMetadata?: AddressMetadata;
+  confidence?: number;
+  confidenceTier?: LocationConfidenceTier;
+  status?: LocationAccuracyState;
+  address?: string | null;
+  locality?: string | null;
+  city?: string | null;
+  region?: string | null;
+  country?: string | null;
+  postalCode?: string | null;
+  freshnessText?: string;
+  providerName?: string;
+}
 export type IntelligenceRadiusKm = 5 | 10 | 25 | 50 | 100 | 250;
-
 export type AppMode = 'explore' | 'journey';
-
 export type DataStatus = 'AVAILABLE' | 'PARTIAL' | 'UNAVAILABLE' | 'STALE' | 'DEMO' | 'NO_VERIFIED_FEED' | 'NO_COVERAGE' | 'ERROR' | 'EMPTY_VERIFIED';
-
 export type DataFreshness = 'LIVE' | 'RECENT' | 'STALE' | 'PARTIAL' | 'UNAVAILABLE' | 'ERROR';
-
 export type UnitSystem = 'metric' | 'imperial';
-
 export type AQIScale = 'US_AQI' | 'EUROPEAN_AQI' | 'CPCB_INDIA_AQI';
-
 export interface ProvenanceMetadata {
   source: string;
   sourceType: 'LIVE_API' | 'SATELLITE_MODEL' | 'GOVERNMENT_STATION' | 'SENSOR_NETWORK' | 'MAPPING_PROVIDER' | 'NONE';
@@ -54,7 +192,6 @@ export interface ProvenanceMetadata {
   confidence: number;
   status: DataStatus;
 }
-
 export type EventCategory =
   | 'ACCIDENT'
   | 'FIRE'
@@ -76,14 +213,12 @@ export type EventCategory =
   | 'FALLEN_TREE'
   | 'WEATHER_ALERT'
   | 'OTHER';
-
 export type EventStatus =
   | 'VERIFIED'
   | 'REPORTED'
   | 'UNVERIFIED'
   | 'MONITORING'
   | 'RESOLVED';
-
 export type EventSource =
   | 'Google Maps'
   | 'Open-Meteo'
@@ -94,7 +229,6 @@ export type EventSource =
   | 'Verified Citizen Feed'
   | 'UrbanPulse Sensor'
   | 'Demo Data';
-
 export interface UnifiedCityEvent {
   eventId: string;
   canonicalEventId?: string;
@@ -141,11 +275,14 @@ export interface UnifiedCityEvent {
     [key: string]: any;
   };
 }
-
 export type TravelMode = 'drive' | 'two_wheeler' | 'transit' | 'walk' | 'bicycle';
-
 export type RouteCategory = 'FASTEST' | 'SAFEST' | 'LOWEST_RISK' | 'RECOMMENDED';
-
+export type TrafficRoutingPreference = 'TRAFFIC_AWARE' | 'TRAFFIC_AWARE_OPTIMAL';
+export interface TrafficSpeedInterval {
+  startPolylinePointIndex: number;
+  endPolylinePointIndex: number;
+  speed: 'NORMAL' | 'SLOW' | 'TRAFFIC_JAM';
+}
 export interface CandidateRoute {
   id: string;
   name: string;
@@ -161,8 +298,9 @@ export interface CandidateRoute {
   polyline: Coordinates[];
   intersectingEvents: UnifiedCityEvent[];
   weatherAlerts: string[];
+  speedReadingIntervals?: TrafficSpeedInterval[];
+  routingPreference?: TrafficRoutingPreference | string;
 }
-
 export interface RoutePlan {
   fromLocation: ResolvedLocation;
   toLocation: ResolvedLocation;
@@ -171,8 +309,8 @@ export interface RoutePlan {
   candidateRoutes: CandidateRoute[];
   recommendedRouteId: string;
   copilotAdvisory: string;
+  routingPreference?: TrafficRoutingPreference | string;
 }
-
 export interface WeatherConditionSummary {
   temperatureC: string;
   conditionLabel: string;
@@ -188,15 +326,34 @@ export interface WeatherConditionSummary {
   lastUpdated: string;
   status: DataStatus;
 }
-
+export interface SampledCorridor {
+  name: string;
+  origin: Coordinates;
+  destination: Coordinates;
+  distanceMeters: number;
+  durationSeconds: number;
+  staticDurationSeconds: number;
+  delaySeconds: number;
+  delayRatio: number;
+  speedIntervals?: {
+    normal: number;
+    slow: number;
+    trafficJam: number;
+    total: number;
+  };
+}
 export interface TrafficConditionSummary {
   status: DataStatus;
   trafficStatus: 'NORMAL' | 'MODERATE' | 'HEAVY' | 'SEVERE' | 'UNAVAILABLE';
+  level?: 'NORMAL' | 'MODERATE' | 'HEAVY' | 'SEVERE' | 'UNAVAILABLE';
   label: string;
   delayMinutes: number;
+  averageDelaySeconds?: number;
   delayRatio: number;
   detail: string;
   corridor?: string;
+  sampledCorridors?: SampledCorridor[];
+  coverageType?: 'SAMPLED_CORRIDORS' | 'ACTIVE_ROUTE' | 'MAP_LAYER_ONLY' | 'NO_COVERAGE';
   speedIntervals?: {
     normal: number;
     slow: number;
@@ -205,11 +362,15 @@ export interface TrafficConditionSummary {
   };
   location: Coordinates;
   radiusKm: number;
+  provider?: string;
   source: string;
+  observedAt?: string;
+  retrievedAt?: string;
   lastUpdated: string;
+  confidence?: number;
+  methodology?: string;
   reason?: string;
 }
-
 export interface UrbanConditionPillar {
   name: string;
   score: number | null; // null if data unavailable
@@ -232,7 +393,6 @@ export interface UrbanConditionPillar {
   sources?: Array<{ name: string; type?: string; role?: string; authority?: string }>;
   details?: Record<string, any>;
 }
-
 export interface AirQualitySummary {
   value: number | null;
   pollutant: string;
@@ -253,7 +413,6 @@ export interface AirQualitySummary {
     o3?: number;
   };
 }
-
 export interface RoadNetworkDetails {
   status: DataStatus;
   roadTypes?: string[];
@@ -263,7 +422,6 @@ export interface RoadNetworkDetails {
   source?: string;
   authority?: string;
 }
-
 export interface RoadSurfaceDetails {
   status: DataStatus;
   type?: string;
@@ -272,7 +430,6 @@ export interface RoadSurfaceDetails {
   measurementType: 'MAPPED_ATTRIBUTE' | 'MEASURED';
   source?: string;
 }
-
 export interface RoadConditionDetails {
   status: DataStatus;
   message: string;
@@ -280,13 +437,11 @@ export interface RoadConditionDetails {
   measurementType: 'MEASURED' | 'NONE' | 'MODELED';
   roughnessIndex?: number | null;
 }
-
 export interface RoadHazardsDetails {
   status: DataStatus;
   count: number;
   items?: UnifiedCityEvent[];
 }
-
 export interface RoadsSummary {
   status: DataStatus;
   roadNetworkStatus?: 'AVAILABLE' | 'UNAVAILABLE';
@@ -308,7 +463,6 @@ export interface RoadsSummary {
   observedAt: string;
   retrievedAt?: string;
 }
-
 export interface CivilSafetySummary {
   status: DataStatus;
   feedCapability: 'OFFICIAL_PUBLIC_SAFETY_FEED' | 'OPEN_CRIME_DATA' | 'PUBLIC_SAFETY_UPDATE' | 'EMPTY_VERIFIED' | 'NO_COVERAGE' | 'ERROR';
@@ -325,6 +479,15 @@ export interface CivilSafetySummary {
     authorityScore: number;
   }>;
   updateCount?: number;
+  guidance?: Array<{
+    id: string;
+    title: string;
+    content: string;
+    category: string;
+    source: string;
+    authorityScore: number;
+  }>;
+  guidanceCount?: number;
   sources: Array<{
     name: string;
     type: string;
@@ -336,7 +499,6 @@ export interface CivilSafetySummary {
   confidence: number;
   message?: string;
 }
-
 export interface UrbanConditionBreakdown {
   overallScore: number | null; // 0–100, null if insufficient signals
   label: 'EXCELLENT' | 'GOOD' | 'FAVORABLE' | 'MODERATE' | 'CONCERN' | 'CRITICAL' | 'UNAVAILABLE';
@@ -350,7 +512,6 @@ export interface UrbanConditionBreakdown {
   lastUpdated: string;
   dataStatus: DataStatus;
 }
-
 export interface UrbanIntelResponse {
   location: ResolvedLocation;
   radiusKm: IntelligenceRadiusKm;
@@ -363,7 +524,6 @@ export interface UrbanIntelResponse {
   condition: UrbanConditionBreakdown;
   retrievedAt: string;
 }
-
 export interface CopilotMessage {
   id: string;
   sender: 'user' | 'copilot';
@@ -378,7 +538,6 @@ export interface CopilotMessage {
   referenceKnowledge?: string[];
   recommendation?: string;
 }
-
 export type AgentIntent =
   | 'TRAFFIC'
   | 'WEATHER'
@@ -391,12 +550,10 @@ export type AgentIntent =
   | 'COMPARISON'
   | 'FORECAST'
   | 'MONTHLY_OUTLOOK'
-  | 'LIVE_UPDATES';
-
+  | 'LIVE_UPDATES'
+  | 'ACTIVITIES';
 export type AgentTimeQualifier = 'CURRENT' | 'NEXT_7_DAYS' | 'NEXT_30_DAYS' | 'HISTORICAL' | null;
-
 export type ForecastHorizon = '7_DAYS' | '30_DAYS';
-
 export interface ForecastPoint {
   date: string;
   temperatureMinC?: number;
@@ -412,7 +569,6 @@ export interface ForecastPoint {
   confidence: number; // 0.0 - 1.0
   isEstimate: boolean;
 }
-
 export interface LocationForecast {
   location: ResolvedLocation;
   horizon: ForecastHorizon;
@@ -429,7 +585,6 @@ export interface LocationForecast {
   limitations: string[];
   generatedAt: string;
 }
-
 export interface LiveUpdateItem {
   id: string;
   eventType: EventCategory;
@@ -446,7 +601,6 @@ export interface LiveUpdateItem {
   timestamp: string;
   metadata?: Record<string, any>;
 }
-
 export interface RAGKnowledgeItem {
   id: string;
   title: string;
@@ -463,7 +617,6 @@ export interface RAGKnowledgeItem {
   observedAt?: string | null;
   expiresAt?: string | null;
 }
-
 export type AgentIntent =
   | 'GENERAL_INTELLIGENCE'
   | 'TRAFFIC'
@@ -484,8 +637,14 @@ export type AgentIntent =
   | 'ANOMALY'
   | 'SIMULATE'
   | 'COMPARISON'
-  | 'ASK_THE_MAP';
-
+  | 'ASK_THE_MAP'
+  | 'ACTIVITIES'
+  | 'PREDICT'
+  | 'RISK_FORECAST'
+  | 'SMART_ROUTE'
+  | 'MISSION_MODE'
+  | 'RECOMMEND_PLACE'
+  | 'CASCADE';
 export type AgentMapActionType =
   | 'CENTER_MAP'
   | 'SET_ZOOM'
@@ -508,8 +667,19 @@ export type AgentMapActionType =
   | 'SHOW_SCORE'
   | 'SHOW_COMPARISON'
   | 'SHOW_CHANGES'
-  | 'SHOW_SCENARIO';
-
+  | 'SHOW_SCENARIO'
+  | 'SHOW_RISK'
+  | 'SET_RADIUS'
+  | 'SELECT_EVENT'
+  | 'SELECT_PLACE'
+  | 'SET_EVENT_FILTER'
+  | 'SHOW_RISK_FORECAST'
+  | 'SHOW_ROUTE'
+  | 'SHOW_ALTERNATIVE_ROUTES'
+  | 'FOCUS_ALERT'
+  | 'OPEN_MISSION'
+  | 'OPEN_MONITOR'
+  | 'SHOW_CASCADE';
 export interface AgentMapAction {
   type: AgentMapActionType;
   payload?: {
@@ -524,27 +694,28 @@ export interface AgentMapAction {
     updates?: LiveUpdateItem[] | any;
     bulletins?: RAGKnowledgeItem[] | any;
     data?: any;
+    eventId?: string;
+    placeId?: string;
+    filter?: string;
+    riskDomain?: string;
   };
 }
-
 export interface AgentToolActivity {
   step: string;
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
   detail?: string;
   timestamp: string;
 }
-
 export interface AgentInteractionRequest {
   query: string;
   sessionId?: string;
-  currentLocation?: ResolvedLocation | null;
+  currentLocation?: (ResolvedLocation & { selectedMapEntity?: any; activeFilter?: any }) | any;
   selectedRadiusKm?: number;
   conversationHistory?: Array<{
     sender: 'user' | 'agent';
     content: string;
   }>;
 }
-
 export interface AgentInteractionResponse {
   id: string;
   message: string;
@@ -572,6 +743,7 @@ export interface AgentInteractionResponse {
     monitors?: LocationMonitor[];
     alerts?: MonitorAlert[];
     cityComparison?: CityComparisonResponse;
+    riskRadar?: LocationRiskReport;
   };
   sources: Array<{
     type: string;
@@ -585,13 +757,11 @@ export interface AgentInteractionResponse {
   toolActivities: AgentToolActivity[];
   timestamp: string;
 }
-
 // ============================================================
 // WHAT CHANGED? ENGINE
 // ============================================================
 export type ChangeComparisonWindow = '1h' | '6h' | '12h' | '24h' | '7d';
 export type LocationChangeSignal = 'traffic' | 'weather' | 'aqi' | 'hazards' | 'events' | 'condition' | 'safety' | 'roads';
-
 export interface LocationChangeItem {
   signal: LocationChangeSignal;
   label: string;
@@ -607,7 +777,6 @@ export interface LocationChangeItem {
   confidence: number;
   description: string;
 }
-
 export interface LocationChangesResponse {
   location: ResolvedLocation;
   window: ChangeComparisonWindow;
@@ -617,7 +786,6 @@ export interface LocationChangesResponse {
   confidence: number;
   retrievedAt: string;
 }
-
 // ============================================================
 // EXPLAINABLE URBANPULSE SCORE & HISTORY
 // ============================================================
@@ -631,14 +799,12 @@ export interface ScoreComponentDetail {
   metric: string;
   source: string;
 }
-
 export interface ScoreHistoryItem {
   timestamp: string;
   label: string; // 'Today' | 'Yesterday' | '7 days ago' | '30 days ago'
   score: number;
   confidence: number;
 }
-
 export interface ExplainableUrbanScore {
   score: number;
   confidence: number;
@@ -653,12 +819,10 @@ export interface ExplainableUrbanScore {
   trend: 'IMPROVING' | 'STABLE' | 'DETERIORATING';
   timestamp: string;
 }
-
 // ============================================================
 // MONITOR THIS PLACE & ALERTS
 // ============================================================
 export type MonitorSignal = 'traffic' | 'aqi' | 'weather' | 'hazards' | 'events' | 'road closures' | 'urban condition';
-
 export interface LocationMonitor {
   id: string;
   location: ResolvedLocation;
@@ -670,7 +834,6 @@ export interface LocationMonitor {
   lastEvaluatedAt?: string;
   lastAlertAt?: string;
 }
-
 export interface MonitorAlert {
   id: string;
   monitorId: string;
@@ -684,7 +847,6 @@ export interface MonitorAlert {
   observedAt: string;
   triggeredAt: string;
 }
-
 // ============================================================
 // ANOMALY DETECTION
 // ============================================================
@@ -696,7 +858,6 @@ export type AnomalyType =
   | 'UNUSUAL_ROUTE_DELAY'
   | 'UNUSUAL_WEATHER'
   | 'UNUSUAL_AQI';
-
 export interface AnomalyItem {
   id: string;
   signal: string;
@@ -711,7 +872,6 @@ export interface AnomalyItem {
   source: string;
   explanation: string;
 }
-
 export interface AnomalyDetectionResponse {
   location: ResolvedLocation;
   window: string;
@@ -720,7 +880,6 @@ export interface AnomalyDetectionResponse {
   confidence: number;
   evaluatedAt: string;
 }
-
 // ============================================================
 // SCENARIO SIMULATION
 // ============================================================
@@ -732,14 +891,12 @@ export type ScenarioType =
   | 'large_public_event'
   | 'extreme_heat'
   | 'flood_scenario';
-
 export interface ScenarioSimulationRequest {
   location: ResolvedLocation;
   scenario: ScenarioType;
   parameters?: Record<string, any>;
   radiusKm?: number;
 }
-
 export interface ScenarioSimulationResult {
   scenario: ScenarioType;
   scenarioTitle: string;
@@ -755,7 +912,6 @@ export interface ScenarioSimulationResult {
   label: 'SIMULATION';
   simulatedAt: string;
 }
-
 // ============================================================
 // CITY COMPARISON
 // ============================================================
@@ -763,7 +919,6 @@ export interface CityComparisonMatrixRow {
   signal: string;
   values: Record<string, number | string | null>; // city key -> value
 }
-
 export interface CityComparisonEntry {
   location: ResolvedLocation;
   trafficScore: number | null;
@@ -776,7 +931,6 @@ export interface CityComparisonEntry {
   confidence: number;
   summary: string;
 }
-
 export interface CityComparisonResponse {
   cities: CityComparisonEntry[];
   matrix: CityComparisonMatrixRow[];
@@ -784,4 +938,368 @@ export interface CityComparisonResponse {
   confidence: number;
   timestamp: string;
 }
-
+// ============================================================
+// URBANPULSE RISK RADAR & CANONICAL NEXUS CONTEXT (PHASE 1)
+// ============================================================
+export type RiskDomain =
+  | 'TRAFFIC'
+  | 'FLOOD'
+  | 'FIRE'
+  | 'SAFETY'
+  | 'WEATHER'
+  | 'ROAD'
+  | 'AQI'
+  | 'HAZARDS';
+export type RiskLevel = 'LOW' | 'MODERATE' | 'HIGH' | 'SEVERE' | 'UNKNOWN';
+export interface RiskSignal {
+  name: string;
+  value: number | string | null;
+  unit?: string;
+  level: RiskLevel;
+  source: string;
+  observedAt?: string;
+}
+export interface DomainRiskAssessment {
+  domain: RiskDomain;
+  level: RiskLevel;
+  score: number | null; // 0-100 (null if UNKNOWN)
+  headline: string;
+  description: string;
+  signals: RiskSignal[];
+  confidence: number; // 0.0 - 1.0
+  source: string;
+}
+export interface SpatialRiskZone {
+  id: string;
+  domain: RiskDomain;
+  level: RiskLevel;
+  name: string;
+  center: Coordinates;
+  radiusMeters: number;
+  advisory: string;
+}
+export interface LocationRiskReport {
+  location: ResolvedLocation;
+  overallLevel: RiskLevel;
+  overallScore: number | null;
+  confidence: number;
+  evaluatedAt: string;
+  domains: Record<RiskDomain, DomainRiskAssessment>;
+  riskZones: SpatialRiskZone[];
+  actionableGuidance: string[];
+}
+export interface NexusContext {
+  activeLocation: ResolvedLocation | null;
+  mapCenter: Coordinates;
+  mapZoom: number;
+  selectedRadiusKm: number;
+  selectedMapEntity: {
+    type: 'POI' | 'EVENT' | 'COORDINATE' | 'NONE';
+    id?: string;
+    name?: string;
+    coordinates?: Coordinates;
+    meta?: Record<string, any>;
+  } | null;
+  activeFilter: 'ALL' | 'CRIME' | 'WEATHER' | 'TRAFFIC' | 'HAZARD' | 'MUNICIPAL' | 'LIVE' | 'RECENT' | 'FORECAST' | 'ALERTS';
+  version: number;
+}
+// ============================================================
+// URBANPULSE 3D GEOSPATIAL & PLACES ARCHITECTURE (PHASE 2)
+// ============================================================
+export type MapMode = 'ROADMAP' | 'SATELLITE' | 'HYBRID' | 'TERRAIN' | '3D';
+export type CameraPreset =
+  | 'DEFAULT'
+  | 'CITY_OVERVIEW'
+  | 'LOCATION_FOCUS'
+  | 'EVENT_FOCUS'
+  | 'RISK_FOCUS'
+  | 'ROUTE_FOCUS'
+  | 'POI_FOCUS';
+export interface StreetViewState {
+  available: boolean | null;
+  active: boolean;
+  latitude: number;
+  longitude: number;
+  heading: number;
+  pitch: number;
+  zoom: number;
+  panoId?: string;
+  error?: string | null;
+}
+export interface NearbyActivityItem {
+  placeId: string;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  rating?: number;
+  userRatingsTotal?: number;
+  types: string[];
+  photo?: string;
+  distanceMeters?: number;
+}
+export type UrbanPulse3DObjectType =
+  | 'IntelligenceBeacon'
+  | 'EventPulse'
+  | 'RiskColumn'
+  | 'TrafficPulse'
+  | 'HazardRing'
+  | 'ScoreBeacon'
+  | 'RouteGlow'
+  | 'NexusLocationMarker'
+  | 'ActivityMarker';
+// ============================================================
+// URBANPULSE PHASE 3: PREDICTIVE INTELLIGENCE & DECISION ENGINES
+// ============================================================
+export type IntelligenceClassification =
+  | 'OBSERVED'
+  | 'CURRENT'
+  | 'RECENT'
+  | 'FORECAST'
+  | 'SIMULATION'
+  | 'RECOMMENDATION';
+export type TrafficTrend = 'INCREASING' | 'STABLE' | 'DECREASING' | 'UNKNOWN';
+export interface TrafficBaseline {
+  currentCongestionIndex: number; // 0-100
+  historicalBaseline: number; // 0-100
+  deviationPercent: number; // e.g. +52%
+  trend: TrafficTrend;
+  confidence: number;
+}
+export interface TrafficForecast {
+  location: ResolvedLocation;
+  currentLevel: 'LOW' | 'MODERATE' | 'HEAVY' | 'SEVERE' | 'UNKNOWN';
+  expectedLevel: 'LOW' | 'MODERATE' | 'HEAVY' | 'SEVERE' | 'UNKNOWN';
+  forecastWindow: string; // e.g. "Next 2 hours"
+  expectedPeakTime?: string; // e.g. "17:30–19:00"
+  baseline: TrafficBaseline;
+  summary: string;
+  confidence: number;
+  model: string;
+  dataCoverage: string;
+  status: 'AVAILABLE' | 'UNAVAILABLE';
+  generatedAt: string;
+}
+export type RiskForecastHorizon =
+  | 'NOW'
+  | '1_HOUR'
+  | '3_HOURS'
+  | '6_HOURS'
+  | '12_HOURS'
+  | '24_HOURS'
+  | '7_DAYS'
+  | '30_DAY_OUTLOOK';
+export interface HorizonRiskDomainItem {
+  domain: RiskDomain;
+  currentLevel: RiskLevel;
+  forecastLevel: RiskLevel;
+  confidence: number;
+  contributingSignals: string[];
+  status: 'AVAILABLE' | 'UNKNOWN';
+}
+export interface HorizonRiskSnapshot {
+  horizon: RiskForecastHorizon;
+  label: string;
+  overallLevel: RiskLevel;
+  overallScore: number | null;
+  confidence: number;
+  domains: Record<RiskDomain, HorizonRiskDomainItem>;
+  summary: string;
+}
+export interface RiskForecastReport {
+  location: ResolvedLocation;
+  evaluatedAt: string;
+  horizons: Record<RiskForecastHorizon, HorizonRiskSnapshot>;
+  guidance: string[];
+}
+export interface ScenarioSimulationResult {
+  scenarioId: string;
+  scenarioType: string;
+  scenarioTitle: string;
+  location: ResolvedLocation;
+  isSimulation: true;
+  label: 'SIMULATION';
+  baseline: {
+    overallScore: number;
+    trafficStatus: string;
+    floodRisk: string;
+    roadCondition: string;
+  };
+  scenario: {
+    overallScore: number;
+    trafficStatus: string;
+    floodRisk: string;
+    roadCondition: string;
+  };
+  difference: {
+    scoreDelta: number;
+    trafficDelayIncreasePercent?: number;
+    inundationDepthMeters?: number;
+    speedReductionPercent?: number;
+    summary: string;
+  };
+  affectedDomains: string[];
+  affectedAreaKm2: number;
+  confidence: number;
+  assumptions: string[];
+  limitations: string[];
+  closedRoadPolyline?: Array<{ latitude: number; longitude: number }>;
+  alternateRoutePolyline?: Array<{ latitude: number; longitude: number }>;
+  simulatedAt: string;
+}
+export type SmartRouteCategory = 'FASTEST' | 'LOWEST_TRAFFIC' | 'LOWEST_RISK' | 'BALANCED';
+export interface RouteScoreBreakdown {
+  travelTimeScore: number; // 40%
+  trafficScore: number; // 25%
+  riskScore: number; // 20%
+  weatherScore: number; // 10%
+  roadConditionScore: number; // 5%
+  totalScore: number; // 0-100
+}
+export interface SmartRouteOptionItem {
+  id: string;
+  category: SmartRouteCategory;
+  name: string;
+  distanceKm: number;
+  estimatedMinutes: number;
+  trafficDelayMinutes: number;
+  overallRiskScore: number; // 0-100
+  weatherRisk: 'CLEAR' | 'ADVISORY' | 'WARNING';
+  roadCondition: string;
+  scoreBreakdown: RouteScoreBreakdown;
+  whyThisRoute: {
+    traffic: string;
+    hazards: string;
+    weather: string;
+    roadCondition: string;
+    summary: string;
+  };
+  confidence: number;
+  polyline: Array<{ latitude: number; longitude: number }>;
+  speedReadingIntervals?: Array<{
+    startPolylinePointIndex: number;
+    endPolylinePointIndex: number;
+    speed: 'NORMAL' | 'SLOW' | 'TRAFFIC_JAM';
+  }>;
+}
+export interface SmartRoutePlan {
+  origin: ResolvedLocation;
+  destination: ResolvedLocation;
+  travelMode: string;
+  generatedAt: string;
+  options: Record<SmartRouteCategory, SmartRouteOptionItem | null>;
+  recommendedCategory: SmartRouteCategory;
+  recommendedRoute: SmartRouteOptionItem;
+  tradeOffs: string[];
+}
+export interface MissionPreference {
+  priority: 'FASTEST' | 'LOWEST_RISK' | 'LOWEST_TRAFFIC' | 'BALANCED';
+  avoidTolls?: boolean;
+  avoidKnownHazards?: boolean;
+  avoidClosures?: boolean;
+  departureWindowStart?: string;
+  departureWindowEnd?: string;
+}
+export interface MissionPlan {
+  missionId: string;
+  title: string;
+  origin: ResolvedLocation;
+  destination: ResolvedLocation;
+  departureWindow: {
+    start: string;
+    end: string;
+  };
+  recommendedDepartureTime: string;
+  recommendedDepartureReason: string;
+  recommendedCategory: SmartRouteCategory;
+  routePlan: SmartRoutePlan;
+  expectedConditions: {
+    traffic: string;
+    weather: string;
+    roadRisk: string;
+    hazards: string;
+  };
+  confidence: number;
+  whyRecommendation: string[];
+  createdAt: string;
+}
+export interface PlaceRecommendation {
+  placeId: string;
+  name: string;
+  category: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  distanceKm: number;
+  trafficCondition: string;
+  aqiValue: number | null;
+  aqiCategory: string;
+  weatherCondition: string;
+  activitiesCount: number;
+  overallRecommendationScore: number; // 0-100
+  confidence: number;
+  whyThisPlace: string[];
+}
+export interface PredictiveAnomaly {
+  id: string;
+  domain: RiskDomain;
+  type: string;
+  currentValue: number | string;
+  expectedValue: number | string;
+  deviationPercent: number;
+  trend: 'INCREASING' | 'STABLE' | 'DECREASING';
+  forecast: string;
+  projectedSeverity: 'MODERATE' | 'SEVERE' | 'CRITICAL';
+  confidence: number;
+  detectedAt: string;
+  location: ResolvedLocation;
+}
+export interface CascadeStep {
+  stepIndex: number;
+  event: string;
+  observed: boolean;
+  confidence: number;
+  evidence?: string;
+}
+export interface CascadeChain {
+  chainId: string;
+  title: string;
+  rootTrigger: string;
+  chain: CascadeStep[];
+  possibleNextImpact: string;
+  potentialConsequence: string;
+  confidence: number;
+  classification: 'POSSIBLE_CONTRIBUTING_CHAIN';
+  detectedAt: string;
+}
+export type AlertState = 'NEW' | 'ACTIVE' | 'ACKNOWLEDGED' | 'RESOLVED' | 'EXPIRED';
+export interface MonitorRule {
+  id: string;
+  name: string;
+  location: ResolvedLocation;
+  radiusKm: number;
+  signals: string[];
+  condition: string;
+  thresholdValue?: any;
+  active: boolean;
+  createdAt: string;
+  lastEvaluatedAt?: string;
+}
+export interface UrbanPulseAlert {
+  id: string;
+  ruleId?: string;
+  category: 'TRAFFIC' | 'WEATHER' | 'AQI' | 'HAZARDS' | 'ROADS' | 'SAFETY' | 'EVENTS' | 'FORECASTS';
+  title: string;
+  locationName: string;
+  latitude: number;
+  longitude: number;
+  severity: 'INFO' | 'MODERATE' | 'HIGH' | 'SEVERE';
+  state: AlertState;
+  currentValue: string;
+  normalValue?: string;
+  change?: string;
+  contributingFactor?: string;
+  confidence: number;
+  source: string;
+  triggeredAt: string;
+}

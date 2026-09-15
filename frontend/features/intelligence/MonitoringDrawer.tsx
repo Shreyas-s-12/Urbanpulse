@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useAgentStore } from '@/stores/useAgentStore';
 import { useLocationStore } from '@/stores/useLocationStore';
 import { agentService } from '@/services/agentService';
+import { BellIcon, TrashIcon, CloseIcon } from '@/components/common/Icons';
 
 export default function MonitoringDrawer() {
   const {
@@ -97,7 +98,7 @@ export default function MonitoringDrawer() {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '20px' }}>🔔</span>
+            <BellIcon size={20} color="var(--accent-primary)" />
             <h2 style={{ fontSize: '17px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
               Corridor & Location Monitoring
             </h2>
@@ -109,12 +110,16 @@ export default function MonitoringDrawer() {
               background: 'none',
               border: 'none',
               color: 'var(--text-muted)',
-              fontSize: '20px',
               cursor: 'pointer',
-              padding: '4px 8px',
+              padding: '6px',
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
+            title="Dismiss"
           >
-            ✕
+            <CloseIcon size={18} />
           </button>
         </div>
 
@@ -224,12 +229,14 @@ export default function MonitoringDrawer() {
                         border: 'none',
                         color: '#DC2626',
                         cursor: 'pointer',
-                        fontSize: '14px',
                         padding: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
                       title="Remove Monitor"
                     >
-                      🗑️
+                      <TrashIcon size={14} color="#DC2626" />
                     </button>
                   </div>
                 ))}
@@ -237,41 +244,117 @@ export default function MonitoringDrawer() {
             )}
           </div>
 
-          {/* Non-Intrusive Alerts Feed */}
+          {/* Alert Center Feed with Lifecycle Controls */}
           <div>
             <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '10px' }}>
-              Recent Notification Alerts ({monitorAlerts.length})
+              Alert Center & Lifecycle ({monitorAlerts.length})
             </div>
 
             {monitorAlerts.length === 0 ? (
               <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                No active threshold alerts triggered recently.
+                No active corridor threshold alerts triggered recently.
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {monitorAlerts.map((alert) => (
-                  <div
-                    key={alert.id}
-                    style={{
-                      backgroundColor: 'var(--bg-app)',
-                      border: '1px solid rgba(245, 158, 11, 0.3)',
-                      borderRadius: '10px',
-                      padding: '12px 14px',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                      <span style={{ fontWeight: 700, fontSize: '12px', color: '#D97706' }}>
-                        {alert.trigger || (alert as any).signal || 'Threshold Exceeded'}
-                      </span>
-                      <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                        {new Date(alert.triggeredAt || (alert as any).timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {monitorAlerts.map((alert) => {
+                  const status = (alert as any).status || 'ACTIVE';
+                  const isAck = status === 'ACKNOWLEDGED';
+                  const isRes = status === 'RESOLVED';
+
+                  return (
+                    <div
+                      key={alert.id}
+                      style={{
+                        backgroundColor: isRes ? 'var(--bg-subtle)' : 'var(--bg-app)',
+                        border: isRes ? '1px solid var(--border-subtle)' : isAck ? '1px solid rgba(59, 130, 246, 0.4)' : '1px solid rgba(245, 158, 11, 0.35)',
+                        borderRadius: '10px',
+                        padding: '12px 14px',
+                        opacity: isRes ? 0.7 : 1,
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontWeight: 700, fontSize: '12px', color: isRes ? 'var(--text-muted)' : isAck ? '#2563EB' : '#D97706' }}>
+                            {alert.trigger || (alert as any).signal || 'Threshold Exceeded'}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: '9.5px',
+                              fontWeight: 800,
+                              padding: '1px 6px',
+                              borderRadius: '4px',
+                              backgroundColor: isRes ? '#E2E8F0' : isAck ? 'rgba(59, 130, 246, 0.12)' : 'rgba(245, 158, 11, 0.15)',
+                              color: isRes ? '#475569' : isAck ? '#1D4ED8' : '#B45309',
+                            }}
+                          >
+                            {status}
+                          </span>
+                        </div>
+                        <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                          {new Date(alert.triggeredAt || (alert as any).timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+
+                      <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                        <strong style={{ color: 'var(--text-primary)' }}>{alert.locationName}</strong>: {alert.currentState || (alert as any).description || 'Alert condition met'}
+                      </div>
+
+                      {/* Lifecycle Action Buttons */}
+                      {!isRes && (
+                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                          {!isAck && (
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                try {
+                                  await agentService.updateAlertStatus(alert.id, 'ACKNOWLEDGED');
+                                  await fetchMonitorAlerts();
+                                } catch (e) {
+                                  console.warn('Failed to acknowledge alert:', e);
+                                }
+                              }}
+                              style={{
+                                padding: '3px 8px',
+                                fontSize: '10.5px',
+                                fontWeight: 600,
+                                borderRadius: '4px',
+                                border: '1px solid rgba(59, 130, 246, 0.3)',
+                                backgroundColor: 'rgba(59, 130, 246, 0.08)',
+                                color: '#1D4ED8',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              Acknowledge
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                await agentService.updateAlertStatus(alert.id, 'RESOLVED');
+                                await fetchMonitorAlerts();
+                              } catch (e) {
+                                console.warn('Failed to resolve alert:', e);
+                              }
+                            }}
+                            style={{
+                              padding: '3px 8px',
+                              fontSize: '10.5px',
+                              fontWeight: 600,
+                              borderRadius: '4px',
+                              border: '1px solid var(--border-subtle)',
+                              backgroundColor: '#FFFFFF',
+                              color: 'var(--text-secondary)',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Mark Resolved
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                      <strong style={{ color: 'var(--text-primary)' }}>{alert.locationName}</strong>: {alert.currentState || (alert as any).description || 'Alert condition met'}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

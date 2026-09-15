@@ -20,6 +20,17 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   className,
   isUser = false,
 }) => {
+  // Sanitize content: prevent raw URLs from being printed directly as visible text
+  const sanitizedContent = React.useMemo(() => {
+    if (!content) return '';
+    // 1. Convert markdown links with URL as text: [https://...](https://...) -> [Verified Reference](https://...)
+    let res = content.replace(/\[https?:\/\/[^\]]+\]\((https?:\/\/[^\)]+)\)/gi, '[Verified Reference]($1)');
+    // 2. Convert naked URLs: https://... -> [Verified Reference](https://...)
+    // Negative lookbehind ensures we don't match URLs already inside markdown parenthesis
+    res = res.replace(/(?<!\]\()(?<!\[)(https?:\/\/[^\s\)\],]+)/gi, '[Verified Reference]($1)');
+    return res;
+  }, [content]);
+
   if (!content) return null;
 
   const textColor = isUser ? '#FFFFFF' : 'var(--text-primary)';
@@ -97,11 +108,28 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             </li>
           ),
           // Links
-          a: ({href, children}) => (
-            <a href={href} target="_blank" rel="noopener noreferrer" style={{color: isUser ? '#FFFFFF' : 'var(--accent-primary)', textDecoration: 'underline', fontWeight: 600}}>
-              {children}
-            </a>
-          ),
+          a: ({href, children}) => {
+            const rawLabel = String(children || '').trim();
+            const isRawUrl = /^https?:\/\//i.test(rawLabel) || /^www\./i.test(rawLabel) || rawLabel.includes('google.com/maps');
+            const displayLabel = isRawUrl ? 'Verified Reference' : children;
+            return (
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: isUser ? '#FFFFFF' : 'var(--accent-primary)',
+                  textDecoration: 'underline',
+                  fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                <span>{displayLabel}</span>
+              </a>
+            );
+          },
           // Inline code
           code: ({children}) => (
             <code style={{fontFamily: 'var(--font-mono, monospace)', fontSize: '12px', padding: '1px 5px', borderRadius: '4px', backgroundColor: isUser ? 'rgba(255, 255, 255, 0.2)' : 'var(--bg-surface-secondary, #F0F3F5)', color: isUser ? '#FFFFFF' : 'var(--text-primary)'}}>
@@ -126,7 +154,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           ),
         }}
       >
-        {content}
+        {sanitizedContent}
       </ReactMarkdown>
     </div>
   );

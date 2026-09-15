@@ -12,11 +12,21 @@
   --text-muted: #6B7280;
   --text-inverse: #FFFFFF;
   
-  --border: #E5E7EB;
-  --border-subtle: #E5E7EB;
+  --border: #E2E8F0;
+  --border-subtle: #E2E8F0;
   --border-light: #CBD5E1;
   --border-strong: #94A3B8;
   
+  /* Global Spacing System */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+
   /* Brand Accent: Cobalt / Electric Blue */
   --accent-primary: #2563EB;
   --accent-primary-hover: #1D4ED8;
@@ -42,17 +52,19 @@
   --severity-low: #10B981;
   --severity-low-bg: rgba(16, 185, 129, 0.1);
 
-  /* Clean Restrained Shadows (Soft neutral shadows, no heavy black or green glows) */
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
-  --shadow-panel: 0 20px 25px -5px rgba(0, 0, 0, 0.06), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+  /* Clean Restrained Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.02);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -4px rgba(0, 0, 0, 0.02);
+  --shadow-panel: 0 16px 24px -4px rgba(0, 0, 0, 0.05), 0 6px 12px -4px rgba(0, 0, 0, 0.02);
 
+  /* Standardized Border Radius */
   --radius-xs: 4px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
   --radius-full: 9999px;
 
   --font-sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -106,4 +118,11 @@ input, select, textarea {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
+}
+
+/* Quick Action Scroller clean scrollbar hiding */
+.quick-action-scroller::-webkit-scrollbar {
+  display: none;
+  height: 0px;
+  width: 0px;
 }

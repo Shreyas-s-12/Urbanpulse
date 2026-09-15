@@ -4,6 +4,8 @@ Real-time traffic-aware routing powered by Google Routes API v2.
 Calculates multi-candidate corridors (FASTEST, SAFEST, RECOMMENDED),
 extracts actual Google traffic congestion and delay, and correlates
 corridors against real verified UrbanPulse incident risks.
+Supports normal TRAFFIC_AWARE routing and highest-quality TRAFFIC_AWARE_OPTIMAL routing.
+Never hallucinates, mocks, or fabricates traffic telemetry.
 """
 
 from typing import Any, Dict, List, Optional
@@ -18,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Computes great-circle distance in km between two lat/lon coordinates."""
     r = 6371.0
     dlat = math.radians(lat2 - lat1)
     dlon = math.radians(lon2 - lon1)
@@ -104,7 +107,6 @@ def find_intersecting_events(
         for pt in sampled_points:
             dist = haversine_km(pt["latitude"], pt["longitude"], ev_lat, ev_lon)
             if dist <= threshold_km:
-                # Add copy with corridor distance noted
                 ev_copy = dict(ev)
                 ev_copy["corridorDistanceKm"] = round(dist, 2)
                 intersecting.append(ev_copy)
@@ -114,6 +116,12 @@ def find_intersecting_events(
 
 
 class RoutingProvider:
+    """
+    Google Routes API v2 adapter.
+    Calculates traffic-aware routes, derivations of genuine Google delay (duration - staticDuration),
+    speed reading intervals, and integrates with UrbanPulse route-risk engine.
+    """
+
     @staticmethod
     async def analyze_route(
         origin_lat: float,
@@ -123,12 +131,17 @@ class RoutingProvider:
         travel_mode: str = "drive",
         nearby_events: Optional[List[Dict[str, Any]]] = None,
         departure_time: Optional[str] = None,
+        routing_preference: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Calls Google Routes API v2 for authentic traffic-aware routing.
-        Derives actual traffic ETA, congestion delay, and correlates candidate
-        routes against structured UrbanPulse hazard events.
-        Does NOT invent or mock traffic data.
+        - For normal route requests: routingPreference = TRAFFIC_AWARE
+        - For highest-quality recommended route: routingPreference = TRAFFIC_AWARE_OPTIMAL
+        - travelMode = DRIVE (default)
+        - Uses current departure time for current traffic requests unless explicit future departure
+        - Delay is calculated ONLY from duration - staticDuration
+        - NEVER fabricates traffic percentage, congestion, bottlenecks, delay, or route ETA
+        - Separately integrates UrbanPulse hazard/event risks
         """
         api_key = settings.GOOGLE_MAPS_API_KEY or settings.GOOGLE_API_KEY
         if not api_key or api_key == "your-google-maps-api-key":
@@ -138,8 +151,8 @@ class RoutingProvider:
                 detail="Google Routes API service is unconfigured. Real-time traffic routes unavailable.",
             )
 
-        # Normalize travel mode to Google Routes API v2
-        normalized_mode = travel_mode.lower().replace("-", "_")
+        # Normalize travel mode to Google Routes API v2 (default: DRIVE)
+        normalized_mode = (travel_mode or "drive").lower().replace("-", "_")
         mode_mapping = {
             "drive": "DRIVE",
             "two_wheeler": "TWO_WHEELER",
@@ -149,8 +162,28 @@ class RoutingProvider:
         }
         google_mode = mode_mapping.get(normalized_mode, "DRIVE")
 
-        # Set departure time to current ISO UTC timestamp for live traffic calculations
-        departure_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        # Determine routing preference:
+        # Normal route requests use TRAFFIC_AWARE.
+        # Highest-quality UrbanPulse recommended route supports TRAFFIC_AWARE_OPTIMAL.
+        pref_upper = (routing_preference or "").strip().upper()
+        if pref_upper in ["TRAFFIC_AWARE_OPTIMAL", "OPTIMAL", "HIGH_QUALITY", "RECOMMENDED"]:
+            effective_routing_pref = "TRAFFIC_AWARE_OPTIMAL"
+        else:
+            effective_routing_pref = "TRAFFIC_AWARE"
+
+        # Departure time resolution:
+        # Use current departure time for current traffic requests unless user explicitly asks about a future departure
+        current_utc_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        effective_departure_time = current_utc_iso
+        has_future_departure = False
+
+        if departure_time and departure_time.strip().lower() not in ["immediate", "now", "current", ""]:
+            try:
+                dt_parsed = datetime.fromisoformat(departure_time.replace("Z", "+00:00"))
+                effective_departure_time = dt_parsed.strftime("%Y-%m-%dT%H:%M:%SZ")
+                has_future_departure = True
+            except Exception:
+                effective_departure_time = current_utc_iso
 
         payload: Dict[str, Any] = {
             "origin": {
@@ -175,14 +208,11 @@ class RoutingProvider:
 
         # routingPreference is ONLY valid for DRIVE and TWO_WHEELER in Google Routes API
         if google_mode in ["DRIVE", "TWO_WHEELER"]:
-            payload["routingPreference"] = "TRAFFIC_AWARE_OPTIMAL"
-            if departure_time and departure_time.lower() not in ["immediate", "now"]:
-                try:
-                    # Validate format if provided
-                    datetime.fromisoformat(departure_time.replace("Z", "+00:00"))
-                    payload["departureTime"] = departure_time
-                except Exception:
-                    pass  # Default to immediate live departure
+            payload["routingPreference"] = effective_routing_pref
+            if has_future_departure:
+                payload["departureTime"] = effective_departure_time
+            # Request traffic-aware speed readings on polyline when supported
+            payload["extraComputations"] = ["TRAFFIC_ON_POLYLINE"]
 
         headers = {
             "Content-Type": "application/json",
@@ -195,11 +225,22 @@ class RoutingProvider:
                 "routes.description,"
                 "routes.warnings,"
                 "routes.routeLabels,"
-                "routes.travelAdvisory"
+                "routes.travelAdvisory.speedReadingIntervals"
             ),
         }
 
         url = "https://routes.googleapis.com/directions/v2:computeRoutes"
+
+        logger.info(
+            "Google Routes API query: mode=%s preference=%s departure=%s origin=(%.4f, %.4f) dest=(%.4f, %.4f)",
+            google_mode,
+            effective_routing_pref,
+            effective_departure_time,
+            origin_lat,
+            origin_lon,
+            dest_lat,
+            dest_lon,
+        )
 
         try:
             async with httpx.AsyncClient(timeout=12.0) as client:
@@ -236,8 +277,11 @@ class RoutingProvider:
             static_duration_sec = parse_duration_seconds(r.get("staticDuration"))
             dist_meters = r.get("distanceMeters", 0)
 
+            # ETA and delay calculated strictly from Google telemetry
             est_minutes = max(1, round(duration_sec / 60.0))
-            traffic_delay = max(0, round((duration_sec - static_duration_sec) / 60.0)) if static_duration_sec > 0 else 0
+            # Calculate delay ONLY from duration - staticDuration (Never fabricate!)
+            delay_seconds = max(0, duration_sec - static_duration_sec) if static_duration_sec > 0 else 0
+            traffic_delay = round(delay_seconds / 60.0)
             dist_km = round(dist_meters / 1000.0, 1)
 
             # Route description from Google
@@ -250,11 +294,23 @@ class RoutingProvider:
             encoded = r.get("polyline", {}).get("encodedPolyline", "")
             decoded_pts = decode_polyline(encoded) if encoded else []
 
-            # Find real UrbanPulse hazard event intersections
-            intersecting = find_intersecting_events(decoded_pts, events, threshold_km=0.8)
-            high_hazards = [e for e in intersecting if e.get("severity", 0) >= 70]
+            # Extract traffic-aware speed reading intervals from Google
+            travel_advisory = r.get("travelAdvisory", {})
+            raw_intervals = travel_advisory.get("speedReadingIntervals", [])
+            speed_reading_intervals: List[Dict[str, Any]] = []
+            for item in raw_intervals:
+                speed = item.get("speed")
+                if speed in ["NORMAL", "SLOW", "TRAFFIC_JAM"]:
+                    speed_reading_intervals.append({
+                        "startPolylinePointIndex": item.get("startPolylinePointIndex", 0),
+                        "endPolylinePointIndex": item.get("endPolylinePointIndex", 0),
+                        "speed": speed,
+                    })
 
-            # Deterministic UrbanPulse route risk computed strictly from real structured incident records
+            # Find real UrbanPulse hazard event intersections (separate from Google's traffic data)
+            intersecting = find_intersecting_events(decoded_pts, events, threshold_km=0.8)
+
+            # Deterministic UrbanPulse route risk computed strictly from verified incident records
             if intersecting:
                 hazard_impact = sum(e.get("severity", 40) * 0.35 for e in intersecting)
                 risk_score = min(98, max(20, round(15 + hazard_impact)))
@@ -264,7 +320,7 @@ class RoutingProvider:
             # Confidence based on real Google routing precision
             confidence = 96 if static_duration_sec > 0 else 88
 
-            # Rationale describing real Google traffic and UrbanPulse hazards
+            # Rationale describing real Google traffic and UrbanPulse hazards separately
             if traffic_delay > 0:
                 traffic_text = f"Live Google Traffic reports +{traffic_delay} min slowdown due to congestion."
             else:
@@ -290,14 +346,15 @@ class RoutingProvider:
                 "polyline": decoded_pts,
                 "intersectingEvents": intersecting,
                 "weatherAlerts": [],
+                "speedReadingIntervals": speed_reading_intervals,
+                "routingPreference": effective_routing_pref,
             })
 
         # Categorize routes: FASTEST, SAFEST, RECOMMENDED
-        # Sort by actual ETA for fastest
         fastest_route = min(candidate_routes, key=lambda x: x["estimatedTimeMinutes"])
         safest_route = min(candidate_routes, key=lambda x: x["overallRiskScore"])
 
-        # Decide recommended:
+        # Recommended route decision:
         # If the fastest route has severe hazard risk (risk >= 60) and an alternate exists with significantly lower risk,
         # recommend the safest alternative; otherwise recommend the fastest.
         if fastest_route["overallRiskScore"] >= 60 and safest_route["id"] != fastest_route["id"]:
@@ -331,13 +388,18 @@ class RoutingProvider:
         else:
             hazard_status = "No verified hazard incidents intersect this path."
 
-        advisory = f"{traffic_status} {hazard_status} Estimated transit time: {recommended_route['estimatedTimeMinutes']} mins."
+        advisory = (
+            f"{traffic_status} {hazard_status} "
+            f"Estimated transit time: {recommended_route['estimatedTimeMinutes']} mins."
+        )
 
         return {
             "travelMode": travel_mode,
             "candidateRoutes": candidate_routes,
             "recommendedRouteId": recommended_route["id"],
             "copilotAdvisory": advisory,
-            "source": "Google Routes API (v2 Traffic-Aware)",
+            "source": f"Google Routes API (v2 {effective_routing_pref})",
+            "routingPreference": effective_routing_pref,
+            "departureTime": effective_departure_time,
             "status": "AVAILABLE",
         }

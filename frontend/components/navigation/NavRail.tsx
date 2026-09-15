@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import UrbanPulseLogo from '@/components/common/UrbanPulseLogo';
 
 export default function NavRail() {
   const pathname = usePathname();
@@ -10,6 +11,7 @@ export default function NavRail() {
   const navItems = [
     {
       label: 'Overview',
+      shortLabel: 'Overview',
       path: '/overview',
       alias: '/',
       icon: (
@@ -23,6 +25,7 @@ export default function NavRail() {
     },
     {
       label: 'Live Map',
+      shortLabel: 'Map',
       path: '/map',
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -33,18 +36,24 @@ export default function NavRail() {
       ),
     },
     {
-      label: 'Plan Route',
-      path: '/routes',
+      label: 'Command Center',
+      shortLabel: 'Command',
+      path: '/command',
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="6" cy="19" r="3"></circle>
-          <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"></path>
-          <circle cx="18" cy="5" r="3"></circle>
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="2" x2="12" y2="6"></line>
+          <line x1="12" y1="18" x2="12" y2="22"></line>
+          <line x1="2" y1="12" x2="6" y2="12"></line>
+          <line x1="18" y1="12" x2="22" y2="12"></line>
+          <circle cx="12" cy="12" r="3"></circle>
         </svg>
       ),
     },
+
     {
       label: 'Events',
+      shortLabel: 'Events',
       path: '/events',
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -55,6 +64,7 @@ export default function NavRail() {
     },
     {
       label: 'Urban Intelligence',
+      shortLabel: 'Intel',
       path: '/urban-condition',
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -63,7 +73,8 @@ export default function NavRail() {
       ),
     },
     {
-      label: 'Copilot',
+      label: 'Nexus Agent',
+      shortLabel: 'Nexus',
       path: '/copilot',
       alias: '/agent',
       icon: (
@@ -79,60 +90,34 @@ export default function NavRail() {
   return (
     <aside
       style={{
-        width: '84px',
+        width: '64px',
         backgroundColor: 'var(--bg-surface)',
         borderRight: '1px solid var(--border-subtle)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        padding: '20px 0',
+        padding: 'var(--space-4) 0',
         zIndex: 50,
-        boxShadow: 'var(--shadow-sm)',
         flexShrink: 0,
       }}
     >
       {/* Brand Icon */}
       <Link
         href="/"
+        title="UrbanPulse Home"
         style={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '4px',
-          marginBottom: '32px',
+          justifyContent: 'center',
+          marginBottom: 'var(--space-5)',
+          textDecoration: 'none',
+          transition: 'transform 0.15s ease',
         }}
+        onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+        onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
       >
-        <div
-          style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '10px',
-            backgroundColor: '#1E293B',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#FFFFFF',
-            fontWeight: 800,
-            fontSize: '17px',
-            letterSpacing: '-0.5px',
-            position: 'relative',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-        >
-          UP
-          <span
-            style={{
-              position: 'absolute',
-              top: '4px',
-              right: '4px',
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              backgroundColor: 'var(--accent-primary)',
-              boxShadow: '0 0 8px rgba(37, 99, 235, 0.7)',
-            }}
-          />
-        </div>
+        <UrbanPulseLogo size={32} priority />
       </Link>
 
       {/* Navigation Icons */}
@@ -140,9 +125,9 @@ export default function NavRail() {
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '12px',
+          gap: 'var(--space-2)',
           width: '100%',
-          padding: '0 10px',
+          padding: '0 6px',
         }}
       >
         {navItems.map((item) => {
@@ -157,24 +142,44 @@ export default function NavRail() {
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                padding: '10px 4px',
-                borderRadius: 'var(--radius-sm)',
+                height: '48px',
+                borderRadius: 'var(--radius-md)',
                 backgroundColor: isActive ? 'var(--accent-primary-light)' : 'transparent',
                 color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
                 transition: 'all 0.15s ease',
-                gap: '5px',
+                gap: '4px',
+                padding: '0 2px',
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.backgroundColor = 'var(--bg-app)';
+                  e.currentTarget.style.color = 'var(--text-primary)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = 'var(--text-secondary)';
+                }
               }}
             >
-              {item.icon}
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {item.icon}
+              </span>
               <span
                 style={{
                   fontSize: '10px',
                   fontWeight: isActive ? 700 : 500,
                   textAlign: 'center',
                   lineHeight: 1.1,
+                  whiteSpace: 'nowrap',
+                  letterSpacing: '-0.2px',
+                  maxWidth: '52px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
                 }}
               >
-                {item.label}
+                {item.shortLabel}
               </span>
             </Link>
           );
@@ -188,20 +193,23 @@ export default function NavRail() {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '6px',
+          gap: '4px',
+          paddingBottom: '4px',
         }}
       >
         <span
           title="Engine: Operational"
           style={{
-            width: '8px',
-            height: '8px',
+            width: '6px',
+            height: '6px',
             borderRadius: '50%',
             backgroundColor: 'var(--accent-primary)',
-            boxShadow: '0 0 8px rgba(37, 99, 235, 0.6)',
+            boxShadow: '0 0 6px rgba(37, 99, 235, 0.6)',
           }}
         />
-        <span style={{ fontSize: '9px', fontWeight: 600, color: 'var(--text-muted)' }}>LIVE</span>
+        <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>
+          LIVE
+        </span>
       </div>
     </aside>
   );

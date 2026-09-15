@@ -1,11 +1,30 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useLocationStore } from '@/stores/useLocationStore';
 import { useNearbyEvents } from '@/hooks/useNearbyEvents';
 import { copilotService } from '@/services/copilotService';
 import { CopilotMessage } from '@shared/types';
 import MarkdownRenderer from '@/components/common/MarkdownRenderer';
+import UrbanPulseLogo from '@/components/common/UrbanPulseLogo';
+import ErrorBoundary from '@/components/common/ErrorBoundary';
+import { PinIcon } from '@/components/common/Icons';
+
+const NexusHoloOrb = dynamic(() => import('@/components/3d/NexusHoloOrb'), {
+  ssr: false,
+  loading: () => (
+    <div
+      style={{
+        width: 32,
+        height: 32,
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, #3B82F6 0%, #1D4ED8 100%)',
+        opacity: 0.8,
+      }}
+    />
+  ),
+});
 
 export default function CopilotView() {
   const { currentLocation, selectedRadiusKm } = useLocationStore();
@@ -15,12 +34,13 @@ export default function CopilotView() {
   const cityName = currentLocation?.city || (currentLocation ? 'Coordinates Selected' : 'Current Location');
 
   const { events } = useNearbyEvents(centerLat, centerLon, selectedRadiusKm);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const [messages, setMessages] = useState<CopilotMessage[]>([
     {
-      id: 'COPILOT-INIT',
+      id: 'NEXUS-INIT',
       sender: 'copilot',
-      content: `Hello. I am **UrbanPulse Copilot**, your real-time spatial and civic intelligence partner for **${cityName}** (${selectedRadiusKm} km radius). I synthesize live sensor telemetry, 24-hour event trends, traffic hazard intersections, and municipal safety guidance. How can I assist your situational awareness today?`,
+      content: `Hello. I am **UrbanPulse Nexus**, your real-time spatial and civic intelligence layer for **${cityName}** (${selectedRadiusKm} km radius). I synthesize live sensor telemetry, 24-hour incident history, traffic disruption corridors, and municipal safety guidance. How can I assist your situational awareness today?`,
       timestamp: new Date().toISOString(),
       suggestedActions: [
         'What happened around me today?',
@@ -33,6 +53,10 @@ export default function CopilotView() {
 
   const [inputQuery, setInputQuery] = useState('');
   const [isSending, setIsSending] = useState(false);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isSending]);
 
   const handleSend = async (text: string) => {
     const q = text.trim();
@@ -68,195 +92,265 @@ export default function CopilotView() {
 
       setMessages((prev) => [...prev, copilotReply]);
     } catch (err) {
-      console.warn('Failed to get copilot reply:', err);
+      console.warn('[Nexus] Failed to query intelligence:', err);
     } finally {
       setIsSending(false);
     }
   };
 
   return (
-    <div
-      style={{
-        flex: 1,
-        backgroundColor: 'var(--bg-app)',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        maxWidth: '1020px',
-        margin: '0 auto',
-        width: '100%',
-        padding: '24px',
-      }}
-    >
-      {/* Header */}
-      <div style={{ marginBottom: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--accent-primary)', boxShadow: '0 0 8px rgba(37, 99, 235, 0.6)' }} />
-            <h1 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)' }}>
-              UrbanPulse Copilot
-            </h1>
-          </div>
-          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-            Contextual reasoning over Live Signals • 24h Incident History • Route Corridors • Municipal Knowledge
-          </p>
-        </div>
-        <span
-          style={{
-            fontSize: '11px',
-            padding: '3px 8px',
-            borderRadius: 'var(--radius-full)',
-            backgroundColor: 'var(--accent-primary-light)',
-            color: 'var(--accent-primary)',
-            fontWeight: 700,
-          }}
-        >
-          {cityName} • {selectedRadiusKm} km active radius
-        </span>
-      </div>
-
-      {/* Messages Scroll Area */}
+    <ErrorBoundary fallbackTitle="UrbanPulse Nexus Unavailable">
       <div
         style={{
           flex: 1,
-          backgroundColor: 'var(--bg-surface)',
-          borderRadius: 'var(--radius-md)',
-          border: '1px solid var(--border-subtle)',
-          boxShadow: 'var(--shadow-sm)',
-          padding: '24px',
-          overflowY: 'auto',
+          height: '100%',
+          backgroundColor: 'var(--bg-app)',
+          backgroundImage: 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(37, 99, 235, 0.05) 0%, transparent 80%)',
           display: 'flex',
-          flexDirection: 'column',
-          gap: '18px',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '12px',
+          overflow: 'hidden',
+          boxSizing: 'border-box',
         }}
       >
-        {messages.map((msg) => {
-          const isUser = msg.sender === 'user';
-
-          return (
-            <div
-              key={msg.id}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: isUser ? 'flex-end' : 'flex-start',
-                gap: '6px',
-              }}
-            >
-              <div
-                style={{
-                  maxWidth: '82%',
-                  backgroundColor: isUser ? 'var(--accent-primary)' : 'var(--bg-surface)',
-                  color: isUser ? '#FFFFFF' : 'var(--text-primary)',
-                  padding: '14px 18px',
-                  borderRadius: isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                  fontSize: '13px',
-                  lineHeight: 1.55,
-                  border: isUser ? 'none' : '1px solid var(--border-subtle)',
-                  boxShadow: isUser ? 'var(--shadow-sm)' : 'var(--shadow-xs)',
-                }}
-              >
-                <MarkdownRenderer content={msg.content} isUser={isUser} />
-
-                {/* Cited Live Signals */}
-                {msg.citedLiveSignals && msg.citedLiveSignals.length > 0 && (
-                  <div
-                    style={{
-                      marginTop: '12px',
-                      paddingTop: '10px',
-                      borderTop: '1px solid var(--border-subtle)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '4px',
-                    }}
-                  >
-                    <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                      CITED LIVE SIGNALS & PROVENANCE:
-                    </span>
-                    {msg.citedLiveSignals.map((cite, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          fontSize: '11px',
-                          color: 'var(--text-secondary)',
-                          display: 'flex',
-                          gap: '6px',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: 'var(--accent-primary)' }} />
-                        <strong>[{cite.type}]</strong> via {cite.source}: {cite.detail}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Suggested Action Chips */}
-              {msg.suggestedActions && msg.suggestedActions.length > 0 && (
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
-                  {msg.suggestedActions.map((action, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleSend(action)}
-                      style={{
-                        fontSize: '11px',
-                        padding: '4px 10px',
-                        borderRadius: 'var(--radius-full)',
-                        backgroundColor: 'var(--bg-app)',
-                        border: '1px solid var(--border-subtle)',
-                        color: 'var(--accent-primary)',
-                        fontWeight: 600,
-                        transition: 'all 0.1s ease',
-                      }}
-                    >
-                      {action}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Input Box */}
-      <div style={{ marginTop: '16px', display: 'flex', gap: '10px' }}>
-        <input
-          type="text"
-          placeholder="Ask Copilot about route hazards, 24h events, weather, or earthquakes..."
-          value={inputQuery}
-          onChange={(e) => setInputQuery(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') handleSend(inputQuery);
-          }}
+        {/* Responsive 9:16 Portrait Chat Shell */}
+        <div
+          className="chat-shell"
           style={{
-            flex: 1,
-            padding: '12px 18px',
-            borderRadius: 'var(--radius-sm)',
-            border: '1px solid var(--border-subtle)',
+            width: 'clamp(360px, calc((100vh - 58px) * 9 / 16), 540px)',
+            height: '100%',
+            maxHeight: 'calc(100vh - 58px)',
             backgroundColor: 'var(--bg-surface)',
-            fontSize: '13px',
-            color: 'var(--text-primary)',
-            outline: 'none',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-        />
-        <button
-          onClick={() => handleSend(inputQuery)}
-          style={{
-            padding: '0 24px',
-            borderRadius: 'var(--radius-sm)',
-            backgroundColor: 'var(--accent-primary)',
-            color: '#FFFFFF',
-            fontSize: '13px',
-            fontWeight: 700,
-            boxShadow: 'var(--shadow-sm)',
+            backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.90)), url("/images/Chat Background.png")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            borderRadius: 'var(--radius-lg, 12px)',
+            border: '1px solid var(--border-subtle)',
+            boxShadow: 'var(--shadow-panel)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            position: 'relative',
           }}
         >
-          Send
-        </button>
+          {/* Header */}
+          <div
+            style={{
+              height: '56px',
+              padding: '0 var(--space-4)',
+              borderBottom: '1px solid var(--border-subtle)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(8px)',
+              flexShrink: 0,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <NexusHoloOrb size={32} />
+              <div>
+                <h1 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1.2 }}>
+                  UrbanPulse Nexus
+                </h1>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1 }}>
+                  Spatial Intelligence & Decision Layer
+                </p>
+              </div>
+            </div>
+
+            <span
+              style={{
+                fontSize: '11px',
+                padding: '3px 8px',
+                borderRadius: 'var(--radius-full)',
+                backgroundColor: 'var(--accent-primary-light)',
+                color: 'var(--accent-primary)',
+                fontWeight: 700,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                maxWidth: '150px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+              title={cityName}
+            >
+              <PinIcon size={11} color="var(--accent-primary)" />
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{cityName}</span>
+            </span>
+          </div>
+
+          {/* Messages Scroll Area */}
+          <div
+            style={{
+              flex: 1,
+              minHeight: 0,
+              padding: 'var(--space-4)',
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--space-3)',
+            }}
+          >
+            {messages.map((msg) => {
+              const isUser = msg.sender === 'user';
+
+              return (
+                <div
+                  key={msg.id}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: isUser ? 'flex-end' : 'flex-start',
+                    gap: '4px',
+                  }}
+                >
+                  <div
+                    style={{
+                      maxWidth: isUser ? '85%' : '90%',
+                      backgroundColor: isUser ? 'var(--accent-primary)' : 'rgba(255, 255, 255, 0.92)',
+                      color: isUser ? '#FFFFFF' : 'var(--text-primary)',
+                      padding: isUser ? '10px 14px' : '12px 14px',
+                      borderRadius: isUser ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
+                      fontSize: '13px',
+                      lineHeight: 1.5,
+                      border: isUser ? 'none' : '1px solid var(--border-subtle)',
+                      boxShadow: 'var(--shadow-xs)',
+                    }}
+                  >
+                    <MarkdownRenderer content={msg.content} isUser={isUser} />
+
+                    {/* Citations List */}
+                    {msg.citedLiveSignals && msg.citedLiveSignals.length > 0 && (
+                      <div
+                        style={{
+                          marginTop: '10px',
+                          paddingTop: '8px',
+                          borderTop: isUser ? '1px solid rgba(255,255,255,0.2)' : '1px solid var(--border-subtle)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '4px',
+                        }}
+                      >
+                        <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: isUser ? 'rgba(255,255,255,0.8)' : 'var(--text-muted)' }}>
+                          PROVENANCE:
+                        </span>
+                        {msg.citedLiveSignals.map((cite, idx) => (
+                          <div
+                            key={idx}
+                            style={{
+                              fontSize: '11px',
+                              color: isUser ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)',
+                              display: 'flex',
+                              gap: '6px',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: isUser ? '#FFFFFF' : 'var(--accent-primary)' }} />
+                            <span><strong>[{cite.type}]</strong> {cite.detail} ({cite.source})</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Suggested Action Chips */}
+                  {msg.suggestedActions && msg.suggestedActions.length > 0 && (
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+                      {msg.suggestedActions.map((action, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleSend(action)}
+                          style={{
+                            fontSize: '11px',
+                            padding: '4px 10px',
+                            borderRadius: 'var(--radius-full)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            border: '1px solid var(--border-subtle)',
+                            color: 'var(--accent-primary)',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                            e.currentTarget.style.backgroundColor = 'var(--accent-primary-light)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = 'var(--border-subtle)';
+                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                          }}
+                        >
+                          {action}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Fixed Bottom Input Composer */}
+          <div
+            style={{
+              padding: 'var(--space-3) var(--space-4)',
+              borderTop: '1px solid var(--border-subtle)',
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              gap: 'var(--space-2)',
+              flexShrink: 0,
+            }}
+          >
+            <input
+              type="text"
+              placeholder="Ask Nexus about route hazards, 24h events, weather, or earthquakes..."
+              value={inputQuery}
+              onChange={(e) => setInputQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSend(inputQuery);
+              }}
+              style={{
+                flex: 1,
+                height: '40px',
+                padding: '0 14px',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border-subtle)',
+                backgroundColor: 'var(--bg-app)',
+                fontSize: '13px',
+                color: 'var(--text-primary)',
+                outline: 'none',
+                transition: 'border-color 0.15s ease',
+              }}
+            />
+            <button
+              onClick={() => handleSend(inputQuery)}
+              disabled={isSending || !inputQuery.trim()}
+              style={{
+                height: '40px',
+                padding: '0 18px',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: isSending ? 'var(--text-muted)' : 'var(--accent-primary)',
+                color: '#FFFFFF',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: isSending || !inputQuery.trim() ? 'not-allowed' : 'pointer',
+                border: 'none',
+                transition: 'background-color 0.15s ease',
+                flexShrink: 0,
+              }}
+            >
+              {isSending ? 'Thinking...' : 'Send'}
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }

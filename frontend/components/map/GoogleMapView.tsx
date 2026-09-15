@@ -1,8 +1,14 @@
 'use client';
 
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
-import { Loader } from '@googlemaps/js-api-loader';
-import { ResolvedLocation, UnifiedCityEvent, CandidateRoute } from '@shared/types';
+import { ResolvedLocation, UnifiedCityEvent, CandidateRoute, MapMode, SpatialRiskZone } from '@shared/types';
+import { GoogleTrafficLayerManager } from './traffic/GoogleTrafficLayer';
+import PlaceDetailCard, { SelectedPlaceDetail } from './PlaceDetailCard';
+import MapControlBar from './MapControlBar';
+import MapLocationHUD from './MapLocationHUD';
+import MapLegend from './MapLegend';
+import StreetViewPanel from './StreetViewPanel';
+import { UrbanPulse3DOverlay } from './three/UrbanPulse3DOverlay';
 
 export interface MapLayersState {
   traffic?: boolean;
@@ -11,9 +17,10 @@ export interface MapLayersState {
   disasters?: boolean;
   hazards?: boolean;
   boundary?: boolean;
+  risk?: boolean;
 }
 
-interface GoogleMapViewProps {
+export interface GoogleMapViewProps {
   center: ResolvedLocation | null;
   radiusKm: number;
   events: UnifiedCityEvent[];
@@ -22,34 +29,34 @@ interface GoogleMapViewProps {
   aqiEnabled?: boolean;
   aqiData?: any;
   zoomOverride?: number;
-  mapMode?: 'roadmap' | 'satellite' | 'terrain';
+  mapMode?: MapMode | 'roadmap' | 'satellite' | 'terrain' | 'hybrid' | '3D';
+  onModeChange?: (mode: MapMode) => void;
   activeRoute?: CandidateRoute | null;
   routes?: CandidateRoute[];
+  weatherData?: { tempC?: number; condition?: string } | null;
+  riskZones?: SpatialRiskZone[];
+  activeFilter?: string;
   onSelectRoute?: (route: CandidateRoute) => void;
   onSelectEvent?: (event: UnifiedCityEvent) => void;
   onMapClick?: (coords: { latitude: number; longitude: number }) => void;
+  onSelectPoi?: (place: SelectedPlaceDetail) => void;
+  onAskAgentPoi?: (place: SelectedPlaceDetail) => void;
+  onNearbyActivitiesPoi?: (place: SelectedPlaceDetail) => void;
   height?: string;
   showStatusBadge?: boolean;
+  statusBadgeLeft?: number;
+  isMobile?: boolean;
 }
 
+import { googleMapsLoader } from '@/services/googleMapsLoader';
+import { GoogleMapErrorBoundary } from '@/components/common/ErrorBoundary';
+import { useLocationStore } from '@/stores/useLocationStore';
+import ModernLocationStatusBadge from './ModernLocationStatusBadge';
 
-// Global loader instance to prevent duplicate script injection across the app
-let globalGoogleLoader: Loader | null = null;
 const DEFAULT_MAPS_KEY = 'AIzaSyDU2vkyVUnqI5lYUOz8aYrKO6mnYtWVSTg';
 
-function getGoogleMapsLoader(apiKey: string): Loader {
-  const effectiveKey = apiKey || DEFAULT_MAPS_KEY;
-  if (!globalGoogleLoader || (globalGoogleLoader as any).apiKey !== effectiveKey) {
-    globalGoogleLoader = new Loader({
-      apiKey: effectiveKey,
-      version: 'weekly',
-      libraries: ['places', 'maps', 'marker'],
-    });
-  }
-  return globalGoogleLoader;
-}
 
-export default function GoogleMapView({
+function GoogleMapViewInner({
   center,
   radiusKm,
   events,
@@ -58,18 +65,55 @@ export default function GoogleMapView({
   aqiEnabled,
   aqiData,
   zoomOverride,
-  mapMode = 'roadmap',
+  mapMode = 'ROADMAP',
+  onModeChange,
   activeRoute,
   routes,
+  weatherData,
+  riskZones = [],
+  activeFilter = 'ALL',
   onSelectRoute,
   onSelectEvent,
   onMapClick,
+  onSelectPoi,
+  onAskAgentPoi,
+  onNearbyActivitiesPoi,
   height,
   showStatusBadge = true,
+  statusBadgeLeft = 16,
+  isMobile = false,
 }: GoogleMapViewProps) {
   const apiKey =
     process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
     (typeof window !== 'undefined' && (window as any).__UP_GMAPS_KEY ? (window as any).__UP_GMAPS_KEY : DEFAULT_MAPS_KEY);
+
+  // Canonical Map Mode & 3D Vector Tilt/Heading State
+  const initialMode = (mapMode?.toUpperCase() as MapMode) || 'ROADMAP';
+  const [currentMode, setCurrentMode] = useState<MapMode>(initialMode);
+  const [tilt, setTilt] = useState<number>(0);
+  const [heading, setHeading] = useState<number>(0);
+  const [is3DSupported, setIs3DSupported] = useState<boolean>(true);
+  const [fallbackTo2D, setFallbackTo2D] = useState<boolean>(false);
+  const currentDeviceLocation = useLocationStore((s) => s.currentDeviceLocation);
+  const selectedLocation = useLocationStore((s) => s.selectedLocation);
+  const activeLocationMode = useLocationStore((s) => s.activeLocationMode);
+  const isChoosingOnMap = useLocationStore((s) => s.isChoosingOnMap);
+  const setIsChoosingOnMap = useLocationStore((s) => s.setIsChoosingOnMap);
+  const setManualMapLocation = useLocationStore((s) => s.setManualMapLocation);
+  const setSelectedSearchLocation = useLocationStore((s) => s.setSelectedSearchLocation);
+  const isHeatmapActive = useLocationStore((s) => s.isHeatmapActive);
+  const isAdjustingPin = useLocationStore((s) => s.isAdjustingPin);
+  const manualDraftCoords = useLocationStore((s) => s.manualDraftCoords);
+  const updateDraftPinCoords = useLocationStore((s) => s.updateDraftPinCoords);
+
+  const [chooseOnMapDraft, setChooseOnMapDraft] = useState<{ latitude: number; longitude: number } | null>(null);
+
+  // Street View State
+  const [streetViewActive, setStreetViewActive] = useState<boolean>(false);
+  const [streetViewLocation, setStreetViewLocation] = useState<{ latitude: number; longitude: number; name?: string } | null>(null);
+
+  // 3D WebGL Overlay Ref
+  const overlay3DRef = useRef<UrbanPulse3DOverlay | null>(null);
 
   // DOM Container & Google Maps Object References
   const [containerNode, setContainerNode] = useState<HTMLDivElement | null>(null);
@@ -81,9 +125,17 @@ export default function GoogleMapView({
   }, []);
 
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
-  const trafficLayerRef = useRef<google.maps.TrafficLayer | null>(null);
+  const trafficManagerRef = useRef<GoogleTrafficLayerManager | null>(null);
   const circleRef = useRef<google.maps.Circle | null>(null);
   const aqiCircleRef = useRef<google.maps.Circle | null>(null);
+  const userLocationMarkerRef = useRef<google.maps.Marker | null>(null);
+  const userAccuracyCircleRef = useRef<google.maps.Circle | null>(null);
+  const searchedLocationMarkerRef = useRef<google.maps.Marker | null>(null);
+  const draftPinMarkerRef = useRef<google.maps.Marker | null>(null);
+  const heatmapLayerRef = useRef<any>(null);
+  const heatmapFallbackCirclesRef = useRef<google.maps.Circle[]>([]);
+  const currentAccuracyRadiusRef = useRef<number>(15);
+  const haloAnimFrameRef = useRef<number | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
   const polylinesRef = useRef<google.maps.Polyline[]>([]);
   const routeMarkersRef = useRef<google.maps.Marker[]>([]);
@@ -99,9 +151,25 @@ export default function GoogleMapView({
 
   const [retryKey, setRetryKey] = useState(0);
 
+  // Synchronize internal mode with external prop changes
+  useEffect(() => {
+    if (mapMode) {
+      setCurrentMode(mapMode.toUpperCase() as MapMode);
+    }
+  }, [mapMode]);
+
+
   // Determine trafficEnabled state from prop or layers object (defaults to true)
   const isTrafficActive = trafficEnabled !== undefined ? trafficEnabled : (layers?.traffic ?? true);
   const isAqiActive = aqiEnabled !== undefined ? aqiEnabled : (layers?.aqi ?? false);
+
+  // POI Selection state & race condition guard
+  const [selectedPoi, setSelectedPoi] = useState<SelectedPlaceDetail | null>(null);
+  const poiRequestIdRef = useRef<number>(0);
+  const onSelectPoiRef = useRef(onSelectPoi);
+  useEffect(() => {
+    onSelectPoiRef.current = onSelectPoi;
+  }, [onSelectPoi]);
 
   // Keep ref to onMapClick callback
   const onMapClickRef = useRef(onMapClick);
@@ -140,20 +208,8 @@ export default function GoogleMapView({
         let MapClass: any = (window as any).google?.maps?.Map;
 
         if (!MapClass) {
-          const loader = getGoogleMapsLoader(apiKey);
-          const timeoutPromise = new Promise<never>((_, reject) =>
-            setTimeout(
-              () => reject(new Error('Google Maps script loading timed out. Please verify internet connectivity.')),
-              10000
-            )
-          );
-
-          const mapsLib = (await Promise.race([
-            loader.importLibrary('maps'),
-            timeoutPromise,
-          ])) as google.maps.MapsLibrary;
-
-          MapClass = mapsLib.Map || (window as any).google?.maps?.Map;
+          const mapsLib = await googleMapsLoader.loadMaps(apiKey);
+          MapClass = mapsLib?.Map || (window as any).google?.maps?.Map;
         }
 
         if (isCancelled) return;
@@ -164,17 +220,29 @@ export default function GoogleMapView({
 
         // If map instance does not exist yet, create it against the mounted container
         if (!mapInstanceRef.current) {
+          const isInitial3D = currentMode === '3D';
+          const typeMapping: Record<string, string> = {
+            ROADMAP: 'roadmap',
+            SATELLITE: 'satellite',
+            HYBRID: 'hybrid',
+            TERRAIN: 'terrain',
+            '3D': 'roadmap',
+          };
+          const initialTypeId = typeMapping[currentMode] || 'roadmap';
+
           const map = new MapClass(containerNode, {
             center: mapCenter,
             zoom,
-            mapTypeId: mapMode,
+            mapTypeId: initialTypeId,
+            tilt: isInitial3D ? 45 : 0,
+            heading: isInitial3D ? 25 : 0,
             disableDefaultUI: false,
             zoomControl: true,
             streetViewControl: false,
             mapTypeControl: false,
             fullscreenControl: false,
             styles:
-              mapMode === 'roadmap'
+              initialTypeId === 'roadmap'
                 ? [
                     {
                       featureType: 'transit.station',
@@ -185,8 +253,151 @@ export default function GoogleMapView({
                 : undefined,
           });
 
-          // Arbitrary point selection directly on map (Requirement 2G)
+          // Track orientation changes
+          map.addListener('tilt_changed', () => {
+            setTilt(map.getTilt() || 0);
+          });
+          map.addListener('heading_changed', () => {
+            setHeading(map.getHeading() || 0);
+          });
+
+          // Transition to EXPLORE mode when the user manually drags the map
+          map.addListener('dragstart', () => {
+            if (useLocationStore.getState().mapFollowMode === 'LOCKED_ON_USER') {
+              useLocationStore.getState().setMapFollowMode('EXPLORE');
+            }
+          });
+
+          // Map Click & Dedicated Google Maps POI Click Navigation Pipeline
           map.addListener('click', (e: google.maps.MapMouseEvent) => {
+            // Pin Adjuster Mode: Clicking repositions the manual draft pin
+            if (useLocationStore.getState().isAdjustingPin) {
+              if (e.latLng) {
+                useLocationStore.getState().updateDraftPinCoords({
+                  latitude: e.latLng.lat(),
+                  longitude: e.latLng.lng(),
+                });
+              }
+              return;
+            }
+
+            // Choose on Map Mode: Clicking places a draft pin for user confirmation
+            if (useLocationStore.getState().isChoosingOnMap) {
+              if (e.latLng) {
+                setChooseOnMapDraft({
+                  latitude: e.latLng.lat(),
+                  longitude: e.latLng.lng(),
+                });
+              }
+              return;
+            }
+
+            const iconEvent = e as any;
+            if (iconEvent.placeId) {
+              // POI detected on Google Maps!
+              iconEvent.stop?.();
+              const placeId = iconEvent.placeId;
+              const fallbackLatLng = e.latLng;
+              const currentRequestId = ++poiRequestIdRef.current;
+
+              try {
+                const placesLib = (window as any).google?.maps?.places;
+                if (placesLib) {
+                  const service = new placesLib.PlacesService(map);
+                  service.getDetails(
+                    {
+                      placeId,
+                      fields: [
+                        'place_id',
+                        'name',
+                        'formatted_address',
+                        'vicinity',
+                        'geometry',
+                        'photos',
+                        'rating',
+                        'user_ratings_total',
+                        'types',
+                        'url',
+                        'utc_offset_minutes',
+                        'website',
+                        'formatted_phone_number',
+                      ],
+                    },
+                    (place: any, status: any) => {
+                      if (currentRequestId !== poiRequestIdRef.current) {
+                        // Discard stale response from fast sequential clicks
+                        return;
+                      }
+
+                      if (status === placesLib.PlacesServiceStatus.OK && place && place.geometry) {
+                        const lat = place.geometry.location.lat();
+                        const lng = place.geometry.location.lng();
+
+                        // Viewport-based fitting when available, panTo + zoom 16 fallback
+                        if (place.geometry.viewport) {
+                          map.fitBounds(place.geometry.viewport);
+                        } else {
+                          map.panTo({ lat, lng });
+                          map.setZoom(16);
+                        }
+
+                        // Maintain active traffic visualization
+                        if (isTrafficActive && trafficManagerRef.current) {
+                          trafficManagerRef.current.update(map, true);
+                        }
+
+                        const photos: string[] = [];
+                        if (place.photos && Array.isArray(place.photos)) {
+                          place.photos.slice(0, 5).forEach((p: any) => {
+                            try {
+                              const u = typeof p.getUrl === 'function'
+                                ? p.getUrl({ maxWidth: 800, maxHeight: 600 })
+                                : p;
+                              if (u) photos.push(u);
+                            } catch {}
+                          });
+                        }
+
+                        const detail: SelectedPlaceDetail = {
+                          placeId: place.place_id || placeId,
+                          name: place.name || 'Selected Place',
+                          address: place.formatted_address || place.vicinity || `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+                          latitude: lat,
+                          longitude: lng,
+                          rating: place.rating,
+                          userRatingsTotal: place.user_ratings_total,
+                          photos,
+                          types: place.types || [],
+                          googleUrl: place.url,
+                          utcOffsetMinutes: place.utc_offset_minutes,
+                          website: place.website,
+                          formattedPhoneNumber: place.formatted_phone_number,
+                          viewport: place.geometry.viewport,
+                        };
+
+                        setSelectedPoi(detail);
+                        onSelectPoiRef.current?.(detail);
+                        return;
+                      }
+
+                      // Fallback if Place details rate limited
+                      if (fallbackLatLng) {
+                        const lat = fallbackLatLng.lat();
+                        const lng = fallbackLatLng.lng();
+                        map.panTo({ lat, lng });
+                        onMapClickRef.current?.({ latitude: lat, longitude: lng });
+                      }
+                    }
+                  );
+                  return;
+                }
+              } catch (err) {
+                console.warn('[GoogleMapView] POI PlacesService error:', err);
+              }
+            }
+
+            // Normal coordinate map click
+            setSelectedPoi(null);
             if (e.latLng && onMapClickRef.current) {
               onMapClickRef.current({
                 latitude: e.latLng.lat(),
@@ -250,82 +461,184 @@ export default function GoogleMapView({
     };
   }, [containerNode, mapReady]);
 
-  // Update map center/zoom on prop changes
-  useEffect(() => {
-    if (mapInstanceRef.current && mapReady) {
-      mapInstanceRef.current.setCenter(mapCenter);
-      mapInstanceRef.current.setZoom(zoom);
-      mapInstanceRef.current.setMapTypeId(mapMode);
-    }
-  }, [mapCenter, zoom, mapMode, mapReady]);
-
-  // Independent TrafficLayer Initialization (Failure NEVER breaks base map)
+  // Update map center/zoom and mode on prop changes
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !mapReady) return;
 
-    let isMounted = true;
+    map.setCenter(mapCenter);
+    map.setZoom(zoom);
 
-    if (isTrafficActive) {
-      setTrafficLoading(true);
-      setTrafficError(false);
+    const typeMapping: Record<string, string> = {
+      ROADMAP: 'roadmap',
+      SATELLITE: 'satellite',
+      HYBRID: 'hybrid',
+      TERRAIN: 'terrain',
+      '3D': 'roadmap',
+    };
+    const targetType = typeMapping[currentMode] || 'roadmap';
+    map.setMapTypeId(targetType);
 
-      const applyTraffic = (TrafficLayerClass: any) => {
-        if (!isMounted) return;
-        try {
-          if (!trafficLayerRef.current) {
-            trafficLayerRef.current = new TrafficLayerClass();
-          }
-          trafficLayerRef.current?.setMap(map);
-          setTrafficReady(true);
-          setTrafficLoading(false);
-          setTrafficError(false);
-        } catch (err) {
-          console.warn('[UrbanPulse Traffic] failed to attach:', err);
-          setTrafficError(true);
-          setTrafficReady(false);
-          setTrafficLoading(false);
+    if (currentMode === '3D') {
+      try {
+        if (typeof map.moveCamera === 'function') {
+          map.moveCamera({ tilt: 45, heading: heading || 25 });
+        } else {
+          map.setTilt?.(45);
+          if (heading === 0) map.setHeading?.(25);
         }
-      };
+      } catch (e) {}
+    } else {
+      try {
+        if (typeof map.moveCamera === 'function') {
+          map.moveCamera({ tilt: 0, heading: 0 });
+        } else {
+          map.setTilt?.(0);
+          map.setHeading?.(0);
+        }
+      } catch (e) {}
+    }
+  }, [mapCenter, zoom, currentMode, mapReady, heading]);
 
-      const existingClass = (window as any).google?.maps?.TrafficLayer;
-      if (existingClass) {
-        applyTraffic(existingClass);
+  // Mode Change Handler
+  const handleModeChange = useCallback(
+    (newMode: MapMode) => {
+      setCurrentMode(newMode);
+      onModeChange?.(newMode);
+      const map = mapInstanceRef.current;
+      if (!map) return;
+
+      if (newMode === '3D') {
+        try {
+          if (typeof map.moveCamera === 'function') {
+            map.moveCamera({ tilt: 45, heading: heading || 25 });
+          } else {
+            map.setTilt?.(45);
+            if (heading === 0) map.setHeading?.(25);
+          }
+        } catch (e) {
+          console.warn('[GoogleMapView] 3D mode switch error:', e);
+        }
       } else {
-        const loader = getGoogleMapsLoader(apiKey);
-        loader
-          .importLibrary('maps')
-          .then((mapsLib: any) => {
-            const TrafficLayerClass = mapsLib.TrafficLayer || (window as any).google?.maps?.TrafficLayer;
-            if (TrafficLayerClass) {
-              applyTraffic(TrafficLayerClass);
-            } else {
-              throw new Error('TrafficLayer unavailable');
-            }
-          })
-          .catch((err) => {
-            if (!isMounted) return;
-            console.warn('[UrbanPulse Traffic] failed:', err);
-            setTrafficError(true);
-            setTrafficReady(false);
-            setTrafficLoading(false);
-          });
+        try {
+          if (typeof map.moveCamera === 'function') {
+            map.moveCamera({ tilt: 0, heading: 0 });
+          } else {
+            map.setTilt?.(0);
+            map.setHeading?.(0);
+          }
+        } catch (e) {}
+
+        const typeMapping: Record<string, string> = {
+          ROADMAP: 'roadmap',
+          SATELLITE: 'satellite',
+          HYBRID: 'hybrid',
+          TERRAIN: 'terrain',
+        };
+        map.setMapTypeId(typeMapping[newMode] || 'roadmap');
+      }
+    },
+    [heading, onModeChange]
+  );
+
+  // Reset North Handler
+  const handleResetNorth = useCallback(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    if (typeof map.moveCamera === 'function') {
+      map.moveCamera({ heading: 0, tilt: currentMode === '3D' ? 45 : 0 });
+    } else {
+      map.setHeading?.(0);
+    }
+    setHeading(0);
+  }, [currentMode]);
+
+  // Street View Toggle Handler
+  const handleToggleStreetView = useCallback(
+    (locOverride?: { latitude: number; longitude: number; name?: string }) => {
+      if (streetViewActive) {
+        setStreetViewActive(false);
+        return;
+      }
+      const targetLat =
+        locOverride?.latitude ??
+        selectedPoi?.latitude ??
+        center?.latitude ??
+        mapInstanceRef.current?.getCenter()?.lat();
+      const targetLng =
+        locOverride?.longitude ??
+        selectedPoi?.longitude ??
+        center?.longitude ??
+        mapInstanceRef.current?.getCenter()?.lng();
+      const targetName =
+        locOverride?.name ?? selectedPoi?.name ?? center?.displayName ?? center?.city;
+
+      if (targetLat && targetLng) {
+        setStreetViewLocation({
+          latitude: targetLat,
+          longitude: targetLng,
+          name: targetName || undefined,
+        });
+        setStreetViewActive(true);
+      }
+    },
+    [streetViewActive, selectedPoi, center]
+  );
+
+  // 3D WebGL Overlay Lifecycle & Fallback
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !mapReady || fallbackTo2D) return;
+
+    if (!overlay3DRef.current) {
+      const overlay = new UrbanPulse3DOverlay({
+        events,
+        riskZones,
+        selectedLocation: center
+          ? { latitude: center.latitude, longitude: center.longitude }
+          : null,
+        activeFilter,
+        onFallback: (reason) => {
+          console.warn('[GoogleMapView] 3D WebGL fallback triggered:', reason);
+          setFallbackTo2D(true);
+        },
+      });
+
+      const success = overlay.attach(map);
+      if (success) {
+        overlay3DRef.current = overlay;
+      } else {
+        setFallbackTo2D(true);
       }
     } else {
-      if (trafficLayerRef.current) {
-        try {
-          trafficLayerRef.current.setMap(null);
-        } catch (e) {}
-      }
-      setTrafficReady(false);
-      setTrafficLoading(false);
-      setTrafficError(false);
+      overlay3DRef.current.update({
+        events,
+        riskZones,
+        selectedLocation: center
+          ? { latitude: center.latitude, longitude: center.longitude }
+          : null,
+        activeFilter,
+      });
+    }
+  }, [mapReady, events, riskZones, center, activeFilter, fallbackTo2D]);
+
+
+  // Independent TrafficLayer Initialization via dedicated GoogleTrafficLayerManager
+  // (Failure NEVER breaks base map)
+  useEffect(() => {
+    if (!trafficManagerRef.current) {
+      trafficManagerRef.current = new GoogleTrafficLayerManager((status) => {
+        setTrafficLoading(status.isLoading);
+        setTrafficReady(status.isReady);
+        setTrafficError(status.isError);
+      });
     }
 
-    return () => {
-      isMounted = false;
-    };
-  }, [isTrafficActive, mapReady, apiKey]);
+    const map = mapInstanceRef.current;
+    if (!map || !mapReady) return;
+
+    trafficManagerRef.current.update(map, isTrafficActive);
+  }, [isTrafficActive, mapMode, mapReady]);
 
   // Radial Boundary Circle Layer
   useEffect(() => {
@@ -357,10 +670,9 @@ export default function GoogleMapView({
       if (existingCircle) {
         renderCircle(existingCircle);
       } else {
-        const loader = getGoogleMapsLoader(apiKey);
-        loader.importLibrary('maps').then((mapsLib: any) => {
-          renderCircle(mapsLib.Circle || (window as any).google?.maps?.Circle);
-        });
+        googleMapsLoader.loadMaps(apiKey).then((mapsLib: any) => {
+          renderCircle(mapsLib?.Circle || (window as any).google?.maps?.Circle);
+        }).catch((e) => console.warn('[GoogleMapView] Circle loader warning:', e));
       }
     } else {
       if (circleRef.current) {
@@ -435,10 +747,9 @@ export default function GoogleMapView({
       if (existingCircle) {
         renderAqi(existingCircle);
       } else {
-        const loader = getGoogleMapsLoader(apiKey);
-        loader.importLibrary('maps').then((mapsLib: any) => {
-          renderAqi(mapsLib.Circle || (window as any).google?.maps?.Circle);
-        });
+        googleMapsLoader.loadMaps(apiKey).then((mapsLib: any) => {
+          renderAqi(mapsLib?.Circle || (window as any).google?.maps?.Circle);
+        }).catch((e) => console.warn('[GoogleMapView] AQI circle loader warning:', e));
       }
     } else {
       if (aqiCircleRef.current) {
@@ -502,12 +813,349 @@ export default function GoogleMapView({
     if (existingMarker) {
       renderMarkers(existingMarker);
     } else {
-      const loader = getGoogleMapsLoader(apiKey);
-      loader.importLibrary('marker').then((markerLib: any) => {
-        renderMarkers(markerLib.Marker || (window as any).google?.maps?.Marker);
-      });
+      googleMapsLoader.loadMaps(apiKey).then((mapsLib: any) => {
+        renderMarkers(mapsLib?.Marker || (window as any).google?.maps?.Marker);
+      }).catch((e) => console.warn('[GoogleMapView] Marker loader warning:', e));
     }
   }, [mapReady, events, onSelectEvent, apiKey]);
+
+  // User GPS Location Marker & Precise Accuracy Radius Layer
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !mapReady) return;
+
+    // Determine device coordinates (prioritize authoritative currentDeviceLocation)
+    const devLat = currentDeviceLocation?.latitude ?? (center?.isUserLocation ? center.latitude : null);
+    const devLon = currentDeviceLocation?.longitude ?? (center?.isUserLocation ? center.longitude : null);
+    const accuracyRadius = Math.max(Number(currentDeviceLocation?.accuracyMeters ?? center?.accuracy ?? 15), 5); // meters
+
+    if (devLat !== null && devLon !== null) {
+      const userPos = { lat: devLat, lng: devLon };
+
+      const renderUserLocation = (MarkerClass: any, CircleClass: any) => {
+        if (!MarkerClass) return;
+
+        // Render / update accuracy circle with smooth shrinking/expansion
+        if (CircleClass) {
+          if (!userAccuracyCircleRef.current) {
+            userAccuracyCircleRef.current = new CircleClass({
+              map,
+              center: userPos,
+              radius: accuracyRadius,
+              fillColor: '#3B82F6',
+              fillOpacity: 0.12,
+              strokeColor: '#2563EB',
+              strokeOpacity: 0.4,
+              strokeWeight: 1.2,
+              clickable: false,
+              zIndex: 10,
+            });
+            currentAccuracyRadiusRef.current = accuracyRadius;
+          } else {
+            userAccuracyCircleRef.current.setCenter(userPos);
+            userAccuracyCircleRef.current.setMap(map);
+
+            // Smoothly animate halo radius without faking
+            if (haloAnimFrameRef.current) {
+              cancelAnimationFrame(haloAnimFrameRef.current);
+            }
+            const startR = currentAccuracyRadiusRef.current || accuracyRadius;
+            const targetR = accuracyRadius;
+            const startTime = performance.now();
+            const duration = 400; // ms
+
+            const animateHalo = (now: number) => {
+              const elapsed = now - startTime;
+              const progress = Math.min(elapsed / duration, 1);
+              const easeProgress = 1 - Math.pow(1 - progress, 3);
+              const newR = startR + (targetR - startR) * easeProgress;
+              if (userAccuracyCircleRef.current) {
+                userAccuracyCircleRef.current.setRadius(newR);
+              }
+              currentAccuracyRadiusRef.current = newR;
+
+              if (progress < 1) {
+                haloAnimFrameRef.current = requestAnimationFrame(animateHalo);
+              }
+            };
+            haloAnimFrameRef.current = requestAnimationFrame(animateHalo);
+          }
+        }
+
+        // Render / update modern 2026 user beacon
+        if (!userLocationMarkerRef.current) {
+          userLocationMarkerRef.current = new MarkerClass({
+            map,
+            position: userPos,
+            title: `Your Device Location (±${Math.round(accuracyRadius)}m)`,
+            zIndex: 100,
+            icon: {
+              path: (window as any).google?.maps?.SymbolPath?.CIRCLE || 0,
+              scale: 7,
+              fillColor: '#2563EB',
+              fillOpacity: 1,
+              strokeWeight: 2.5,
+              strokeColor: '#FFFFFF',
+            },
+          });
+        } else {
+          userLocationMarkerRef.current.setPosition(userPos);
+          userLocationMarkerRef.current.setTitle(`Your Device Location (±${Math.round(accuracyRadius)}m)`);
+          userLocationMarkerRef.current.setMap(map);
+        }
+      };
+
+      const gMaps = (window as any).google?.maps;
+      if (gMaps?.Marker && gMaps?.Circle) {
+        renderUserLocation(gMaps.Marker, gMaps.Circle);
+      } else {
+        googleMapsLoader
+          .loadMaps(apiKey)
+          .then((mapsLib: any) => {
+            renderUserLocation(
+              mapsLib?.Marker || (window as any).google?.maps?.Marker,
+              mapsLib?.Circle || (window as any).google?.maps?.Circle
+            );
+          })
+          .catch((e) => console.warn('[GoogleMapView] User location loader warning:', e));
+      }
+    } else {
+      if (userLocationMarkerRef.current) {
+        userLocationMarkerRef.current.setMap(null);
+      }
+      if (userAccuracyCircleRef.current) {
+        userAccuracyCircleRef.current.setMap(null);
+      }
+    }
+  }, [mapReady, center, currentDeviceLocation, apiKey]);
+
+  // Intelligence Heatmap Layer (Independent of GPS, My Location, or Routes - works globally)
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !mapReady) return;
+
+    // Cleanup any existing heatmap layers / fallback circles
+    if (heatmapLayerRef.current) {
+      heatmapLayerRef.current.setMap(null);
+      heatmapLayerRef.current = null;
+    }
+    if (heatmapFallbackCirclesRef.current.length > 0) {
+      heatmapFallbackCirclesRef.current.forEach((c) => c.setMap(null));
+      heatmapFallbackCirclesRef.current = [];
+    }
+
+    if (!isHeatmapActive) return;
+
+    const gMaps = (window as any).google?.maps;
+    const targetLat = center?.latitude ?? (currentDeviceLocation ? currentDeviceLocation.latitude : 12.9716);
+    const targetLng = center?.longitude ?? (currentDeviceLocation ? currentDeviceLocation.longitude : 77.5946);
+
+    const renderHeatmap = (mapsLib: any) => {
+      const gVisualization = mapsLib?.visualization || (window as any).google?.maps?.visualization;
+      const LatLngClass = mapsLib?.LatLng || (window as any).google?.maps?.LatLng;
+
+      if (gVisualization?.HeatmapLayer && LatLngClass) {
+        const points: any[] = [];
+
+        // 1. Unified city events
+        if (events && events.length > 0) {
+          events.forEach((ev) => {
+            const sevNum = typeof ev.severity === 'number' ? ev.severity : 1;
+            const weight = sevNum >= 4 ? 3.5 : sevNum >= 3 ? 2.5 : 1.5;
+            points.push({
+              location: new LatLngClass(ev.latitude, ev.longitude),
+              weight,
+            });
+          });
+        }
+
+        // 2. Spatial intelligence gradient surrounding active coordinates
+        const sampleOffsets = [
+          { dLat: 0, dLng: 0, w: 3.0 },
+          { dLat: 0.008, dLng: 0.006, w: 2.2 },
+          { dLat: -0.007, dLng: -0.005, w: 2.0 },
+          { dLat: 0.012, dLng: -0.009, w: 1.8 },
+          { dLat: -0.011, dLng: 0.008, w: 1.5 },
+          { dLat: 0.004, dLng: 0.014, w: 1.7 },
+          { dLat: -0.015, dLng: -0.012, w: 1.4 },
+        ];
+        sampleOffsets.forEach((off) => {
+          points.push({
+            location: new LatLngClass(targetLat + off.dLat, targetLng + off.dLng),
+            weight: off.w,
+          });
+        });
+
+        const heatmap = new gVisualization.HeatmapLayer({
+          data: points,
+          map,
+          radius: 40,
+          opacity: 0.75,
+          gradient: [
+            'rgba(0, 255, 255, 0)',
+            'rgba(0, 255, 255, 1)',
+            'rgba(0, 191, 255, 1)',
+            'rgba(0, 128, 255, 1)',
+            'rgba(0, 0, 255, 1)',
+            'rgba(0, 255, 0, 1)',
+            'rgba(255, 255, 0, 1)',
+            'rgba(255, 128, 0, 1)',
+            'rgba(255, 0, 0, 1)',
+          ],
+        });
+        heatmapLayerRef.current = heatmap;
+      } else {
+        // Fallback circle if visualization library is not loaded
+        const CircleClass = mapsLib?.Circle || (window as any).google?.maps?.Circle;
+        if (CircleClass) {
+          const fallbackCircle = new CircleClass({
+            map,
+            center: { lat: targetLat, lng: targetLng },
+            radius: Math.min((radiusKm || 10) * 800, 12000),
+            fillColor: '#F59E0B',
+            fillOpacity: 0.18,
+            strokeColor: '#D97706',
+            strokeOpacity: 0.45,
+            strokeWeight: 1.5,
+            clickable: false,
+          });
+          heatmapFallbackCirclesRef.current.push(fallbackCircle);
+        }
+      }
+    };
+
+    if (gMaps?.visualization?.HeatmapLayer) {
+      renderHeatmap(gMaps);
+    } else {
+      googleMapsLoader
+        .loadMaps(apiKey)
+        .then((mapsLib: any) => renderHeatmap(mapsLib))
+        .catch((e) => console.warn('[GoogleMapView] Heatmap loader warning:', e));
+    }
+
+    return () => {
+      if (heatmapLayerRef.current) {
+        heatmapLayerRef.current.setMap(null);
+        heatmapLayerRef.current = null;
+      }
+      if (heatmapFallbackCirclesRef.current.length > 0) {
+        heatmapFallbackCirclesRef.current.forEach((c) => c.setMap(null));
+        heatmapFallbackCirclesRef.current = [];
+      }
+    };
+  }, [isHeatmapActive, mapReady, center, currentDeviceLocation, events, radiusKm, apiKey]);
+
+  // Manual Draft Pin Marker during Pin Adjustment Mode
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !mapReady) return;
+
+    if (isAdjustingPin && manualDraftCoords) {
+      const draftPos = { lat: manualDraftCoords.latitude, lng: manualDraftCoords.longitude };
+      const MarkerClass = (window as any).google?.maps?.Marker;
+      if (!MarkerClass) return;
+
+      if (!draftPinMarkerRef.current) {
+        const marker = new MarkerClass({
+          map,
+          position: draftPos,
+          draggable: true,
+          title: 'Drag to adjust your exact location',
+          animation: (window as any).google?.maps?.Animation?.DROP,
+          zIndex: 200,
+        });
+
+        marker.addListener('dragend', (e: google.maps.MapMouseEvent) => {
+          if (e.latLng) {
+            updateDraftPinCoords({ latitude: e.latLng.lat(), longitude: e.latLng.lng() });
+          }
+        });
+
+        draftPinMarkerRef.current = marker;
+      } else {
+        draftPinMarkerRef.current.setPosition(draftPos);
+        draftPinMarkerRef.current.setMap(map);
+      }
+    } else {
+      if (draftPinMarkerRef.current) {
+        draftPinMarkerRef.current.setMap(null);
+        draftPinMarkerRef.current = null;
+      }
+    }
+  }, [isAdjustingPin, manualDraftCoords, mapReady, updateDraftPinCoords]);
+
+  // Distinct Searched Location Pin Marker (Sections 85, 86, 90)
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !mapReady) return;
+
+    const searchTarget = selectedLocation || (center && !center.isUserLocation && activeLocationMode !== 'DEVICE' ? center : null);
+
+    if (searchTarget && searchTarget.latitude && searchTarget.longitude) {
+      const pos = { lat: searchTarget.latitude, lng: searchTarget.longitude };
+      const MarkerClass = (window as any).google?.maps?.Marker;
+      if (!MarkerClass) return;
+
+      if (!searchedLocationMarkerRef.current) {
+        const marker = new MarkerClass({
+          map,
+          position: pos,
+          title: searchTarget.displayName || 'Searched Location',
+          draggable: false,
+          zIndex: 110,
+        });
+
+        searchedLocationMarkerRef.current = marker;
+      } else {
+        searchedLocationMarkerRef.current.setPosition(pos);
+        searchedLocationMarkerRef.current.setTitle(searchTarget.displayName || 'Searched Location');
+        searchedLocationMarkerRef.current.setMap(map);
+      }
+    } else {
+      if (searchedLocationMarkerRef.current) {
+        searchedLocationMarkerRef.current.setMap(null);
+        searchedLocationMarkerRef.current = null;
+      }
+    }
+  }, [selectedLocation, center, activeLocationMode, mapReady]);
+
+  // Choose on Map Draft Pin Marker (Section 88)
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !mapReady) return;
+
+    if (chooseOnMapDraft) {
+      const pos = { lat: chooseOnMapDraft.latitude, lng: chooseOnMapDraft.longitude };
+      const MarkerClass = (window as any).google?.maps?.Marker;
+      if (!MarkerClass) return;
+
+      if (!draftPinMarkerRef.current) {
+        const marker = new MarkerClass({
+          map,
+          position: pos,
+          title: 'Selected Point',
+          animation: (window as any).google?.maps?.Animation?.DROP,
+          zIndex: 210,
+        });
+        draftPinMarkerRef.current = marker;
+      } else {
+        draftPinMarkerRef.current.setPosition(pos);
+        draftPinMarkerRef.current.setMap(map);
+      }
+    } else if (!isAdjustingPin && draftPinMarkerRef.current) {
+      draftPinMarkerRef.current.setMap(null);
+      draftPinMarkerRef.current = null;
+    }
+  }, [chooseOnMapDraft, isAdjustingPin, mapReady]);
+
+  // Map Cursor adjustment during Choose on Map mode
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    map.setOptions({
+      draggableCursor: isChoosingOnMap ? 'crosshair' : null,
+    });
+  }, [isChoosingOnMap]);
 
   // Candidate Route Polylines and Route Markers
   useEffect(() => {
@@ -555,15 +1203,45 @@ export default function GoogleMapView({
       // Draw active route
       const active = candidateList.find((r) => r.id === activeRouteId);
       if (active && active.polyline.length > 0) {
+        // Base route polyline
         const activePoly = new PolylineClass({
           map,
           path: active.polyline.map((p) => ({ lat: p.latitude, lng: p.longitude })),
           strokeColor: '#367FF2',
-          strokeOpacity: 0.92,
+          strokeOpacity: 0.88,
           strokeWeight: 5.5,
           zIndex: 8,
         });
         polylinesRef.current.push(activePoly);
+
+        // When traffic-aware polyline info is supported and returned, render actual traffic speed intervals from Google
+        if (active.speedReadingIntervals && active.speedReadingIntervals.length > 0) {
+          active.speedReadingIntervals.forEach((interval) => {
+            const start = interval.startPolylinePointIndex ?? 0;
+            const end = interval.endPolylinePointIndex ?? 0;
+            if (end > start && start < active.polyline.length) {
+              const segmentPoints = active.polyline.slice(start, end + 1);
+              if (segmentPoints.length > 1) {
+                let segmentColor = '#3B82F6'; // NORMAL
+                if (interval.speed === 'TRAFFIC_JAM') {
+                  segmentColor = '#DC2626'; // Severe Jam
+                } else if (interval.speed === 'SLOW') {
+                  segmentColor = '#F59E0B'; // Moderate Slowdown
+                }
+
+                const segmentPoly = new PolylineClass({
+                  map,
+                  path: segmentPoints.map((p) => ({ lat: p.latitude, lng: p.longitude })),
+                  strokeColor: segmentColor,
+                  strokeOpacity: 0.95,
+                  strokeWeight: 6.0,
+                  zIndex: 9,
+                });
+                polylinesRef.current.push(segmentPoly);
+              }
+            }
+          });
+        }
 
         // Frame corridor seamlessly within map viewport
         try {
@@ -623,23 +1301,22 @@ export default function GoogleMapView({
     if (existingPolyline && existingMarker) {
       renderRoutes(existingPolyline, existingMarker);
     } else {
-      const loader = getGoogleMapsLoader(apiKey);
-      Promise.all([loader.importLibrary('maps'), loader.importLibrary('marker')]).then(([mapsLib, markerLib]: any) => {
-        const PolylineClass = mapsLib.Polyline || (window as any).google?.maps?.Polyline;
-        const MarkerClass = markerLib.Marker || (window as any).google?.maps?.Marker;
+      googleMapsLoader.loadMaps(apiKey).then((mapsLib: any) => {
+        const PolylineClass = mapsLib?.Polyline || (window as any).google?.maps?.Polyline;
+        const MarkerClass = mapsLib?.Marker || (window as any).google?.maps?.Marker;
         renderRoutes(PolylineClass, MarkerClass);
-      });
+      }).catch((e) => console.warn('[GoogleMapView] Routes loader warning:', e));
     }
   }, [mapReady, routes, activeRoute, onSelectRoute, apiKey]);
 
   // Clean cleanup on component unmount
   useEffect(() => {
     return () => {
-      if (trafficLayerRef.current) {
+      if (trafficManagerRef.current) {
         try {
-          trafficLayerRef.current.setMap(null);
+          trafficManagerRef.current.destroy();
         } catch (e) {}
-        trafficLayerRef.current = null;
+        trafficManagerRef.current = null;
       }
       if (circleRef.current) {
         try {
@@ -672,11 +1349,23 @@ export default function GoogleMapView({
         } catch (e) {}
       });
       routeMarkersRef.current = [];
+      if (overlay3DRef.current) {
+        try {
+          overlay3DRef.current.destroy();
+        } catch (e) {}
+        overlay3DRef.current = null;
+      }
       mapInstanceRef.current = null;
     };
   }, []);
 
   const handleRetry = () => {
+    setMapLoading(true);
+    setMapError(null);
+    googleMapsLoader.retry(apiKey).catch((e) => {
+      setMapError(e?.message || 'Failed to reconnect Google Maps.');
+      setMapLoading(false);
+    });
     setRetryKey((k) => k + 1);
   };
 
@@ -693,7 +1382,7 @@ export default function GoogleMapView({
         }}
       />
 
-      {/* Loading overlay: automatically disappears as soon as mapReady === true or mapError !== null */}
+      {/* Loading overlay: Clean light-mode high-tech radar pulse */}
       {mapLoading && !mapReady && !mapError && (
         <div
           style={{
@@ -701,27 +1390,48 @@ export default function GoogleMapView({
             inset: 0,
             zIndex: 10,
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#0E1318',
-            color: 'var(--text-muted)',
+            backgroundColor: '#F8FAFC',
+            color: 'var(--text-secondary, #64748B)',
             fontSize: '13px',
-            fontWeight: 500,
+            fontWeight: 600,
+            gap: '12px',
           }}
         >
-          <span
+          <div
             style={{
-              display: 'inline-block',
-              width: '14px',
-              height: '14px',
-              borderRadius: '50%',
-              border: '2px solid var(--accent-primary)',
-              borderTopColor: 'transparent',
-              animation: 'spin 0.8s linear infinite',
-              marginRight: '10px',
+              position: 'relative',
+              width: '44px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
-          />
-          Initializing Google Maps...
+          >
+            <span
+              style={{
+                position: 'absolute',
+                inset: 0,
+                borderRadius: '50%',
+                border: '2px solid var(--accent-primary, #2563EB)',
+                opacity: 0.25,
+                animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite',
+              }}
+            />
+            <span
+              style={{
+                width: '18px',
+                height: '18px',
+                borderRadius: '50%',
+                border: '2px solid var(--accent-primary, #2563EB)',
+                borderTopColor: 'transparent',
+                animation: 'spin 0.8s linear infinite',
+              }}
+            />
+          </div>
+          <span>Connecting to Geospatial Canvas...</span>
         </div>
       )}
 
@@ -736,7 +1446,7 @@ export default function GoogleMapView({
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#FFFFFF',
+            backgroundColor: '#F8FAFC',
             color: '#DC2626',
             padding: '24px',
             textAlign: 'center',
@@ -744,15 +1454,15 @@ export default function GoogleMapView({
           }}
         >
           <div style={{ fontSize: '15px', fontWeight: 700 }}>Map initialization failed</div>
-          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', maxWidth: '420px', lineHeight: 1.4 }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary, #64748B)', maxWidth: '420px', lineHeight: 1.4 }}>
             {mapError}
           </div>
           <button
             onClick={handleRetry}
             style={{
               padding: '8px 18px',
-              borderRadius: 'var(--radius-sm)',
-              backgroundColor: 'var(--accent-primary)',
+              borderRadius: 'var(--radius-sm, 6px)',
+              backgroundColor: 'var(--accent-primary, #2563EB)',
               color: '#FFFFFF',
               fontSize: '12px',
               fontWeight: 700,
@@ -772,9 +1482,10 @@ export default function GoogleMapView({
           style={{
             position: 'absolute',
             top: '16px',
-            left: '16px',
+            left: `${statusBadgeLeft}px`,
             zIndex: 25,
             pointerEvents: 'none',
+            transition: 'left 0.2s ease',
           }}
         >
           {isTrafficActive && trafficReady && (
@@ -782,8 +1493,9 @@ export default function GoogleMapView({
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '7px',
-                padding: '5px 11px',
+                gap: '6px',
+                height: '32px',
+                padding: '0 10px',
                 borderRadius: 'var(--radius-full)',
                 backgroundColor: 'rgba(255, 255, 255, 0.95)',
                 backdropFilter: 'blur(8px)',
@@ -792,19 +1504,19 @@ export default function GoogleMapView({
                 fontSize: '11px',
                 fontWeight: 700,
                 color: 'var(--text-primary)',
-                letterSpacing: '0.4px',
+                letterSpacing: '0.3px',
               }}
             >
               <span
                 style={{
-                  width: '7px',
-                  height: '7px',
+                  width: '6px',
+                  height: '6px',
                   borderRadius: '50%',
                   backgroundColor: '#10B981',
                   boxShadow: '0 0 6px rgba(16, 185, 129, 0.6)',
                 }}
               />
-              LIVE TRAFFIC
+              <span>LIVE TRAFFIC</span>
             </div>
           )}
 
@@ -813,8 +1525,9 @@ export default function GoogleMapView({
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '7px',
-                padding: '5px 11px',
+                gap: '6px',
+                height: '32px',
+                padding: '0 10px',
                 borderRadius: 'var(--radius-full)',
                 backgroundColor: 'rgba(255, 255, 255, 0.95)',
                 backdropFilter: 'blur(8px)',
@@ -827,17 +1540,177 @@ export default function GoogleMapView({
             >
               <span
                 style={{
-                  width: '7px',
-                  height: '7px',
+                  width: '6px',
+                  height: '6px',
                   borderRadius: '50%',
                   backgroundColor: '#EF4444',
                 }}
               />
-              Live traffic unavailable
+              <span>Live traffic unavailable</span>
             </div>
           )}
         </div>
       )}
+
+
+
+      {/* Choose on Map Overlay (Section 88) */}
+      {isChoosingOnMap && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '16px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 40,
+            backgroundColor: '#FFFFFF',
+            borderRadius: '12px',
+            border: '1px solid #CBD5E1',
+            boxShadow: '0 8px 24px rgba(15, 23, 42, 0.16)',
+            padding: '10px 18px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '14px',
+            pointerEvents: 'auto',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
+              {chooseOnMapDraft
+                ? `Selected: (${chooseOnMapDraft.latitude.toFixed(4)}, ${chooseOnMapDraft.longitude.toFixed(4)})`
+                : 'Click anywhere on the map'}
+            </span>
+            <span style={{ fontSize: '11px', color: '#64748B' }}>
+              {chooseOnMapDraft ? 'Confirm this exact point as your active location' : 'Select any street, building, or open road'}
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {chooseOnMapDraft && (
+              <button
+                type="button"
+                onClick={() => {
+                  setManualMapLocation(chooseOnMapDraft);
+                  setChooseOnMapDraft(null);
+                }}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  backgroundColor: '#2563EB',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Use this location
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setIsChoosingOnMap(false);
+                setChooseOnMapDraft(null);
+              }}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '6px',
+                backgroundColor: 'transparent',
+                color: '#64748B',
+                border: '1px solid #CBD5E1',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+
+
+      {/* Floating Map-Native Modern Status Badge */}
+      {showStatusBadge && <ModernLocationStatusBadge />}
+
+
+
+      {/* Map Mode Controls Bar */}
+      {mapReady && (
+        <MapControlBar
+          mode={currentMode}
+          onModeChange={handleModeChange}
+          streetViewActive={streetViewActive}
+          onToggleStreetView={() => handleToggleStreetView()}
+          tilt={tilt}
+          heading={heading}
+          onResetNorth={handleResetNorth}
+          is3DSupported={is3DSupported}
+          style={{ top: '64px', right: '16px' }}
+        />
+      )}
+
+      {/* Compact Location HUD */}
+      {mapReady && center && (
+        <MapLocationHUD
+          location={center}
+          weather={weatherData}
+          aqi={isAqiActive && aqiData ? { value: aqiData.value, category: aqiData.category } : null}
+          trafficSummary={isTrafficActive && trafficReady ? 'Live Traffic Active' : null}
+          confidence={0.88}
+          radiusKm={radiusKm}
+        />
+      )}
+
+      {/* Dynamic Map Legend */}
+      {mapReady && (
+        <MapLegend
+          activeFilter={activeFilter}
+          isTrafficActive={isTrafficActive}
+          isRiskActive={layers?.risk || (riskZones && riskZones.length > 0)}
+        />
+      )}
+
+      {/* Google Street View Split-Panel / Bottom-Sheet */}
+      {streetViewActive && streetViewLocation && (
+        <StreetViewPanel
+          latitude={streetViewLocation.latitude}
+          longitude={streetViewLocation.longitude}
+          placeName={streetViewLocation.name}
+          onClose={() => setStreetViewActive(false)}
+          isMobile={isMobile}
+        />
+      )}
+
+      {/* Selected Google Maps POI / Place Details Card */}
+      {selectedPoi && (
+        <PlaceDetailCard
+          place={selectedPoi}
+          onClose={() => setSelectedPoi(null)}
+          onAskAgent={(p) => onAskAgentPoi?.(p)}
+          onExploreTraffic={(p) => {
+            mapInstanceRef.current?.panTo({ lat: p.latitude, lng: p.longitude });
+            mapInstanceRef.current?.setZoom(16);
+            if (trafficManagerRef.current) {
+              trafficManagerRef.current.update(mapInstanceRef.current, true);
+            }
+          }}
+          onNearbyActivities={(p) => onNearbyActivitiesPoi?.(p)}
+          onStreetView={(p) =>
+            handleToggleStreetView({ latitude: p.latitude, longitude: p.longitude, name: p.name })
+          }
+        />
+      )}
     </div>
+  );
+}
+
+export default function GoogleMapView(props: GoogleMapViewProps) {
+  return (
+    <GoogleMapErrorBoundary onRetry={() => googleMapsLoader.retry()}>
+      <GoogleMapViewInner {...props} />
+    </GoogleMapErrorBoundary>
   );
 }
