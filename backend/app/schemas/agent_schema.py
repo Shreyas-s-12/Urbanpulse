@@ -38,6 +38,12 @@ AgentIntent = Literal[
     "RECOMMEND_PLACE",
     "CASCADE",
     "WHERE_AM_I",
+    "HEATMAP",
+    "RANKING",
+    "WHY_TRAFFIC",
+    "CONFIDENCE_EXPLANATION",
+    "EXPLAINABILITY",
+    "EVALUATION",
 ]
 
 AgentTimeQualifier = Literal["CURRENT", "FORECAST", "HISTORICAL", "SIMULATION"]
@@ -72,6 +78,18 @@ AgentMapActionType = Literal[
     "OPEN_MISSION",
     "OPEN_MONITOR",
     "SHOW_CASCADE",
+    "SHOW_HEATMAP",
+    "HIDE_HEATMAP",
+    "SET_HEATMAP_METRIC",
+    "SET_HEATMAP_GEOGRAPHY",
+    "SET_HEATMAP_TIME",
+    "FOCUS_HEATMAP_HOTSPOT",
+    "INVESTIGATE_HEATMAP_CELL",
+    "RANK_ENTITIES",
+    "SHOW_RANKING",
+    "SHOW_RANKED_MARKERS",
+    "CLEAR_RANKING",
+    "FOCUS_RANKED_ENTITY",
 ]
 
 
@@ -83,6 +101,7 @@ class ParsedAgentIntent(BaseModel):
     radius_km: Optional[float] = None
     requires_comparison: bool = False
     is_follow_up: bool = False
+    ranking_params: Optional[Dict[str, Any]] = None
 
 
 class AgentMapAction(BaseModel):
@@ -105,6 +124,40 @@ class AgentInteractionRequest(BaseModel):
     conversation_history: Optional[List[Dict[str, str]]] = None
 
 
+NexusResponseType = Literal[
+    "RANKING",
+    "COMPARISON",
+    "CURRENT_STATUS",
+    "EXPLANATION",
+    "WHAT_CHANGED",
+    "FORECAST",
+    "SCENARIO",
+    "LOCATION_INFO",
+    "FACT",
+    "GENERAL",
+]
+
+
+class NexusStructuredSection(BaseModel):
+    title: Optional[str] = None
+    type: Literal["text", "table", "bullets", "key_values", "alert"] = "text"
+    content: Optional[str] = None
+    items: Optional[List[str]] = None
+    key_values: Optional[Dict[str, Any]] = None
+    table_headers: Optional[List[str]] = None
+    table_rows: Optional[List[List[Any]]] = None
+
+
+class NexusStructuredResponse(BaseModel):
+    type: NexusResponseType
+    title: str
+    summary: str
+    sections: List[NexusStructuredSection] = Field(default_factory=list)
+    results: Optional[List[Dict[str, Any]]] = None
+    metadata: Optional[Dict[str, Any]] = None
+    sources: List[Dict[str, Any]] = Field(default_factory=list)
+
+
 class AgentInteractionResponse(BaseModel):
     id: str
     message: str
@@ -116,3 +169,5 @@ class AgentInteractionResponse(BaseModel):
     actions: List[AgentMapAction] = Field(default_factory=list)
     tool_activities: List[AgentToolActivity] = Field(default_factory=list)
     timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    structured_response: Optional[NexusStructuredResponse] = None
+

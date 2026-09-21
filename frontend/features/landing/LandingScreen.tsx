@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import UrbanPulseLogo from '@/components/common/UrbanPulseLogo';
 import { CheckIcon } from '@/components/common/Icons';
@@ -14,15 +15,8 @@ interface LandingScreenProps {
 export default function LandingScreen({ onStart, destination = '/overview' }: LandingScreenProps) {
   const router = useRouter();
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [isNavigating, setIsNavigating] = useState(false);
 
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (isNavigating) return;
-    setIsNavigating(true);
-
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     try {
       if (typeof window !== 'undefined' && window.sessionStorage) {
         sessionStorage.setItem('up_agent_started', 'true');
@@ -32,9 +26,9 @@ export default function LandingScreen({ onStart, destination = '/overview' }: La
     }
 
     if (onStart) {
+      e.preventDefault();
+      e.stopPropagation();
       onStart();
-    } else if (destination) {
-      router.push(destination);
     }
   };
 
@@ -177,8 +171,8 @@ export default function LandingScreen({ onStart, destination = '/overview' }: La
         </p>
 
         {/* Primary CTA Button */}
-        <button
-          type="button"
+        <Link
+          href={destination || '/overview'}
           aria-label="Let's Get Started"
           onClick={handleClick}
           style={{
@@ -233,7 +227,7 @@ export default function LandingScreen({ onStart, destination = '/overview' }: La
             <line x1="5" y1="12" x2="19" y2="12"></line>
             <polyline points="12 5 19 12 12 19"></polyline>
           </svg>
-        </button>
+        </Link>
 
         {/* Verified Data Badges */}
         <div

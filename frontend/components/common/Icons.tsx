@@ -260,3 +260,16 @@ export const LayersIcon: React.FC<IconProps> = ({ size = 16, color = 'currentCol
     <polyline points="2 12 12 17 22 12" />
   </svg>
 );
+
+export const ChevronUpIcon: React.FC<IconProps> = ({ size = 16, color = 'currentColor', style }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={style}>
+    <polyline points="18 15 12 9 6 15" />
+  </svg>
+);
+
+export const RefreshIcon: React.FC<IconProps> = ({ size = 16, color = 'currentColor', style }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
+    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+  </svg>
+);
+

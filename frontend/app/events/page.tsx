@@ -1,6 +1,5 @@
-import React from 'react';
-import EventsTimelineView from '@/features/events/EventsTimelineView';
+import { redirect } from 'next/navigation';
 
-export default function EventsPage() {
-  return <EventsTimelineView />;
+export default function EventsRedirect() {
+  redirect('/overview');
 }

@@ -4,7 +4,6 @@ import React from 'react';
 import { usePathname } from 'next/navigation';
 import NavRail from '@/components/navigation/NavRail';
 import TopBar from '@/components/header/TopBar';
-import LocationDebugOverlay from '@/components/common/LocationDebugOverlay';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 
 interface AppShellProps {
@@ -48,9 +47,6 @@ export default function AppShell({ children }: AppShellProps) {
           </ErrorBoundary>
         </div>
       </div>
-
-      {/* Dev-Only Diagnostic HUD Overlay */}
-      <LocationDebugOverlay />
     </div>
   );
 }

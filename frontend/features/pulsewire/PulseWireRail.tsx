@@ -7,7 +7,6 @@ import { useLocationStore } from '@/stores/useLocationStore';
 import { useAgentStore } from '@/stores/useAgentStore';
 import {
   RadioIcon,
-  ExternalLinkIcon,
   CloseIcon,
   CollapseIcon,
   ExpandIcon,
@@ -25,6 +24,29 @@ const SCOPES: { id: PulseWireScope; label: string }[] = [
   { id: 'COUNTRY', label: 'Country' },
   { id: 'GLOBAL', label: 'Global' },
 ];
+
+function isValidArticleUrl(url: string | undefined | null): boolean {
+  if (!url || typeof url !== 'string') return false;
+  const trimmed = url.trim();
+  if (trimmed === '#' || trimmed === '') return false;
+  if (/^(javascript|data|vbscript|file):/i.test(trimmed)) return false;
+  return /^https?:\/\//i.test(trimmed);
+}
+
+function cleanText(raw: string): string {
+  if (!raw) return '';
+  return raw
+    .replace(/<[^>]*>/g, '')
+    .replace(/https?:\/\/\S+/gi, '')
+    .replace(/www\.\S+/gi, '')
+    .replace(/\bhref\s*=\s*["'][^"']*["']/gi, '')
+    .replace(/\bhref\s*=\s*\S+/gi, '')
+    .replace(/\bread\s+report\b/gi, '')
+    .replace(/\bread\s+more\b/gi, '')
+    .replace(/\bknow\s+more\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
 export default function PulseWireRail() {
   const {
@@ -384,12 +406,18 @@ export default function PulseWireRail() {
           };
 
           const catColor = categoryColors[article.category] || categoryColors.General;
+          const articleUrl = article.articleUrl || article.url;
+          const hasValidUrl = isValidArticleUrl(articleUrl);
+          const sourceLabel = cleanText(article.sourceName || article.source || 'Verified Source');
+          const headlineText = cleanText(article.headline || article.title);
+          const summaryText = cleanText(article.summary);
+          const locationText = cleanText(article.location);
 
           return (
             <article
               key={article.id}
               style={{
-                padding: '10px 12px',
+                padding: '11px 12px',
                 borderRadius: '8px',
                 backgroundColor: '#FFFFFF',
                 border: '1px solid var(--border-subtle)',
@@ -398,6 +426,8 @@ export default function PulseWireRail() {
                 flexDirection: 'column',
                 gap: '6px',
                 transition: 'border-color 0.15s ease',
+                overflow: 'hidden',
+                wordBreak: 'break-word',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = 'var(--accent-primary)';
@@ -406,84 +436,139 @@ export default function PulseWireRail() {
                 e.currentTarget.style.borderColor = 'var(--border-subtle)';
               }}
             >
-              {/* Card Meta Row */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+              {/* Category */}
+              <div>
                 <span
                   style={{
                     fontSize: '9.5px',
-                    fontWeight: 700,
+                    fontWeight: 750,
                     backgroundColor: catColor.bg,
                     color: catColor.text,
-                    padding: '1px 6px',
+                    padding: '2px 6px',
                     borderRadius: '4px',
                     textTransform: 'uppercase',
-                    letterSpacing: '0.3px',
+                    letterSpacing: '0.4px',
+                    display: 'inline-block',
                   }}
                 >
                   {article.category}
                 </span>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10.5px', color: 'var(--text-muted)' }}>
-                  <span>{article.freshness}</span>
-                  <span>•</span>
-                  <span style={{ fontWeight: 600, color: 'var(--text-secondary)', maxWidth: '90px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {article.source}
-                  </span>
-                </div>
               </div>
 
               {/* Headline */}
               <h3
                 style={{
-                  fontSize: '12px',
+                  fontSize: '12.5px',
                   fontWeight: 700,
                   lineHeight: 1.35,
                   color: 'var(--text-primary)',
                   margin: 0,
-                  overflowWrap: 'break-word',
+                  userSelect: 'text',
                 }}
               >
-                {article.headline}
+                {headlineText}
               </h3>
 
-              {/* Summary */}
+              {/* Short summary */}
               <p
                 style={{
                   fontSize: '11px',
                   color: 'var(--text-secondary)',
-                  lineHeight: 1.4,
+                  lineHeight: 1.45,
                   margin: 0,
-                  overflowWrap: 'break-word',
+                  userSelect: 'text',
                 }}
               >
-                {article.summary}
+                {summaryText}
               </p>
 
-              {/* Action / Source link */}
-              {article.url && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2px', paddingTop: '4px', borderTop: '1px solid var(--border-subtle)' }}>
-                  <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                    {article.location}
+              {/* Time & Source meta line: e.g. "1h ago · WSJ" */}
+              <div
+                style={{
+                  fontSize: '10.5px',
+                  color: 'var(--text-muted)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  lineHeight: 1.2,
+                }}
+              >
+                <span>{article.freshness}</span>
+                <span>·</span>
+                <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>
+                  {sourceLabel}
+                </span>
+              </div>
+
+              {/* Footer: Location & Source attribution on left, Read more → on right */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginTop: '2px',
+                  paddingTop: '6px',
+                  borderTop: '1px solid var(--border-subtle)',
+                  gap: '8px',
+                }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', minWidth: 0, flex: 1 }}>
+                  {locationText && (
+                    <span style={{ fontSize: '10px', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {locationText}
+                    </span>
+                  )}
+                  <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    Source: {sourceLabel}
                   </span>
-                  <a
-                    href={article.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      fontSize: '11px',
-                      color: 'var(--accent-primary)',
-                      textDecoration: 'none',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      fontWeight: 600,
-                    }}
-                  >
-                    <span>Read report</span>
-                    <ExternalLinkIcon size={11} color="var(--accent-primary)" />
-                  </a>
                 </div>
-              )}
+
+                <div style={{ flexShrink: 0 }}>
+                  {hasValidUrl ? (
+                    <a
+                      href={articleUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={`Open article from ${sourceLabel} in a new tab`}
+                      aria-label={`Read more about ${headlineText} on ${sourceLabel}`}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '2px',
+                        fontSize: '11px',
+                        fontWeight: 650,
+                        color: 'var(--accent-primary, #0284C7)',
+                        textDecoration: 'none',
+                        padding: '3px 7px',
+                        borderRadius: '4px',
+                        backgroundColor: 'rgba(2, 132, 199, 0.08)',
+                        transition: 'all 0.15s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(2, 132, 199, 0.18)';
+                        e.currentTarget.style.color = '#0369A1';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(2, 132, 199, 0.08)';
+                        e.currentTarget.style.color = 'var(--accent-primary, #0284C7)';
+                      }}
+                    >
+                      Read more →
+                    </a>
+                  ) : (
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        color: 'var(--text-muted)',
+                        fontStyle: 'italic',
+                        padding: '2px 4px',
+                      }}
+                    >
+                      Source available
+                    </span>
+                  )}
+                </div>
+              </div>
             </article>
           );
         })}

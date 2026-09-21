@@ -85,6 +85,22 @@ interface LocationState {
   setSearchDrawerOpen: (open: boolean) => void;
   isChoosingOnMap: boolean;
   setIsChoosingOnMap: (choosing: boolean) => void;
+  isSelectingMapLocation: boolean;
+  setIsSelectingMapLocation: (selecting: boolean) => void;
+  mapSelectedLocation: MapClickLocation | null;
+  mapClickDraft: {
+    latitude: number;
+    longitude: number;
+    source: 'MAP_CLICK' | 'MANUAL_ADJUSTMENT';
+    timestamp: number;
+    addressMetadata?: AddressMetadata;
+    isAdjusted?: boolean;
+    resolving?: boolean;
+  } | null;
+  setMapClickDraft: (draft: { latitude: number; longitude: number; source?: 'MAP_CLICK' | 'MANUAL_ADJUSTMENT'; isAdjusted?: boolean } | null) => void;
+  setMapClickDraftMetadata: (meta: AddressMetadata) => void;
+  confirmManualMapLocation: () => void;
+  cancelMapSelection: () => void;
   recentLocations: SelectedSearchLocation[];
   savedFavorites: SavedFavoriteLocation[];
   addRecentLocation: (loc: SelectedSearchLocation) => void;
@@ -203,7 +219,112 @@ export const useLocationStore = create<LocationState>((set, get) => ({
   isSearchDrawerOpen: false,
   setSearchDrawerOpen: (open: boolean) => set({ isSearchDrawerOpen: open }),
   isChoosingOnMap: false,
-  setIsChoosingOnMap: (choosing: boolean) => set({ isChoosingOnMap: choosing }),
+  setIsChoosingOnMap: (choosing: boolean) =>
+    set({
+      isChoosingOnMap: choosing,
+      isSelectingMapLocation: choosing,
+      ...(choosing ? { mapClickDraft: null } : {}),
+    }),
+  isSelectingMapLocation: false,
+  setIsSelectingMapLocation: (selecting: boolean) =>
+    set({
+      isSelectingMapLocation: selecting,
+      isChoosingOnMap: selecting,
+      ...(selecting ? { mapClickDraft: null } : {}),
+    }),
+  mapSelectedLocation: null,
+  mapClickDraft: null,
+  setMapClickDraft: (draft) => {
+    if (!draft) {
+      set({ mapClickDraft: null });
+      return;
+    }
+    const current = get().mapClickDraft;
+    const isAdjusted = draft.isAdjusted || draft.source === 'MANUAL_ADJUSTMENT' || false;
+    const source = isAdjusted ? 'MANUAL_ADJUSTMENT' : 'MAP_CLICK';
+    set({
+      mapClickDraft: {
+        latitude: draft.latitude,
+        longitude: draft.longitude,
+        source,
+        timestamp: Date.now(),
+        isAdjusted,
+        addressMetadata:
+          current?.latitude === draft.latitude && current?.longitude === draft.longitude
+            ? current.addressMetadata
+            : undefined,
+        resolving: true,
+      },
+    });
+  },
+  setMapClickDraftMetadata: (meta: AddressMetadata) => {
+    set((state) => {
+      if (!state.mapClickDraft) return state;
+      return {
+        mapClickDraft: {
+          ...state.mapClickDraft,
+          addressMetadata: meta,
+          resolving: false,
+        },
+      };
+    });
+  },
+  confirmManualMapLocation: () => {
+    const draft = get().mapClickDraft;
+    if (!draft) return;
+    const meta = draft.addressMetadata;
+    const isAdjusted = draft.isAdjusted || draft.source === 'MANUAL_ADJUSTMENT';
+    const source = isAdjusted ? 'MANUAL_ADJUSTMENT' : 'MAP_CLICK';
+    const resolved: ResolvedLocation = {
+      latitude: draft.latitude,
+      longitude: draft.longitude,
+      city: meta?.city || meta?.locality || `${draft.latitude.toFixed(4)}°, ${draft.longitude.toFixed(4)}°`,
+      district: meta?.district || null,
+      state: meta?.state || null,
+      region: meta?.state || null,
+      country: meta?.country || null,
+      countryCode: meta?.countryCode || null,
+      displayName:
+        meta?.formattedAddress ||
+        `Map Location (${draft.latitude.toFixed(4)}, ${draft.longitude.toFixed(4)})`,
+      isUserLocation: false,
+      source,
+      rawLatitude: draft.latitude,
+      rawLongitude: draft.longitude,
+    };
+    const context: LocationContext = {
+      ...resolved,
+      source,
+      addressMetadata: meta,
+    };
+    const mapClickLoc: MapClickLocation = {
+      latitude: draft.latitude,
+      longitude: draft.longitude,
+      source,
+      timestamp: draft.timestamp,
+      isAdjusted,
+      addressMetadata: meta,
+    };
+    set({
+      mapClickLocation: mapClickLoc,
+      mapSelectedLocation: mapClickLoc,
+      activeLocationMode: source,
+      activeSource: source,
+      currentLocation: resolved,
+      activeLocationContext: context,
+      isSelectingMapLocation: false,
+      isChoosingOnMap: false,
+      mapClickDraft: null,
+      mapFollowMode: 'EXPLORE',
+    });
+  },
+  cancelMapSelection: () => {
+    set({
+      isSelectingMapLocation: false,
+      isChoosingOnMap: false,
+      mapClickDraft: null,
+    });
+  },
   recentLocations: getSavedRecents(),
   savedFavorites: getSavedFavorites(),
   addRecentLocation: (loc: SelectedSearchLocation) => {
@@ -288,8 +409,8 @@ export const useLocationStore = create<LocationState>((set, get) => ({
   isResolvingLocation: false,
   searchQuery: '',
   isHeatmapActive: false,
-  toggleHeatmap: () => set((state) => ({ isHeatmapActive: !state.isHeatmapActive })),
-  setIsHeatmapActive: (active: boolean) => set({ isHeatmapActive: active }),
+  toggleHeatmap: () => {},
+  setIsHeatmapActive: () => {},
   distanceFromRawDeviceLocation: (targetLat: number, targetLon: number) => {
     const dev = get().currentDeviceLocation;
     if (!dev) return 0;
@@ -300,7 +421,7 @@ export const useLocationStore = create<LocationState>((set, get) => ({
     set({ locationSequenceNumber: nextSeq });
     return nextSeq;
   },
-  validateAndSetDeviceLocation: (raw: RawDeviceLocation, finalState: LocationAccuracyState = 'LOCKED', seq?: number) => {
+  validateAndSetDeviceLocation: (raw: RawDeviceLocation, finalState: LocationAccuracyState = 'READY', seq?: number) => {
     const state = get();
     // 1. Race condition check: discard stale responses
     if (seq !== undefined && seq < state.locationSequenceNumber) {
@@ -308,13 +429,23 @@ export const useLocationStore = create<LocationState>((set, get) => ({
       return false;
     }
     // 2. Distance guard against accidental overrides with derived/geocoded points
-    if (raw.source !== 'BROWSER_GEOLOCATION') {
+    if (raw.source !== 'BROWSER_GEOLOCATION' && raw.source !== 'DEVICE') {
       console.warn(
         `[UrbanPulse] CURRENT_LOCATION_OVERRIDE_BLOCKED: Attempted to set device location from invalid source '${raw.source}'`
       );
       set((s) => ({ overrideBlockCount: s.overrideBlockCount + 1 }));
       return false;
     }
+
+    const canonicalDeviceLocation: RawDeviceLocation = {
+      latitude: raw.latitude,
+      longitude: raw.longitude,
+      accuracyMeters: raw.accuracyMeters,
+      timestamp: raw.timestamp,
+      source: 'DEVICE',
+      addressMetadata: raw.addressMetadata,
+    };
+
     const resolvedObj: ResolvedLocation = {
       latitude: raw.latitude,
       longitude: raw.longitude,
@@ -329,23 +460,24 @@ export const useLocationStore = create<LocationState>((set, get) => ({
         raw.addressMetadata?.formattedAddress ||
         `Device Location (${raw.latitude.toFixed(4)}, ${raw.longitude.toFixed(4)})`,
       isUserLocation: true,
-      source: 'BROWSER_GEOLOCATION',
+      source: 'DEVICE',
       timestamp: raw.timestamp,
       rawLatitude: raw.latitude,
       rawLongitude: raw.longitude,
     };
     const contextObj: LocationContext = {
       ...resolvedObj,
-      source: 'BROWSER_GEOLOCATION',
+      source: 'DEVICE',
       accuracyMeters: raw.accuracyMeters,
       addressMetadata: raw.addressMetadata,
       timestamp: raw.timestamp,
+      status: finalState,
     };
     set({
-      currentDeviceLocation: raw,
-      lastKnownLocation: raw,
+      currentDeviceLocation: canonicalDeviceLocation,
+      lastKnownLocation: canonicalDeviceLocation,
       activeLocationMode: 'DEVICE',
-      activeSource: 'BROWSER_GEOLOCATION',
+      activeSource: 'DEVICE',
       currentLocation: resolvedObj,
       activeLocationContext: contextObj,
       gpsAccuracyMeters: raw.accuracyMeters,
@@ -376,7 +508,7 @@ export const useLocationStore = create<LocationState>((set, get) => ({
       };
       const updatedContext: LocationContext = {
         ...updatedResolved,
-        source: 'BROWSER_GEOLOCATION',
+        source: 'DEVICE',
         addressMetadata: meta,
       };
       return {
@@ -493,17 +625,17 @@ export const useLocationStore = create<LocationState>((set, get) => ({
       countryCode: dev.addressMetadata?.countryCode || null,
       displayName: dev.addressMetadata?.formattedAddress || `Device Location (${dev.latitude.toFixed(4)}, ${dev.longitude.toFixed(4)})`,
       isUserLocation: true,
-      source: 'BROWSER_GEOLOCATION',
+      source: 'DEVICE',
       timestamp: dev.timestamp,
     };
     const context: LocationContext = {
       ...resolved,
-      source: 'BROWSER_GEOLOCATION',
+      source: 'DEVICE',
       accuracyMeters: dev.accuracyMeters,
     };
     set({
       activeLocationMode: 'DEVICE',
-      activeSource: 'BROWSER_GEOLOCATION',
+      activeSource: 'DEVICE',
       currentLocation: resolved,
       activeLocationContext: context,
       searchQuery: '',
@@ -581,3 +713,78 @@ export const useLocationStore = create<LocationState>((set, get) => ({
 function rawLongitude(loc: any): number {
   return loc.rawLongitude ?? loc.longitude;
 }
+
+if (typeof window !== 'undefined') {
+  (window as any).__UP_LOCATION_STORE__ = useLocationStore;
+  (window as any).__UP_LOCATION_DIAGNOSTICS__ = {
+    getDiagnostics: () => {
+      const store = useLocationStore.getState();
+      const dev = store.currentDeviceLocation;
+      const cur = store.currentLocation;
+      const gmap = (window as any).__UP_GMAP_INSTANCE__;
+      const marker = (window as any).__UP_USER_MARKER__;
+
+      const gmapCenter = gmap?.getCenter?.();
+      const gLat = gmapCenter ? gmapCenter.lat() : cur?.latitude ?? null;
+      const gLng = gmapCenter ? gmapCenter.lng() : cur?.longitude ?? null;
+
+      const mPos = marker?.getPosition?.();
+      const mLat = mPos ? mPos.lat() : (store.activeLocationMode === 'DEVICE' ? dev?.latitude ?? null : cur?.latitude ?? null);
+      const mLng = mPos ? mPos.lng() : (store.activeLocationMode === 'DEVICE' ? dev?.longitude ?? null : cur?.longitude ?? null);
+
+      const dLat = dev?.latitude ?? null;
+      const dLng = dev?.longitude ?? null;
+      const fLat = cur?.latitude ?? null;
+      const fLng = cur?.longitude ?? null;
+
+      const rawToFinal = (dLat !== null && dLng !== null && fLat !== null && fLng !== null)
+        ? haversineDistanceMeters(dLat, dLng, fLat, fLng)
+        : null;
+      const finalToMap = (fLat !== null && fLng !== null && gLat !== null && gLng !== null)
+        ? haversineDistanceMeters(fLat, fLng, gLat, gLng)
+        : null;
+      const finalToMarker = (fLat !== null && fLng !== null && mLat !== null && mLng !== null)
+        ? haversineDistanceMeters(fLat, fLng, mLat, mLng)
+        : null;
+
+      const isSupported = typeof window !== 'undefined' && 'geolocation' in navigator ? 'YES' : 'NO';
+      const isSecure = typeof window !== 'undefined' ? (window.isSecureContext ? 'YES' : 'NO') : 'YES';
+      const mapReady = Boolean(gmap) ? 'YES' : 'NO';
+      const markerReady = Boolean(marker) ? 'YES' : 'NO';
+      const requestStatus = (store.isResolvingLocation || store.locationAccuracyState === 'LOCATING') ? 'STARTED' : 'IDLE';
+      const resultStatus = (store.locationAccuracyState === 'READY' || store.locationAccuracyState === 'LOCKED' || store.locationAccuracyState === 'FOUND')
+        ? 'SUCCESS'
+        : (store.locationAccuracyState === 'DENIED' || store.locationAccuracyState === 'TIMEOUT' || store.locationAccuracyState === 'UNAVAILABLE' || store.locationAccuracyState === 'ERROR')
+        ? store.locationAccuracyState
+        : 'IDLE';
+
+      return {
+        permission: store.permissionStatus || 'unknown',
+        supported: isSupported,
+        secureContext: isSecure,
+        request: requestStatus,
+        result: resultStatus,
+        mapReady,
+        marker: markerReady,
+        deviceLat: dLat,
+        deviceLng: dLng,
+        finalLat: fLat,
+        finalLng: fLng,
+        accuracy: dev?.accuracyMeters ?? null,
+        timestamp: dev?.timestamp ?? null,
+        ageSeconds: dev?.timestamp ? Math.max(0, Math.floor((Date.now() - dev.timestamp) / 1000)) : null,
+        mapLat: gLat,
+        mapLng: gLng,
+        markerLat: mLat,
+        markerLng: mLng,
+        rawToFinalDistanceMeters: rawToFinal,
+        finalToMapDistanceMeters: finalToMap,
+        finalToMarkerDistanceMeters: finalToMarker,
+        activeLocationMode: store.activeLocationMode,
+        locationAccuracyState: store.locationAccuracyState,
+        formattedAddress: dev?.addressMetadata?.formattedAddress || cur?.displayName || null,
+      };
+    },
+  };
+}
+

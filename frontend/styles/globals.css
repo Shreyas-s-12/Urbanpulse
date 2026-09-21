@@ -24,8 +24,15 @@
   --space-4: 16px;
   --space-5: 20px;
   --space-6: 24px;
-  --space-7: 32px;
   --space-8: 40px;
+
+  /* Shared Map Overlay Layout Variables */
+  --map-safe-top: 16px;
+  --map-safe-right: 16px;
+  --map-safe-bottom: 20px;
+  --map-safe-left: 16px;
+  --map-overlay-gap: 12px;
+  --map-card-max-width: 340px;
 
   /* Brand Accent: Cobalt / Electric Blue */
   --accent-primary: #2563EB;

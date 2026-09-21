@@ -12,6 +12,7 @@ import {
   CityComparisonResponse,
   LocationMonitor,
   MonitorAlert,
+  NexusStructuredResponse,
 } from '@shared/types';
 import { agentService } from '@/services/agentService';
 import { useLocationStore } from './useLocationStore';
@@ -32,6 +33,7 @@ export interface AgentChatMessage {
   confidence?: number;
   data?: any;
   location?: ResolvedLocation | null;
+  structuredResponse?: NexusStructuredResponse;
 }
 
 interface AgentState {
@@ -78,6 +80,12 @@ interface AgentState {
   showMissionModal: boolean;
   activeSmartRoutes: any | null;
   activeRiskHorizon: string;
+
+  // Nexus Global Ranking Intelligence
+  activeRanking: any | null;
+  showRankedMarkers: boolean;
+  setActiveRanking: (ranking: any | null) => void;
+  setShowRankedMarkers: (show: boolean) => void;
 
   // Canonical Phase 1 Context
   nexusContextVersion: number;
@@ -165,6 +173,12 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   showMissionModal: false,
   activeSmartRoutes: null,
   activeRiskHorizon: 'NOW',
+
+  // Nexus Global Ranking Intelligence
+  activeRanking: null,
+  showRankedMarkers: false,
+  setActiveRanking: (ranking) => set({ activeRanking: ranking }),
+  setShowRankedMarkers: (show) => set({ showRankedMarkers: show }),
 
   // Canonical Phase 1 Context
   nexusContextVersion: 1,
@@ -274,6 +288,8 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       activeLocation: null,
       toolActivities: [],
       aqiOverlayData: null,
+      activeRanking: null,
+      showRankedMarkers: false,
       activeLayers: { traffic: true, aqi: false, events: true, boundary: true },
     }),
 
@@ -360,6 +376,34 @@ export const useAgentStore = create<AgentState>((set, get) => ({
             set((state) => ({
               activeLayers: { ...state.activeLayers, aqi: false },
             }));
+          } else if (action.type === 'SHOW_RANKING') {
+            set({
+              activeRanking: action.payload?.ranking || res.data?.ranking || null,
+              showRankedMarkers: false,
+            });
+          } else if (action.type === 'SHOW_RANKED_MARKERS') {
+            set({
+              activeRanking: action.payload?.ranking || res.data?.ranking || null,
+              showRankedMarkers: true,
+            });
+            if (action.payload?.center) {
+              set({
+                mapCenter: { lat: action.payload.center.latitude, lng: action.payload.center.longitude },
+                mapZoom: action.payload.zoom || 5,
+              });
+            }
+          } else if (action.type === 'CLEAR_RANKING') {
+            set({
+              activeRanking: null,
+              showRankedMarkers: false,
+            });
+          } else if (action.type === 'FOCUS_RANKED_ENTITY') {
+            if (action.payload?.latitude && action.payload?.longitude) {
+              set({
+                mapCenter: { lat: action.payload.latitude, lng: action.payload.longitude },
+                mapZoom: action.payload.zoom || 12,
+              });
+            }
           } else if (action.type === 'SHOW_EVENTS_LAYER') {
             set((state) => ({
               activeLayers: { ...state.activeLayers, events: true },
@@ -458,6 +502,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
         confidence: res.confidence,
         data: res.data,
         location: res.location,
+        structuredResponse: res.structured_response || res.structuredResponse || (res as any).structured_response || undefined,
       };
 
       set((state) => ({

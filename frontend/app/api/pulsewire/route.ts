@@ -2,15 +2,62 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export interface PulseWireArticle {
   id: string;
+  title: string;
   headline: string;
   summary: string;
   source: string;
+  sourceName: string;
   publishedAt: string;
   freshness: string;
   category: 'Traffic' | 'Civic' | 'Weather' | 'Public Safety' | 'Economy' | 'National' | 'World' | 'General';
   location: string;
+  articleUrl: string;
   url: string;
   scope: string;
+}
+
+function sanitizeArticleUrl(rawUrl: string): string {
+  if (!rawUrl || typeof rawUrl !== 'string') return '';
+  let trimmed = rawUrl.trim();
+
+  // Unescape HTML entity encodings
+  trimmed = trimmed
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+
+  // Reject unsafe schemes
+  if (/^(javascript|data|vbscript|file):/i.test(trimmed)) return '';
+  // Must begin with http:// or https://
+  if (!/^https?:\/\//i.test(trimmed)) return '';
+
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+
+    // Strip marketing tracking parameters
+    const trackingParams = [
+      'utm_source',
+      'utm_medium',
+      'utm_campaign',
+      'utm_term',
+      'utm_content',
+      'fbclid',
+      'gclid',
+      '_ga',
+      '_gl',
+    ];
+    trackingParams.forEach((p) => parsed.searchParams.delete(p));
+
+    return parsed.toString();
+  } catch {
+    if (/^https?:\/\/[a-zA-Z0-9-._~:/?#[\]@!$&'()*+,;=]+$/i.test(trimmed)) {
+      return trimmed;
+    }
+    return '';
+  }
 }
 
 export interface PulseWireApiResponse {
@@ -73,16 +120,40 @@ function detectCategory(text: string): PulseWireArticle['category'] {
 }
 
 function cleanHtml(raw: string): string {
-  return raw
-    .replace(/<[^>]*>/g, '')
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;/g, "'")
-    .replace(/&#39;/g, "'")
+  if (!raw) return '';
+  // Multi-pass HTML entity decoding
+  let text = raw
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
-    .replace(/\s+/g, ' ')
-    .trim();
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ');
+
+  // Strip all HTML tags
+  text = text.replace(/<[^>]*>/g, ' ');
+
+  // Second pass in case of nested or double-encoded tags
+  text = text
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/<[^>]*>/g, ' ');
+
+  // Strip raw URLs (http://, https://, www.)
+  text = text.replace(/https?:\/\/\S+/gi, '');
+  text = text.replace(/www\.\S+/gi, '');
+
+  // Strip any lingering href= attributes, quotes or markup artifacts
+  text = text.replace(/\bhref\s*=\s*["'][^"']*["']/gi, '');
+  text = text.replace(/\bhref\s*=\s*\S+/gi, '');
+  text = text.replace(/\bread\s+report\b/gi, '');
+  text = text.replace(/\bread\s+more\b/gi, '');
+  text = text.replace(/\bknow\s+more\b/gi, '');
+  text = text.replace(/target\s*=\s*["'][^"']*["']/gi, '');
+
+  // Normalize whitespace
+  return text.replace(/\s+/g, ' ').trim();
 }
 
 function tokenize(text: string): Set<string> {
@@ -192,9 +263,28 @@ export async function GET(req: NextRequest) {
         source = cleanHtml(sourceTagMatch[1]);
       }
 
-      // Extract link
+      // Extract raw link: check <link>, then <a href="..."> in <description>, then <source url="...">
+      let rawLink = '';
       const linkMatch = itemContent.match(/<link>([\s\S]*?)<\/link>/);
-      const url = linkMatch ? cleanHtml(linkMatch[1]) : '';
+      if (linkMatch && linkMatch[1]) {
+        rawLink = linkMatch[1].trim();
+      }
+
+      if (!rawLink || !/^https?:\/\//i.test(rawLink)) {
+        const aHrefMatch = itemContent.match(/<a\s+(?:[^>]*?\s+)?href=["'](https?:\/\/[^"']+)["']/i);
+        if (aHrefMatch && aHrefMatch[1]) {
+          rawLink = aHrefMatch[1].trim();
+        }
+      }
+
+      if (!rawLink || !/^https?:\/\//i.test(rawLink)) {
+        const sourceUrlMatch = itemContent.match(/<source\s+(?:[^>]*?\s+)?url=["'](https?:\/\/[^"']+)["']/i);
+        if (sourceUrlMatch && sourceUrlMatch[1]) {
+          rawLink = sourceUrlMatch[1].trim();
+        }
+      }
+
+      const articleUrl = sanitizeArticleUrl(rawLink);
 
       // Extract pubDate
       const pubDateMatch = itemContent.match(/<pubDate>([\s\S]*?)<\/pubDate>/);
@@ -220,21 +310,24 @@ export async function GET(req: NextRequest) {
       }
       if (isDuplicate) continue;
 
-      seenTokens.push({ tokens: currentTokens, id: url || rawTitle });
+      seenTokens.push({ tokens: currentTokens, id: articleUrl || rawTitle });
 
       const category = detectCategory(rawTitle + ' ' + summary);
       const freshness = computeFreshness(pubDateStr);
 
       items.push({
         id: `pw-${items.length}-${Buffer.from(rawTitle.slice(0, 20)).toString('base64').replace(/[^a-zA-Z0-9]/g, '')}`,
+        title: rawTitle,
         headline: rawTitle,
         summary: summary || `Verified report from ${source}.`,
         source,
+        sourceName: source,
         publishedAt: new Date(pubDateStr).toISOString(),
         freshness,
         category,
         location: locationLabel,
-        url,
+        articleUrl,
+        url: articleUrl,
         scope,
       });
     }

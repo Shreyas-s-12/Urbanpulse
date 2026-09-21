@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocationStore, haversineDistanceMeters } from '@/stores/useLocationStore';
 import { locationService, getAccuracyTier } from '@/services/locationService';
 import { RawDeviceLocation } from '@shared/types';
+import { MAP_SAFE_AREAS } from '@/components/map/overlaySafeArea';
 
 export default function LocationDebugOverlay() {
   const {
@@ -50,6 +51,8 @@ export default function LocationDebugOverlay() {
     };
   }, []);
 
+
+
   // Show in dev mode or if window is in local test
   const isDev = process.env.NODE_ENV === 'development';
   if (!isDev) return null;
@@ -60,22 +63,35 @@ export default function LocationDebugOverlay() {
   const mapLat = currentLocation?.latitude ?? null;
   const mapLon = currentLocation?.longitude ?? null;
 
-  // In Device mode, marker position is strictly device coordinates
-  const markerLat = activeLocationMode === 'DEVICE' ? deviceLat : mapLat;
-  const markerLon = activeLocationMode === 'DEVICE' ? deviceLon : mapLon;
+  // Actual map instance and marker coordinates
+  const gmap = typeof window !== 'undefined' ? (window as any).__UP_GMAP_INSTANCE__ : null;
+  const userMarker = typeof window !== 'undefined' ? (window as any).__UP_USER_MARKER__ : null;
+
+  const gmapCenter = gmap?.getCenter?.();
+  const actualMapLat = gmapCenter ? gmapCenter.lat() : mapLat;
+  const actualMapLon = gmapCenter ? gmapCenter.lng() : mapLon;
+
+  const markerPos = userMarker?.getPosition?.();
+  const actualMarkerLat = markerPos ? markerPos.lat() : (activeLocationMode === 'DEVICE' ? deviceLat : mapLat);
+  const actualMarkerLon = markerPos ? markerPos.lng() : (activeLocationMode === 'DEVICE' ? deviceLon : mapLon);
 
   const revGeoCoord = currentDeviceLocation?.addressMetadata?.reverseGeocodeCoordinate;
   const formattedAddress = currentDeviceLocation?.addressMetadata?.formattedAddress || currentLocation?.displayName || 'None';
 
   // Distance calculations
-  const distanceDeviceToMap =
+  const rawToFinalDist =
     deviceLat !== null && deviceLon !== null && mapLat !== null && mapLon !== null
       ? haversineDistanceMeters(deviceLat, deviceLon, mapLat, mapLon)
       : null;
 
-  const distanceDeviceToMarker =
-    deviceLat !== null && deviceLon !== null && markerLat !== null && markerLon !== null
-      ? haversineDistanceMeters(deviceLat, deviceLon, markerLat, markerLon)
+  const finalToMapDist =
+    mapLat !== null && mapLon !== null && actualMapLat !== null && actualMapLon !== null
+      ? haversineDistanceMeters(mapLat, mapLon, actualMapLat, actualMapLon)
+      : null;
+
+  const finalToMarkerDist =
+    mapLat !== null && mapLon !== null && actualMarkerLat !== null && actualMarkerLon !== null
+      ? haversineDistanceMeters(mapLat, mapLon, actualMarkerLat, actualMarkerLon)
       : null;
 
   const currentTier = gpsAccuracyMeters !== null ? getAccuracyTier(gpsAccuracyMeters) : 'UNKNOWN';
@@ -156,11 +172,13 @@ export default function LocationDebugOverlay() {
       aria-label="Location Diagnostics"
       style={{
         position: 'fixed',
-        bottom: '16px',
-        right: '16px',
-        zIndex: 9999,
+        bottom: MAP_SAFE_AREAS.DEBUG_HUD.bottom,
+        left: MAP_SAFE_AREAS.DEBUG_HUD.left,
+        transform: MAP_SAFE_AREAS.DEBUG_HUD.transform,
+        zIndex: MAP_SAFE_AREAS.DEBUG_HUD.zIndex,
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
       }}
+
     >
       {!isOpen ? (
         <button
@@ -251,35 +269,82 @@ export default function LocationDebugOverlay() {
                 border: 'none',
                 color: '#94A3B8',
                 cursor: 'pointer',
-                fontSize: '14px',
+                display: 'flex',
+                alignItems: 'center',
                 padding: '0 4px',
               }}
+              aria-label="Close"
             >
-              ✕
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
           </div>
 
-          {/* Telemetry Grid (Exact Rule 35 specifications) */}
-          <div style={{ display: 'grid', gridTemplateColumns: '135px 1fr', gap: '5px', lineHeight: '1.4' }}>
-            <span style={{ color: '#94A3B8' }}>DEVICE LAT/LNG:</span>
+          {/* Telemetry Grid (Exact Rule 35 & Section 34 specifications) */}
+          <div style={{ display: 'grid', gridTemplateColumns: '145px 1fr', gap: '5px', lineHeight: '1.4' }}>
+            <span style={{ color: '#94A3B8' }}>PERMISSION:</span>
+            <span style={{ fontWeight: 600, color: '#A78BFA' }}>
+              {(typeof window !== 'undefined' && (window as any).__UP_LOCATION_STORE__?.getState()?.permissionStatus) || 'unknown'}
+            </span>
+
+            <span style={{ color: '#94A3B8' }}>SUPPORTED:</span>
+            <span style={{ color: typeof window !== 'undefined' && 'geolocation' in navigator ? '#10B981' : '#EF4444' }}>
+              {typeof window !== 'undefined' && 'geolocation' in navigator ? 'YES' : 'NO'}
+            </span>
+
+            <span style={{ color: '#94A3B8' }}>SECURE CONTEXT:</span>
+            <span style={{ color: typeof window !== 'undefined' && window.isSecureContext ? '#10B981' : '#EF4444' }}>
+              {typeof window !== 'undefined' && window.isSecureContext ? 'YES' : 'NO'}
+            </span>
+
+            <span style={{ color: '#94A3B8' }}>MAP / MARKER READY:</span>
+            <span style={{ color: gmap ? '#10B981' : '#F59E0B' }}>
+              Map: {gmap ? 'YES' : 'NO'} | Marker: {userMarker ? 'YES' : 'NO'}
+            </span>
+
+            <span style={{ color: '#94A3B8' }}>RAW (DEVICE) LAT/LNG:</span>
             <span style={{ fontWeight: 600, color: '#38BDF8', wordBreak: 'break-all' }}>
               {deviceLat !== null && deviceLon !== null
                 ? `${deviceLat.toFixed(6)}, ${deviceLon.toFixed(6)}`
                 : 'NOT ACQUIRED'}
             </span>
 
-            <span style={{ color: '#94A3B8' }}>MAP LAT/LNG:</span>
+            <span style={{ color: '#94A3B8' }}>FINAL (STORE) LAT/LNG:</span>
             <span style={{ wordBreak: 'break-all', color: '#E2E8F0' }}>
               {mapLat !== null && mapLon !== null
                 ? `${mapLat.toFixed(6)}, ${mapLon.toFixed(6)}`
                 : 'NOT SET'}
             </span>
 
+            <span style={{ color: '#94A3B8' }}>MAP CENTER LAT/LNG:</span>
+            <span style={{ wordBreak: 'break-all', color: '#60A5FA' }}>
+              {actualMapLat !== null && actualMapLon !== null
+                ? `${actualMapLat.toFixed(6)}, ${actualMapLon.toFixed(6)}`
+                : 'NOT SET'}
+            </span>
+
             <span style={{ color: '#94A3B8' }}>MARKER LAT/LNG:</span>
             <span style={{ wordBreak: 'break-all', color: '#34D399' }}>
-              {markerLat !== null && markerLon !== null
-                ? `${markerLat.toFixed(6)}, ${markerLon.toFixed(6)}`
+              {actualMarkerLat !== null && actualMarkerLon !== null
+                ? `${actualMarkerLat.toFixed(6)}, ${actualMarkerLon.toFixed(6)}`
                 : 'NO MARKER'}
+            </span>
+
+            <span style={{ color: '#94A3B8' }}>RAW → FINAL DIST:</span>
+            <span style={{ fontWeight: 700, color: rawToFinalDist !== null && rawToFinalDist < 0.05 ? '#10B981' : '#F59E0B' }}>
+              {rawToFinalDist !== null ? `${rawToFinalDist.toFixed(3)} m` : 'N/A'}
+            </span>
+
+            <span style={{ color: '#94A3B8' }}>FINAL → MAP DIST:</span>
+            <span style={{ fontWeight: 700, color: finalToMapDist !== null && finalToMapDist < 0.05 ? '#10B981' : '#F59E0B' }}>
+              {finalToMapDist !== null ? `${finalToMapDist.toFixed(3)} m` : 'N/A'}
+            </span>
+
+            <span style={{ color: '#94A3B8' }}>FINAL → MARKER DIST:</span>
+            <span style={{ fontWeight: 700, color: finalToMarkerDist !== null && finalToMarkerDist < 0.05 ? '#10B981' : '#EF4444' }}>
+              {finalToMarkerDist !== null ? `${finalToMarkerDist.toFixed(3)} m` : 'N/A'}
             </span>
 
             <span style={{ color: '#94A3B8' }}>REVERSE GEOCODE:</span>
@@ -290,16 +355,6 @@ export default function LocationDebugOverlay() {
             <span style={{ color: '#94A3B8' }}>REV GEO COORD:</span>
             <span style={{ wordBreak: 'break-all', color: '#FBBF24' }}>
               {revGeoCoord ? `${revGeoCoord.latitude.toFixed(6)}, ${revGeoCoord.longitude.toFixed(6)}` : 'None (No drift)'}
-            </span>
-
-            <span style={{ color: '#94A3B8' }}>DISTANCE TO MAP:</span>
-            <span style={{ fontWeight: 700, color: distanceDeviceToMap !== null && distanceDeviceToMap < 0.05 ? '#10B981' : '#F59E0B' }}>
-              {distanceDeviceToMap !== null ? `${distanceDeviceToMap.toFixed(3)} m` : 'N/A'}
-            </span>
-
-            <span style={{ color: '#94A3B8' }}>DISTANCE TO MARKER:</span>
-            <span style={{ fontWeight: 700, color: distanceDeviceToMarker !== null && distanceDeviceToMarker < 0.05 ? '#10B981' : '#EF4444' }}>
-              {distanceDeviceToMarker !== null ? `${distanceDeviceToMarker.toFixed(3)} m` : 'N/A'}
             </span>
 
             <span style={{ color: '#94A3B8' }}>ACTIVE MODE:</span>

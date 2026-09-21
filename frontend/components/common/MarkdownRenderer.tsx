@@ -20,15 +20,59 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   className,
   isUser = false,
 }) => {
-  // Sanitize content: prevent raw URLs from being printed directly as visible text
+  // Sanitize content: convert anchor tags to markdown, normalize link labels to "Read more →", and strip naked URLs
   const sanitizedContent = React.useMemo(() => {
     if (!content) return '';
-    // 1. Convert markdown links with URL as text: [https://...](https://...) -> [Verified Reference](https://...)
-    let res = content.replace(/\[https?:\/\/[^\]]+\]\((https?:\/\/[^\)]+)\)/gi, '[Verified Reference]($1)');
-    // 2. Convert naked URLs: https://... -> [Verified Reference](https://...)
-    // Negative lookbehind ensures we don't match URLs already inside markdown parenthesis
-    res = res.replace(/(?<!\]\()(?<!\[)(https?:\/\/[^\s\)\],]+)/gi, '[Verified Reference]($1)');
-    return res;
+
+    // 1. Convert HTML anchor tags: <a href="url">label</a> -> [label](url)
+    let res = content.replace(/<a\s+(?:[^>]*?\s+)?href=["'](https?:\/\/[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, (_, url, label) => {
+      const cleanLabel = label.replace(/<[^>]*>/g, '').trim();
+      let normalizedLabel = cleanLabel;
+      if (/^https?:\/\//i.test(cleanLabel) || /^www\./i.test(cleanLabel) || !cleanLabel) {
+        normalizedLabel = 'Read more →';
+      } else if (cleanLabel.toLowerCase().includes('read report') || cleanLabel.toLowerCase().includes('read more')) {
+        normalizedLabel = 'Read more →';
+      } else if (cleanLabel.toLowerCase().includes('know more')) {
+        normalizedLabel = 'Know more →';
+      }
+      return `[${normalizedLabel}](${url})`;
+    });
+
+    // 2. Normalize markdown link labels so that raw URLs or "read report" inside brackets become "Read more →"
+    res = res.replace(/\[([^\]]*)\]\((https?:\/\/[^\)]+)\)/gi, (_, label, url) => {
+      const trimmedLabel = label.trim();
+      let normalizedLabel = trimmedLabel;
+      if (/^https?:\/\//i.test(trimmedLabel) || /^www\./i.test(trimmedLabel) || !trimmedLabel) {
+        normalizedLabel = 'Read more →';
+      } else if (trimmedLabel.toLowerCase().includes('read report') || trimmedLabel.toLowerCase().includes('read more')) {
+        normalizedLabel = 'Read more →';
+      } else if (trimmedLabel.toLowerCase().includes('know more')) {
+        normalizedLabel = 'Know more →';
+      }
+      return `[${normalizedLabel}](${url})`;
+    });
+
+    // 3. Protect markdown links [label](url) so naked URL stripping does not corrupt them
+    const links: string[] = [];
+    res = res.replace(/\[[^\]]+\]\(https?:\/\/[^\)]+\)/gi, (m) => {
+      links.push(m);
+      return `__MK_LINK_${links.length - 1}__`;
+    });
+
+    // 4. Strip raw naked URLs from prose text
+    res = res.replace(/https?:\/\/\S+/gi, '');
+    res = res.replace(/www\.\S+/gi, '');
+
+    // 5. Strip any lingering href= attributes, HTML tags, or "read report" plain text
+    res = res.replace(/\bhref\s*=\s*["'][^"']*["']/gi, '');
+    res = res.replace(/\bhref\s*=\s*\S+/gi, '');
+    res = res.replace(/<[^>]*>/g, '');
+    res = res.replace(/\bread\s+report\b/gi, '');
+
+    // 6. Restore protected markdown links
+    res = res.replace(/__MK_LINK_(\d+)__/g, (_, idx) => links[Number(idx)] || '');
+
+    return res.trim();
   }, [content]);
 
   if (!content) return null;
@@ -107,26 +151,40 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
               {children}
             </li>
           ),
-          // Links
+          // Semantic Links: renders accessible external navigation without showing the URL text
           a: ({href, children}) => {
+            const rawUrl = href || '';
+            const trimmedUrl = String(rawUrl).trim();
+            const isValid = /^https?:\/\//i.test(trimmedUrl) && !/^(javascript|data|vbscript|file):/i.test(trimmedUrl);
+            if (!isValid) {
+              return <span style={{ fontWeight: 600 }}>{children}</span>;
+            }
+
             const rawLabel = String(children || '').trim();
-            const isRawUrl = /^https?:\/\//i.test(rawLabel) || /^www\./i.test(rawLabel) || rawLabel.includes('google.com/maps');
-            const displayLabel = isRawUrl ? 'Verified Reference' : children;
+            let label = rawLabel;
+            if (/^https?:\/\//i.test(rawLabel) || /^www\./i.test(rawLabel) || !rawLabel) {
+              label = 'Read more →';
+            } else if (rawLabel.toLowerCase().includes('read report') || rawLabel.toLowerCase().includes('read more')) {
+              label = 'Read more →';
+            } else if (rawLabel.toLowerCase().includes('know more')) {
+              label = 'Know more →';
+            }
+
             return (
               <a
-                href={href}
+                href={trimmedUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  color: isUser ? '#FFFFFF' : 'var(--accent-primary)',
-                  textDecoration: 'underline',
-                  fontWeight: 600,
+                  fontWeight: 650,
+                  color: isUser ? '#FFFFFF' : 'var(--accent-primary, #0284C7)',
+                  textDecoration: 'none',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '4px',
+                  gap: '2px',
                 }}
               >
-                <span>{displayLabel}</span>
+                {label}
               </a>
             );
           },

@@ -11,6 +11,19 @@ interface MapLegendProps {
   style?: React.CSSProperties;
 }
 
+interface LegendItem {
+  label: string;
+  color: string;
+  shape?: 'circle' | 'line' | 'square';
+}
+
+interface LegendSection {
+  title: string;
+  items: LegendItem[];
+  stats?: { min: number; mean: number; max: number; stdDev: number; isUniform: boolean; validCount: number } | null;
+  note?: string;
+}
+
 export default function MapLegend({
   activeFilter = 'ALL',
   isTrafficActive = false,
@@ -18,123 +31,165 @@ export default function MapLegend({
   className,
   style,
 }: MapLegendProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [trafficCollapsed, setTrafficCollapsed] = useState(false);
+  const [baseCollapsed, setBaseCollapsed] = useState(false);
 
-  // Determine what type of legend to display based on active state
-  let title = 'INCIDENTS & SEVERITY';
-  let items: { label: string; color: string; shape?: 'circle' | 'line' | 'square' }[] = [
-    { label: 'High (>=75)', color: '#EF4444' },
-    { label: 'Moderate (55-74)', color: '#F59E0B' },
-    { label: 'Low (<55)', color: '#10B981' },
-  ];
+  const isTrafficOn = activeFilter === 'TRAFFIC' || isTrafficActive;
 
-  if (isRiskActive) {
-    title = 'RISK RADAR DOMAINS';
-    items = [
-      { label: 'Severe', color: '#DC2626' },
-      { label: 'High', color: '#EA580C' },
-      { label: 'Moderate', color: '#F59E0B' },
-      { label: 'Low', color: '#10B981' },
-      { label: 'Unknown', color: '#94A3B8' },
-    ];
-  } else if (activeFilter === 'TRAFFIC' || isTrafficActive) {
-    title = 'LIVE ROAD TRAFFIC';
-    items = [
-      { label: 'Fast / Normal', color: '#10B981', shape: 'line' },
-      { label: 'Moderate', color: '#F59E0B', shape: 'line' },
-      { label: 'Slow / Heavy', color: '#EA580C', shape: 'line' },
-      { label: 'Severe Jam', color: '#DC2626', shape: 'line' },
-    ];
-  } else if (activeFilter === 'FLOOD') {
-    title = 'FLOOD & HYDROLOGY';
-    items = [
-      { label: 'Active Inundation', color: '#DC2626' },
-      { label: 'High Flood Risk', color: '#EA580C' },
-      { label: 'Moderate Risk', color: '#2563EB' },
-    ];
-  } else if (activeFilter === 'CRIME') {
-    title = 'PUBLIC SAFETY';
-    items = [
-      { label: 'Verified Severe Incident', color: '#DC2626' },
-      { label: 'Police Alert', color: '#2563EB' },
-      { label: 'Advisory / Low', color: '#64748B' },
-    ];
+  // Build Dedicated Live Traffic Legend (strictly separated, never colliding)
+  let trafficSection: LegendSection | null = null;
+  if (isTrafficOn) {
+    trafficSection = {
+      title: 'LIVE GOOGLE TRAFFIC',
+      items: [
+        { label: 'Normal / Free', color: '#10B981', shape: 'line' },
+        { label: 'Moderate Congestion', color: '#F59E0B', shape: 'line' },
+        { label: 'Slow / Heavy Delay', color: '#EA580C', shape: 'line' },
+        { label: 'Severe Jam', color: '#DC2626', shape: 'line' },
+      ],
+      note: 'Google Maps TrafficLayer',
+    };
   }
+
+  // Base map incidents legend when traffic is OFF
+  let incidentSection: LegendSection | null = null;
+  if (!isTrafficOn) {
+    if (isRiskActive) {
+      incidentSection = {
+        title: 'RISK RADAR DOMAINS',
+        items: [
+          { label: 'Critical (75+)', color: '#9F1239' },
+          { label: 'High (55–74)', color: '#EF4444' },
+          { label: 'Moderate (35–54)', color: '#F59E0B' },
+          { label: 'Low (<35)', color: '#10B981' },
+          { label: 'No Verified Signal', color: '#94A3B8' },
+        ],
+      };
+    } else {
+      incidentSection = {
+        title: 'INCIDENTS & SEVERITY',
+        items: [
+          { label: 'Severe (>=75)', color: '#EF4444' },
+          { label: 'Moderate (55–74)', color: '#F59E0B' },
+          { label: 'Low (<55)', color: '#10B981' },
+        ],
+      };
+    }
+  }
+
+  const cardStyle: React.CSSProperties = {
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    backdropFilter: 'blur(12px)',
+    borderRadius: '8px',
+    border: '1px solid var(--border-subtle, #E2E8F0)',
+    boxShadow: 'var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.08))',
+    padding: '8px 12px',
+    fontSize: '11px',
+    color: 'var(--text-primary, #1E293B)',
+    width: '240px',
+    pointerEvents: 'auto',
+  };
 
   return (
     <div
       className={className}
       style={{
-        position: 'absolute',
-        bottom: '24px',
-        right: '16px',
-        zIndex: 25,
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(10px)',
-        borderRadius: '8px',
-        border: '1px solid var(--border-subtle, #E2E8F0)',
-        boxShadow: 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.08))',
-        padding: '8px 12px',
-        fontSize: '11px',
-        color: 'var(--text-primary, #1E293B)',
-        pointerEvents: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px', // Exact 8px separation between stacked legends
+        alignItems: 'flex-end',
+        pointerEvents: 'none',
         ...style,
       }}
     >
-      <div
-        onClick={() => setCollapsed(!collapsed)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '8px',
-          cursor: 'pointer',
-          userSelect: 'none',
-        }}
-      >
-        <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-muted, #64748B)', letterSpacing: '0.04em' }}>
-          {title}
-        </span>
-        <ChevronDownIcon
-          size={11}
-          style={{
-            transform: collapsed ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform 0.15s ease',
-            color: 'var(--text-muted, #64748B)',
-          }}
-        />
-      </div>
 
-      {!collapsed && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px' }}>
-          {items.map((item, idx) => (
-            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              {item.shape === 'line' ? (
-                <span
-                  style={{
-                    width: '12px',
-                    height: '3px',
-                    borderRadius: '2px',
-                    backgroundColor: item.color,
-                    flexShrink: 0,
-                  }}
-                />
-              ) : (
-                <span
-                  style={{
-                    width: '7px',
-                    height: '7px',
-                    borderRadius: '50%',
-                    backgroundColor: item.color,
-                    flexShrink: 0,
-                  }}
-                />
+
+      {/* 2. Live Traffic Legend (Stacked below with 8px gap) */}
+      {trafficSection && (
+        <div style={cardStyle}>
+          <div
+            onClick={() => setTrafficCollapsed(!trafficCollapsed)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '6px',
+              cursor: 'pointer',
+              userSelect: 'none',
+            }}
+          >
+            <span style={{ fontSize: '10px', fontWeight: 800, color: '#64748B', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+              {trafficSection.title}
+            </span>
+            <ChevronDownIcon
+              size={11}
+              style={{
+                transform: trafficCollapsed ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.15s ease',
+                color: '#64748B',
+              }}
+            />
+          </div>
+
+          {!trafficCollapsed && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px' }}>
+              {trafficSection.items.map((item, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: item.color, flexShrink: 0 }} />
+                  <span style={{ fontSize: '10.5px', color: '#475569', fontWeight: 500 }}>
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+              {trafficSection.note && (
+                <div style={{ fontSize: '9px', color: '#94A3B8', marginTop: '2px' }}>
+                  {trafficSection.note}
+                </div>
               )}
-              <span style={{ fontSize: '10.5px', color: 'var(--text-secondary, #475569)', fontWeight: 500 }}>
-                {item.label}
-              </span>
             </div>
-          ))}
+          )}
+        </div>
+      )}
+
+      {/* 3. Base Incidents / Risk Section (only when both heatmap and traffic are off) */}
+      {incidentSection && (
+        <div style={cardStyle}>
+          <div
+            onClick={() => setBaseCollapsed(!baseCollapsed)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '6px',
+              cursor: 'pointer',
+              userSelect: 'none',
+            }}
+          >
+            <span style={{ fontSize: '10px', fontWeight: 800, color: '#64748B', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+              {incidentSection.title}
+            </span>
+            <ChevronDownIcon
+              size={11}
+              style={{
+                transform: baseCollapsed ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.15s ease',
+                color: '#64748B',
+              }}
+            />
+          </div>
+
+          {!baseCollapsed && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px' }}>
+              {incidentSection.items.map((item, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: item.color, flexShrink: 0 }} />
+                  <span style={{ fontSize: '10.5px', color: '#475569', fontWeight: 500 }}>
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

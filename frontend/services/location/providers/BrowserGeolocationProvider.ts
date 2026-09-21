@@ -2,13 +2,13 @@ import { ILocationProvider, ProviderReading } from './ILocationProvider';
 
 export class BrowserGeolocationProvider implements ILocationProvider {
   readonly name = 'BrowserGeolocationProvider';
-  readonly type = 'BROWSER_GEOLOCATION' as const;
+  readonly type = 'DEVICE' as const;
 
   isAvailable(): boolean {
     return typeof window !== 'undefined' && 'geolocation' in navigator;
   }
 
-  async getLocation(timeoutMs: number = 10000): Promise<ProviderReading> {
+  async getLocation(timeoutMs: number = 15000): Promise<ProviderReading> {
     if (!this.isAvailable()) {
       throw new Error('Browser geolocation is unavailable on this device.');
     }
@@ -21,13 +21,13 @@ export class BrowserGeolocationProvider implements ILocationProvider {
             longitude: pos.coords.longitude,
             accuracyMeters: pos.coords.accuracy,
             timestamp: pos.timestamp || Date.now(),
-            source: 'BROWSER_GEOLOCATION',
+            source: 'DEVICE',
             providerName: this.name,
-            isApproximate: pos.coords.accuracy > 250,
+            isApproximate: pos.coords.accuracy > 75,
           });
         },
         (err) => {
-          reject(new Error(err.message || 'Geolocation request failed.'));
+          reject(err);
         },
         { enableHighAccuracy: true, timeout: timeoutMs, maximumAge: 0 }
       );
@@ -36,7 +36,7 @@ export class BrowserGeolocationProvider implements ILocationProvider {
 
   watchLocation(
     onReading: (reading: ProviderReading) => void,
-    onError?: (err: Error) => void
+    onError?: (err: any) => void
   ): () => void {
     if (!this.isAvailable()) {
       onError?.(new Error('Browser geolocation is unavailable.'));
@@ -50,19 +50,23 @@ export class BrowserGeolocationProvider implements ILocationProvider {
           longitude: pos.coords.longitude,
           accuracyMeters: pos.coords.accuracy,
           timestamp: pos.timestamp || Date.now(),
-          source: 'BROWSER_GEOLOCATION',
+          source: 'DEVICE',
           providerName: this.name,
-          isApproximate: pos.coords.accuracy > 250,
+          isApproximate: pos.coords.accuracy > 75,
         });
       },
       (err) => {
-        onError?.(new Error(err.message));
+        onError?.(err);
       },
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 2000 }
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
     );
 
     return () => {
-      navigator.geolocation.clearWatch(watchId);
+      try {
+        if (typeof window !== 'undefined' && 'geolocation' in navigator) {
+          navigator.geolocation.clearWatch(watchId);
+        }
+      } catch {}
     };
   }
 }

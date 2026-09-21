@@ -3,7 +3,7 @@ UrbanPulse Weather Provider Adapter
 Fetches real-time, hourly, and daily meteorological intelligence from Open-Meteo with server-side caching and retry.
 """
 
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional, Tuple
 from datetime import datetime, timezone
 import openmeteo_requests
 import pandas as pd
@@ -156,3 +156,167 @@ class WeatherProvider:
         elif 95 <= code <= 99:
             return "Thunderstorm Alert"
         return "Scattered Clouds"
+
+    @classmethod
+    def _build_batch_empty(cls, lat: float, lon: float, name: str, now_iso: str) -> Dict[str, Any]:
+        return {
+            "latitude": round(lat, 5),
+            "longitude": round(lon, 5),
+            "metric": "WEATHER",
+            "rawValue": 0.0,
+            "value": 0.0,
+            "unit": "°C",
+            "category": "UNKNOWN",
+            "precipitationMm": 0.0,
+            "windSpeedKmh": 0.0,
+            "weatherCode": 0,
+            "timestamp": now_iso,
+            "source": "Open-Meteo Global Forecasting",
+            "status": "NO_COVERAGE",
+            "confidence": 0.0,
+            "coverage": 0.0,
+            "metadata": {"areaName": name, "note": "Station out of range or offline"},
+        }
+
+    @classmethod
+    def get_batch_weather_sync(
+        cls,
+        points: List[Any],
+    ) -> List[Dict[str, Any]]:
+        """
+        Batches multiple coordinates to Open-Meteo Forecast API in chunked HTTP calls (<=50 points/chunk)
+        using openmeteo_requests with local caching (requests_cache) and bounded retries.
+        Supports points with (lat, lon, name) or (lat, lon, name, bbox).
+        """
+        if not points:
+            return []
+
+        endpoint = settings.OPENMETEO_API_URL
+        chunk_size = 50
+        chunks = [points[i:i + chunk_size] for i in range(0, len(points), chunk_size)]
+        now_iso = datetime.now(timezone.utc).isoformat()
+        results: List[Dict[str, Any]] = []
+
+        for chunk in chunks:
+            lats = [float(p[0]) for p in chunk]
+            lons = [float(p[1]) for p in chunk]
+
+            params = {
+                "latitude": lats,
+                "longitude": lons,
+                "current": [
+                    "temperature_2m",
+                    "precipitation",
+                    "weather_code",
+                    "wind_speed_10m",
+                    "relative_humidity_2m",
+                ],
+                "timezone": "auto",
+            }
+
+            try:
+                responses = openmeteo.weather_api(endpoint, params=params)
+                for i, p in enumerate(chunk):
+                    s_lat = float(p[0])
+                    s_lon = float(p[1])
+                    name = str(p[2])
+                    bbox = p[3] if len(p) > 3 else None
+
+                    if i >= len(responses):
+                        empty_item = cls._build_batch_empty(s_lat, s_lon, name, now_iso)
+                        if bbox:
+                            empty_item["bbox"] = bbox
+                        results.append(empty_item)
+                        continue
+
+                    resp = responses[i]
+                    curr = resp.Current()
+                    if curr is None:
+                        empty_item = cls._build_batch_empty(s_lat, s_lon, name, now_iso)
+                        if bbox:
+                            empty_item["bbox"] = bbox
+                        results.append(empty_item)
+                        continue
+
+                    temp_c = float(curr.Variables(0).Value()) if curr.Variables(0) else 0.0
+                    precip = float(curr.Variables(1).Value()) if curr.Variables(1) else 0.0
+                    w_code = int(curr.Variables(2).Value()) if curr.Variables(2) else 0
+                    wind = float(curr.Variables(3).Value()) if curr.Variables(3) else 0.0
+                    humidity = int(curr.Variables(4).Value()) if curr.Variables(4) else 0
+
+                    # Determine stress category
+                    if precip > 15.0 or wind > 50.0 or abs(temp_c - 22.0) > 18.0:
+                        cat = "SEVERE"
+                    elif precip > 5.0 or wind > 30.0 or abs(temp_c - 22.0) > 12.0:
+                        cat = "HIGH"
+                    elif precip > 1.0 or wind > 15.0 or abs(temp_c - 22.0) > 6.0:
+                        cat = "MODERATE"
+                    else:
+                        cat = "LOW"
+
+                    item: Dict[str, Any] = {
+                        "latitude": round(s_lat, 5),
+                        "longitude": round(s_lon, 5),
+                        "metric": "WEATHER",
+                        "rawValue": round(temp_c, 1),
+                        "value": round(temp_c, 1),
+                        "unit": "°C",
+                        "category": cat,
+                        "precipitationMm": round(precip, 2),
+                        "windSpeedKmh": round(wind, 1),
+                        "temperatureC": round(temp_c, 1),
+                        "weatherCode": w_code,
+                        "humidity": humidity,
+                        "timestamp": now_iso,
+                        "source": "Open-Meteo Global Forecasting",
+                        "status": "AVAILABLE",
+                        "confidence": 0.95,
+                        "coverage": 1.0,
+                        "metadata": {
+                            "areaName": name,
+                            "precipitationMm": round(precip, 2),
+                            "windSpeedKmh": round(wind, 1),
+                            "temperatureC": round(temp_c, 1),
+                            "weatherCode": w_code,
+                        },
+                    }
+                    if bbox:
+                        item["bbox"] = bbox
+                    results.append(item)
+            except Exception as exc:
+                logger.error("WeatherProvider batch chunk error: %s", exc)
+                for p in chunk:
+                    s_lat = float(p[0])
+                    s_lon = float(p[1])
+                    name = str(p[2])
+                    bbox = p[3] if len(p) > 3 else None
+                    err_item: Dict[str, Any] = {
+                        "latitude": round(s_lat, 5),
+                        "longitude": round(s_lon, 5),
+                        "metric": "WEATHER",
+                        "rawValue": 0.0,
+                        "value": 0.0,
+                        "unit": "°C",
+                        "category": "UNKNOWN",
+                        "timestamp": now_iso,
+                        "source": "Open-Meteo Global Forecasting",
+                        "status": "PROVIDER_ERROR",
+                        "confidence": 0.0,
+                        "coverage": 0.0,
+                        "error": str(exc),
+                        "metadata": {"areaName": name, "note": f"Provider error: {exc}"},
+                    }
+                    if bbox:
+                        err_item["bbox"] = bbox
+                    results.append(err_item)
+
+        return results
+
+    @classmethod
+    async def get_batch_weather(
+        cls,
+        points: List[Tuple[float, float, str]],
+    ) -> List[Dict[str, Any]]:
+        """Asynchronous wrapper executing batch query in worker thread."""
+        import asyncio
+        return await asyncio.to_thread(cls.get_batch_weather_sync, points)

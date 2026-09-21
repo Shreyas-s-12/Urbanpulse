@@ -21,27 +21,241 @@ export interface LocateOptions {
   timeoutMs?: number;
 }
 import { locationEngine } from './location/LocationIntelligenceEngine';
+let activeLocateRequestId = 0;
+
 export const locationService = {
   /**
-   * Request device GPS location via centralized LocationIntelligenceEngine.
-   * Auto-improves, filters stability, arbitrates providers, and preserves raw coordinates.
+   * Request device GPS location directly from browser geolocation API.
+   * Simple, direct, immediate success path:
+   * MY LOCATION -> navigator.geolocation.getCurrentPosition() -> RAW COORDS -> STORE -> MAP -> MARKER
    */
   async requestDeviceLocation(options?: LocateOptions): Promise<LocationContext> {
-    return locationEngine.acquireLocation({
-      onProgress: (state, reading) => {
-        options?.onProgress?.(
-          state,
-          reading
-            ? {
-                latitude: reading.latitude,
-                longitude: reading.longitude,
-                accuracy: reading.accuracyMeters,
+    // Section 1: Verify button click
+    console.log('LOCATION_BUTTON_CLICKED');
+    const reqId = ++activeLocateRequestId;
+
+    // Section 2: Check browser geolocation support
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      console.warn('Location is not supported by this browser.');
+      useLocationStore.getState().setLocationAccuracyState('UNAVAILABLE');
+      useLocationStore.getState().setPermissionStatus('unsupported');
+      options?.onProgress?.('UNAVAILABLE');
+      return {
+        latitude: 0,
+        longitude: 0,
+        displayName: 'Location is not supported by this browser.',
+        isUserLocation: false,
+        source: 'DEVICE',
+        status: 'UNAVAILABLE',
+      };
+    }
+
+    // Section 22: Check secure context
+    const isSecure = typeof window !== 'undefined' ? window.isSecureContext : true;
+    if (!isSecure && typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      console.warn('Browser geolocation requires a secure context (HTTPS or localhost).');
+    }
+
+    // Section 3: Check permission using Permissions API where supported
+    let permissionReport: 'granted' | 'prompt' | 'denied' | 'unknown' = 'unknown';
+    try {
+      if (typeof navigator !== 'undefined' && navigator.permissions?.query) {
+        const pStatus = await navigator.permissions.query({ name: 'geolocation' as any });
+        permissionReport = pStatus.state as any;
+      }
+    } catch {
+      permissionReport = 'unknown';
+    }
+    console.log('LOCATION_PERMISSION:', permissionReport);
+
+    if (permissionReport === 'denied') {
+      useLocationStore.getState().setLocationAccuracyState('DENIED');
+      useLocationStore.getState().setPermissionStatus('denied');
+      options?.onProgress?.('DENIED');
+      return {
+        latitude: 0,
+        longitude: 0,
+        displayName: 'Location access is blocked in your browser.',
+        isUserLocation: false,
+        source: 'DEVICE',
+        status: 'DENIED',
+      };
+    }
+
+    // Section 6: Show real user-facing state: LOCATING
+    useLocationStore.getState().setLocationAccuracyState('LOCATING');
+    useLocationStore.getState().setIsResolvingLocation(true);
+    options?.onProgress?.('LOCATING');
+
+    const timeoutMs = options?.timeoutMs ?? 15000;
+
+    return new Promise((resolve) => {
+      let isSettled = false;
+
+      // Section 4: Actually call navigator.geolocation.getCurrentPosition()
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          if (isSettled || reqId !== activeLocateRequestId) return;
+          isSettled = true;
+
+          const { latitude, longitude, accuracy } = position.coords;
+          const timestamp = position.timestamp || Date.now();
+
+          // Section 9: Development log for exact raw coordinates
+          console.log(`RAW DEVICE LOCATION\nLAT: ${latitude}\nLNG: ${longitude}\nACCURACY: ${accuracy}\nTIMESTAMP: ${timestamp}`);
+
+          const rawDev: RawDeviceLocation = {
+            latitude,
+            longitude,
+            accuracyMeters: accuracy,
+            timestamp,
+            source: 'DEVICE',
+          };
+
+          options?.onRawAcquired?.(rawDev);
+
+          const finalState: LocationAccuracyState = accuracy <= 25 ? 'READY' : accuracy <= 75 ? 'READY' : 'APPROXIMATE';
+
+          // Section 10 & 11: Immediately update store, map center, and marker
+          useLocationStore.getState().validateAndSetDeviceLocation(rawDev, finalState, reqId);
+          useLocationStore.getState().switchToDeviceLocation();
+          useLocationStore.getState().setPermissionStatus('granted');
+          useLocationStore.getState().setIsResolvingLocation(false);
+
+          if (typeof window !== 'undefined') {
+            const gmap = (window as any).__UP_GMAP_INSTANCE__;
+            if (gmap?.setCenter) {
+              gmap.setCenter({ lat: latitude, lng: longitude });
+            }
+            const marker = (window as any).__UP_USER_MARKER__;
+            if (marker?.setPosition) {
+              marker.setPosition({ lat: latitude, lng: longitude });
+            }
+          }
+
+          const context: LocationContext = {
+            latitude,
+            longitude,
+            rawLatitude: latitude,
+            rawLongitude: longitude,
+            accuracy,
+            accuracyMeters: accuracy,
+            accuracyTier: getAccuracyTier(accuracy),
+            timestamp,
+            source: 'DEVICE',
+            status: finalState,
+            isUserLocation: true,
+            displayName: `Device Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`,
+          };
+
+          options?.onProgress?.(finalState, { latitude, longitude, accuracy });
+
+          // Section 8: Asynchronously reverse-geocode metadata without delaying marker
+          locationService.reverseGeocodeMetadata(latitude, longitude)
+            .then((meta) => {
+              if (reqId === activeLocateRequestId) {
+                useLocationStore.getState().updateDeviceAddressMetadata(meta);
               }
-            : undefined
-        );
-      },
-      onRawAcquired: options?.onRawAcquired,
-      timeoutMs: options?.timeoutMs,
+            })
+            .catch((e) => console.warn('[Location] Async reverse geocoding non-fatal:', e));
+
+          // Section 26: Short background improvement window if initial fix is moderate (> 25m)
+          if (accuracy > 25 && typeof navigator !== 'undefined' && navigator.geolocation.watchPosition) {
+            let watchCount = 0;
+            let bestAcc = accuracy;
+            let stopWatchId: number | null = null;
+            try {
+              stopWatchId = navigator.geolocation.watchPosition(
+                (improvedPos) => {
+                  if (reqId !== activeLocateRequestId) return;
+                  watchCount++;
+                  if (improvedPos.coords.accuracy < bestAcc) {
+                    bestAcc = improvedPos.coords.accuracy;
+                    const improvedRaw: RawDeviceLocation = {
+                      latitude: improvedPos.coords.latitude,
+                      longitude: improvedPos.coords.longitude,
+                      accuracyMeters: improvedPos.coords.accuracy,
+                      timestamp: improvedPos.timestamp || Date.now(),
+                      source: 'DEVICE',
+                    };
+                    const improvedState: LocationAccuracyState = bestAcc <= 75 ? 'READY' : 'APPROXIMATE';
+                    useLocationStore.getState().validateAndSetDeviceLocation(improvedRaw, improvedState, reqId);
+                    if (bestAcc <= 25 || watchCount >= 3) {
+                      if (stopWatchId !== null) {
+                        try { navigator.geolocation.clearWatch(stopWatchId); } catch {}
+                        stopWatchId = null;
+                      }
+                    }
+                  }
+                },
+                () => {},
+                { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+              );
+
+              setTimeout(() => {
+                if (stopWatchId !== null) {
+                  try { navigator.geolocation.clearWatch(stopWatchId); } catch {}
+                  stopWatchId = null;
+                }
+              }, 4000);
+            } catch {}
+          }
+
+          resolve(context);
+        },
+        (error) => {
+          if (isSettled || reqId !== activeLocateRequestId) return;
+          isSettled = true;
+
+          // Section 5: Log all geolocation errors
+          console.log('LOCATION_ERROR', error.code, error.message);
+
+          let errState: LocationAccuracyState = 'UNAVAILABLE';
+          let userMsg = "Your device couldn't provide a location right now.";
+
+          if (error.code === 1) {
+            // PERMISSION_DENIED
+            errState = 'DENIED';
+            userMsg = 'Location access is blocked in your browser.';
+            useLocationStore.getState().setPermissionStatus('denied');
+          } else if (error.code === 2) {
+            // POSITION_UNAVAILABLE
+            errState = 'UNAVAILABLE';
+            userMsg = "Your device couldn't provide a location right now.";
+          } else if (error.code === 3) {
+            // TIMEOUT
+            errState = 'TIMEOUT';
+            userMsg = 'Location timed out.';
+          } else {
+            errState = 'ERROR';
+            userMsg = error.message || 'Location error';
+          }
+
+          useLocationStore.getState().setLocationAccuracyState(errState);
+          useLocationStore.getState().setIsResolvingLocation(false);
+          options?.onProgress?.(errState);
+
+          resolve({
+            latitude: 0,
+            longitude: 0,
+            rawLatitude: 0,
+            rawLongitude: 0,
+            accuracy: 0,
+            accuracyMeters: 0,
+            accuracyTier: 'LOW',
+            timestamp: Date.now(),
+            source: 'DEVICE',
+            status: errState,
+            isUserLocation: false,
+            displayName: userMsg,
+          });
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 0,
+          timeout: timeoutMs,
+        }
+      );
     });
   },
   /**

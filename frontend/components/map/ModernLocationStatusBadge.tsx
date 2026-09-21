@@ -12,14 +12,19 @@ export default function ModernLocationStatusBadge() {
     activeLocationContext,
   } = useLocationStore();
 
+  const isSelectingMapLocation = useLocationStore((s) => s.isSelectingMapLocation || s.isChoosingOnMap);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (locationAccuracyState === 'LOCATING' || locationAccuracyState === 'IMPROVING') {
       setVisible(true);
-    } else if (locationAccuracyState === 'LOCKED' || locationAccuracyState === 'APPROXIMATE') {
+    } else if (locationAccuracyState === 'READY' || locationAccuracyState === 'LOCKED' || locationAccuracyState === 'APPROXIMATE') {
       setVisible(true);
       const t = setTimeout(() => setVisible(false), 4500);
+      return () => clearTimeout(t);
+    } else if (locationAccuracyState === 'DENIED' || locationAccuracyState === 'TIMEOUT' || locationAccuracyState === 'UNAVAILABLE' || locationAccuracyState === 'ERROR') {
+      setVisible(true);
+      const t = setTimeout(() => setVisible(false), 6000);
       return () => clearTimeout(t);
     } else if (conflictStatus?.hasConflict) {
       setVisible(true);
@@ -28,17 +33,20 @@ export default function ModernLocationStatusBadge() {
     }
   }, [locationAccuracyState, conflictStatus?.hasConflict]);
 
-  if (!visible) return null;
+  if (!visible || isSelectingMapLocation) return null;
 
   const isLocating = locationAccuracyState === 'LOCATING';
   const isImproving = locationAccuracyState === 'IMPROVING';
-  const isLocked = locationAccuracyState === 'LOCKED';
+  const isReady = locationAccuracyState === 'READY' || locationAccuracyState === 'LOCKED' || locationAccuracyState === 'FOUND';
   const isApprox = locationAccuracyState === 'APPROXIMATE';
+  const isDenied = locationAccuracyState === 'DENIED';
+  const isTimeout = locationAccuracyState === 'TIMEOUT';
+  const isUnavailable = locationAccuracyState === 'UNAVAILABLE';
+  const isError = locationAccuracyState === 'ERROR';
   const isStale = locationAccuracyState === 'STALE';
-  const isNetwork = activeSource === 'NETWORK';
   const hasConflict = conflictStatus?.hasConflict;
 
-  let title = 'LOCATING YOU';
+  let title = 'LOCATING...';
   let subtitle = 'Finding your most accurate position...';
   let badgeColor = '#2563EB';
 
@@ -47,23 +55,35 @@ export default function ModernLocationStatusBadge() {
     subtitle = conflictStatus.message || 'Trying to improve accuracy...';
     badgeColor = '#F59E0B';
   } else if (isLocating) {
-    title = 'LOCATING YOU';
-    subtitle = 'Acquiring satellite and hardware signals...';
+    title = 'LOCATING...';
+    subtitle = 'Acquiring device GPS position...';
     badgeColor = '#2563EB';
   } else if (isImproving) {
     title = 'IMPROVING POSITION';
-    subtitle = gpsAccuracyMeters ? `±${Math.round(gpsAccuracyMeters)}m` : 'Refining satellite fix...';
+    subtitle = gpsAccuracyMeters ? `±${Math.round(gpsAccuracyMeters)}m` : 'Refining device fix...';
     badgeColor = '#3B82F6';
-  } else if (isLocked) {
-    title = 'LOCATION READY';
-    subtitle = gpsAccuracyMeters ? `±${Math.round(gpsAccuracyMeters)}m` : 'High-confidence fix';
+  } else if (isReady) {
+    title = 'LOCATION FOUND';
+    subtitle = gpsAccuracyMeters ? `±${Math.round(gpsAccuracyMeters)}m` : 'High-confidence device fix';
     badgeColor = '#10B981';
-  } else if (isApprox || isNetwork) {
-    title = 'APPROXIMATE NETWORK AREA';
-    subtitle = gpsAccuracyMeters ? `±${Math.round(gpsAccuracyMeters)}m` : 'Estimated from regional network';
+  } else if (isApprox) {
+    title = 'APPROXIMATE LOCATION';
+    subtitle = gpsAccuracyMeters ? `±${Math.round(gpsAccuracyMeters)}m uncertainty` : 'Honest device accuracy reported';
     badgeColor = '#F59E0B';
+  } else if (isDenied) {
+    title = 'LOCATION ACCESS BLOCKED';
+    subtitle = 'Location permission is disabled in browser settings';
+    badgeColor = '#EF4444';
+  } else if (isTimeout) {
+    title = 'LOCATION TIMED OUT';
+    subtitle = 'Device GPS took too long to respond';
+    badgeColor = '#EF4444';
+  } else if (isUnavailable || isError) {
+    title = 'LOCATION CURRENTLY UNAVAILABLE';
+    subtitle = "Your device couldn't provide a location right now";
+    badgeColor = '#EF4444';
   } else if (isStale) {
-    title = 'LAST KNOWN LOCATION';
+    title = 'PREVIOUS DEVICE LOCATION';
     subtitle = activeLocationContext?.freshnessText ? `Updated ${activeLocationContext.freshnessText}` : 'Previous session';
     badgeColor = '#64748B';
   }
@@ -134,6 +154,48 @@ export default function ModernLocationStatusBadge() {
         </span>
       </div>
 
+      {/* Action buttons for Denied, Timeout, Unavailable (Sections 3, 20) */}
+      {(isDenied || isTimeout || isUnavailable || isError) && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '4px' }}>
+          <button
+            onClick={() => {
+              import('@/services/locationService').then((m) => m.locationService.requestDeviceLocation());
+            }}
+            style={{
+              backgroundColor: '#EFF6FF',
+              border: '1px solid #BFDBFE',
+              borderRadius: '12px',
+              padding: '2px 8px',
+              fontSize: '10px',
+              fontWeight: 600,
+              color: '#2563EB',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Try Again
+          </button>
+          <button
+            onClick={() => {
+              useLocationStore.getState().setIsChoosingOnMap(true);
+            }}
+            style={{
+              backgroundColor: '#F1F5F9',
+              border: '1px solid #CBD5E1',
+              borderRadius: '12px',
+              padding: '2px 8px',
+              fontSize: '10px',
+              fontWeight: 600,
+              color: '#475569',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Choose on Map
+          </button>
+        </div>
+      )}
+
       <button
         onClick={() => setVisible(false)}
         style={{
@@ -143,11 +205,16 @@ export default function ModernLocationStatusBadge() {
           cursor: 'pointer',
           padding: '0 0 0 4px',
           fontSize: '12px',
-          lineHeight: 1,
+          display: 'flex',
+          alignItems: 'center',
         }}
         title="Dismiss"
+        aria-label="Dismiss"
       >
-        ✕
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
       </button>
     </div>
   );

@@ -39,6 +39,7 @@ export interface ResolvedLocation {
   rawLongitude?: number;
 }
 export type LocationSource =
+  | 'DEVICE'
   | 'BROWSER_GEOLOCATION'
   | 'DEVICE_GPS'
   | 'DEVICE_LOCATION'
@@ -51,7 +52,7 @@ export type LocationSource =
   | 'PLACE'
   | 'ROUTE'
   | 'LAST_KNOWN';
-export type ActiveLocationMode = 'DEVICE' | 'SEARCH' | 'POI' | 'MAP_CLICK' | 'MANUAL';
+export type ActiveLocationMode = 'DEVICE' | 'SEARCH' | 'POI' | 'MAP_CLICK' | 'MANUAL' | 'MANUAL_ADJUSTMENT';
 export type MapFollowMode = 'EXPLORE' | 'MY_LOCATION' | 'LOCKED_ON_USER';
 export type LocationConfidenceTier = 'HIGH' | 'GOOD' | 'APPROXIMATE' | 'LOW';
 export type PlaceCategoryType =
@@ -114,7 +115,7 @@ export interface RawDeviceLocation {
   longitude: number;
   accuracyMeters: number;
   timestamp: number;
-  source: 'BROWSER_GEOLOCATION';
+  source: 'DEVICE' | 'BROWSER_GEOLOCATION';
   addressMetadata?: AddressMetadata;
 }
 export interface SelectedSearchLocation {
@@ -151,11 +152,26 @@ export interface SelectedPoiLocation {
 export interface MapClickLocation {
   latitude: number;
   longitude: number;
-  source: 'MAP_CLICK';
+  source: 'MAP_CLICK' | 'MANUAL_ADJUSTMENT';
+  timestamp?: number;
+  isAdjusted?: boolean;
+  address?: string;
   addressMetadata?: AddressMetadata;
 }
 export type LocationAccuracyTier = 'EXCELLENT' | 'GOOD' | 'MODERATE' | 'LOW' | 'VERY_LOW';
-export type LocationAccuracyState = 'IDLE' | 'LOCATING' | 'IMPROVING' | 'LOCKED' | 'APPROXIMATE' | 'UNAVAILABLE' | 'STALE';
+export type LocationAccuracyState =
+  | 'IDLE'
+  | 'LOCATING'
+  | 'FOUND'
+  | 'READY'
+  | 'LOCKED'
+  | 'IMPROVING'
+  | 'APPROXIMATE'
+  | 'DENIED'
+  | 'UNAVAILABLE'
+  | 'TIMEOUT'
+  | 'ERROR'
+  | 'STALE';
 export interface LocationContext extends ResolvedLocation {
   source: LocationSource;
   accuracyTier?: LocationAccuracyTier;
@@ -644,7 +660,13 @@ export type AgentIntent =
   | 'SMART_ROUTE'
   | 'MISSION_MODE'
   | 'RECOMMEND_PLACE'
-  | 'CASCADE';
+  | 'CASCADE'
+  | 'HEATMAP'
+  | 'RANKING'
+  | 'WHY_TRAFFIC'
+  | 'CONFIDENCE_EXPLANATION'
+  | 'EXPLAINABILITY'
+  | 'EVALUATION';
 export type AgentMapActionType =
   | 'CENTER_MAP'
   | 'SET_ZOOM'
@@ -679,7 +701,19 @@ export type AgentMapActionType =
   | 'FOCUS_ALERT'
   | 'OPEN_MISSION'
   | 'OPEN_MONITOR'
-  | 'SHOW_CASCADE';
+  | 'SHOW_CASCADE'
+  | 'SHOW_HEATMAP'
+  | 'HIDE_HEATMAP'
+  | 'SET_HEATMAP_METRIC'
+  | 'SET_HEATMAP_GEOGRAPHY'
+  | 'SET_HEATMAP_TIME'
+  | 'FOCUS_HEATMAP_HOTSPOT'
+  | 'INVESTIGATE_HEATMAP_CELL'
+  | 'RANK_ENTITIES'
+  | 'SHOW_RANKING'
+  | 'SHOW_RANKED_MARKERS'
+  | 'CLEAR_RANKING'
+  | 'FOCUS_RANKED_ENTITY';
 export interface AgentMapAction {
   type: AgentMapActionType;
   payload?: {
@@ -698,6 +732,11 @@ export interface AgentMapAction {
     placeId?: string;
     filter?: string;
     riskDomain?: string;
+    metric?: any;
+    geography?: any;
+    ranking?: any;
+    center?: { latitude: number; longitude: number };
+    name?: string;
   };
 }
 export interface AgentToolActivity {
@@ -744,6 +783,8 @@ export interface AgentInteractionResponse {
     alerts?: MonitorAlert[];
     cityComparison?: CityComparisonResponse;
     riskRadar?: LocationRiskReport;
+    ranking?: any;
+    entity?: any;
   };
   sources: Array<{
     type: string;
@@ -756,6 +797,47 @@ export interface AgentInteractionResponse {
   actions: AgentMapAction[];
   toolActivities: AgentToolActivity[];
   timestamp: string;
+  structured_response?: NexusStructuredResponse;
+  structuredResponse?: NexusStructuredResponse;
+}
+
+export type NexusResponseType =
+  | 'RANKING'
+  | 'COMPARISON'
+  | 'CURRENT_STATUS'
+  | 'EXPLANATION'
+  | 'WHAT_CHANGED'
+  | 'FORECAST'
+  | 'SCENARIO'
+  | 'LOCATION_INFO'
+  | 'FACT'
+  | 'GENERAL';
+
+export interface NexusStructuredSection {
+  title?: string;
+  type?: 'text' | 'table' | 'bullets' | 'key_values' | 'alert';
+  content?: string;
+  items?: string[];
+  key_values?: Record<string, any>;
+  keyValues?: Record<string, any>;
+  table_headers?: string[];
+  table_rows?: Array<Array<any>>;
+}
+
+export interface NexusStructuredResponse {
+  type: NexusResponseType;
+  title: string;
+  summary: string;
+  sections?: NexusStructuredSection[];
+  results?: Array<Record<string, any>>;
+  metadata?: Record<string, any>;
+  sources?: Array<{
+    name?: string;
+    type?: string;
+    source?: string;
+    detail?: string;
+    freshness?: string;
+  }>;
 }
 // ============================================================
 // WHAT CHANGED? ENGINE
@@ -1006,7 +1088,7 @@ export interface NexusContext {
 // ============================================================
 // URBANPULSE 3D GEOSPATIAL & PLACES ARCHITECTURE (PHASE 2)
 // ============================================================
-export type MapMode = 'ROADMAP' | 'SATELLITE' | 'HYBRID' | 'TERRAIN' | '3D';
+export type MapMode = 'ROADMAP' | 'SATELLITE' | 'HYBRID' | 'TERRAIN' | '2D';
 export type CameraPreset =
   | 'DEFAULT'
   | 'CITY_OVERVIEW'
@@ -1303,3 +1385,150 @@ export interface UrbanPulseAlert {
   source: string;
   triggeredAt: string;
 }
+
+// ============================================================
+// URBANPULSE INTELLIGENCE HEATMAP TYPES (DECK.GL)
+// ============================================================
+export type HeatmapMetric = 'AQI' | 'TRAFFIC' | 'WEATHER' | 'POPULATION';
+export type HeatmapGeography = 'WORLD' | 'COUNTRY' | 'STATE' | 'DISTRICT' | 'CITY' | 'PLACE';
+export type HeatmapStatus =
+  | 'OFF'
+  | 'LOADING'
+  | 'READY'
+  | 'AVAILABLE'
+  | 'PARTIAL'
+  | 'NO_COVERAGE'
+  | 'EMPTY_DATA'
+  | 'INSUFFICIENT_SPATIAL_DATA'
+  | 'PROVIDER_ERROR'
+  | 'BOUNDARY_PROVIDER_ERROR'
+  | 'STALE'
+  | 'INSUFFICIENT_DATA'
+  | 'ERROR'
+  | 'NO_DATA';
+export type HeatmapTimeWindow = 'NOW' | '24H' | '7D' | 'FORECAST';
+export type HeatmapResolution = 'COARSE' | 'MEDIUM' | 'FINE';
+
+export type AQISubMetric = 'CURRENT_AQI' | 'AQI_CHANGE' | 'AQI_ANOMALY';
+export type TrafficSubMetric = 'CONGESTION' | 'DELAY' | 'TRAFFIC_ANOMALY';
+export type WeatherSubMetric = 'PRECIPITATION' | 'TEMPERATURE_STRESS' | 'WIND' | 'SEVERE_WEATHER' | 'WEATHER_ANOMALY';
+export type PopulationSubMetric = 'DENSITY' | 'TOTAL_COUNT' | 'GROWTH_PROJECTION';
+export type RiskSubMetric =
+  | 'ALL_RISK'
+  | 'FLOOD'
+  | 'FIRE'
+  | 'EARTHQUAKE'
+  | 'STORM'
+  | 'LANDSLIDE'
+  | 'ACCIDENT'
+  | 'ROAD_INCIDENT'
+  | 'PUBLIC_SAFETY'
+  | 'INFRASTRUCTURE'
+  | 'ANOMALY';
+export type CombinedSubMetric = 'OVERALL' | 'ANOMALIES' | 'WHAT_CHANGED' | 'FORECAST';
+
+export type HeatmapSubMetric =
+  | AQISubMetric
+  | TrafficSubMetric
+  | WeatherSubMetric
+  | PopulationSubMetric
+  | RiskSubMetric
+  | CombinedSubMetric
+  | string;
+
+export interface HeatmapGeometry {
+  type: 'Point' | 'Polygon' | 'LineString';
+  coordinates: any;
+}
+
+export interface HeatmapCell {
+  id: string;
+  cellId?: string;
+  latitude: number;
+  longitude: number;
+  geometry?: HeatmapGeometry;
+  metric: HeatmapMetric;
+  subMetric?: HeatmapSubMetric;
+  value: number;
+  rawValue?: number;
+  normalizedValue: number;
+  category: string; // LOW | MODERATE | HIGH | SEVERE | UNKNOWN | EXTREME
+  status: string;
+  confidence: number;
+  coverage: number;
+  timestamp: string;
+  source: string;
+  populationDensity?: number;
+  populationCount?: number;
+  datasetYear?: number;
+  resolution?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface HeatmapStats {
+  min: number;
+  max: number;
+  mean: number;
+  stdDev: number;
+  validCount: number;
+  missingCount: number;
+  isUniform: boolean;
+  uniformReason?: string | null;
+}
+
+export interface HeatmapLegendStop {
+  value: number;
+  label: string;
+  category?: string;
+  color: string;
+}
+
+export interface HeatmapLegendMetadata {
+  title: string;
+  metric: HeatmapMetric;
+  unit: string;
+  scale: string;
+  gradient: string;
+  stops: HeatmapLegendStop[];
+  source?: string;
+  updatedAt?: string;
+  coverage?: number;
+  confidence?: number;
+  note?: string;
+}
+
+export interface HeatmapDiagnostics {
+  scope: string;
+  metric: string;
+  centerUsed: string;
+  queryBounds?: any;
+  provider: string;
+  rawObservations: number;
+  validObservations: number;
+  cellCount: number;
+  coveragePercent: number;
+  resolution: string;
+  status: string;
+}
+
+export interface HeatmapResponse {
+  status: HeatmapStatus;
+  availabilityStatus?: string;
+  metric: HeatmapMetric;
+  subMetric?: HeatmapSubMetric;
+  geography: HeatmapGeography;
+  timeWindow?: HeatmapTimeWindow;
+  resolution?: HeatmapResolution;
+  center: { latitude: number; longitude: number };
+  radiusKm: number;
+  timestamp: string;
+  stats: HeatmapStats;
+  count: number;
+  cells: HeatmapCell[];
+  legend?: HeatmapLegendMetadata;
+  diagnostics?: HeatmapDiagnostics;
+  boundary?: any;
+}
+
+
+

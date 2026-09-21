@@ -7,9 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
   "dependencies": {
+    "@deck.gl/aggregation-layers": "^8.9.36",
+    "@deck.gl/core": "^8.9.36",
+    "@deck.gl/google-maps": "^8.9.36",
     "@googlemaps/js-api-loader": "^1.16.8",
     "@react-google-maps/api": "^2.20.8",
     "@react-three/drei": "^9.121.5",

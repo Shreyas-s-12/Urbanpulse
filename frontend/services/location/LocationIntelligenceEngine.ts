@@ -46,6 +46,7 @@ export class LocationIntelligenceEngine {
   private activeWatchStop: (() => void) | null = null;
   private isAcquiring = false;
   private lastRefreshedCoords: { latitude: number; longitude: number } | null = null;
+  private currentRequestId = 0;
 
   private constructor() {}
 
@@ -65,7 +66,10 @@ export class LocationIntelligenceEngine {
     const onProgress = options?.onProgress;
     const onRawAcquired = options?.onRawAcquired;
     const timeoutMs = options?.timeoutMs ?? 10000;
-    const autoImproveMs = options?.autoImproveTimeoutMs ?? 5000;
+    const autoImproveMs = options?.autoImproveTimeoutMs ?? 4000;
+
+    const reqId = ++this.currentRequestId;
+    this.stabilityFilter.reset();
 
     LocationEventBus.emit('LOCATION_REQUESTED', {
       provider: 'BrowserGeolocationProvider',
@@ -74,15 +78,18 @@ export class LocationIntelligenceEngine {
 
     onProgress?.('LOCATING');
     this.isAcquiring = true;
+    useLocationStore.getState().setLocationAccuracyState('LOCATING');
+    useLocationStore.getState().setIsResolvingLocation(true);
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       let isSettled = false;
       let bestReading: ProviderReading | null = null;
       let readCount = 0;
       let improveTimer: NodeJS.Timeout | null = null;
+      let stopWatch: (() => void) | null = null;
 
       const finish = (reading: ProviderReading, state: LocationAccuracyState) => {
-        if (isSettled) return;
+        if (isSettled || reqId !== this.currentRequestId) return;
         isSettled = true;
         this.isAcquiring = false;
 
@@ -90,69 +97,123 @@ export class LocationIntelligenceEngine {
           clearTimeout(improveTimer);
           improveTimer = null;
         }
+        if (stopWatch) {
+          try { stopWatch(); } catch {}
+          stopWatch = null;
+        }
 
-        const stableReading = this.stabilityFilter.filter(reading);
-        const arbitrated = this.arbiter.arbitrate([stableReading]);
-        const finalReading = arbitrated ? arbitrated.selectedReading : stableReading;
+        // Authoritative raw device coordinates strictly preserved (Rule 1, 2, 4)
+        const rawDev: RawDeviceLocation = {
+          latitude: reading.latitude,
+          longitude: reading.longitude,
+          accuracyMeters: reading.accuracyMeters,
+          timestamp: reading.timestamp,
+          source: 'DEVICE',
+        };
+
+        // Update central store immediately
+        useLocationStore.getState().validateAndSetDeviceLocation(rawDev, state, reqId);
+        useLocationStore.getState().switchToDeviceLocation();
 
         // Persist to session cache
-        this.lastKnownProvider.saveLastKnown(finalReading);
+        this.lastKnownProvider.saveLastKnown(reading);
 
-        const context = this.readingToContext(finalReading, state, arbitrated);
+        const context = this.readingToContext(reading, state);
 
         LocationEventBus.emit('LOCATION_LOCKED', { context });
-        onProgress?.(state, finalReading);
+        onProgress?.(state, reading);
 
-        // Progressive enrichment: asynchronous address resolution without blocking coordinates
-        this.enrichAddressAsynchronously(finalReading.latitude, finalReading.longitude);
+        // Progressive enrichment: asynchronous address resolution without altering coordinates (Rule 10)
+        this.enrichAddressAsynchronously(reading.latitude, reading.longitude);
 
         resolve(context);
       };
 
-      // 1. Primary path: Browser Hardware Geolocation
-      if (this.browserProvider.isAvailable()) {
-        const stopWatch = this.browserProvider.watchLocation(
+      const fail = (errorState: LocationAccuracyState, message: string) => {
+        if (isSettled || reqId !== this.currentRequestId) return;
+        isSettled = true;
+        this.isAcquiring = false;
+
+        if (improveTimer) {
+          clearTimeout(improveTimer);
+          improveTimer = null;
+        }
+        if (stopWatch) {
+          try { stopWatch(); } catch {}
+          stopWatch = null;
+        }
+
+        useLocationStore.getState().setLocationAccuracyState(errorState);
+        useLocationStore.getState().setIsResolvingLocation(false);
+        onProgress?.(errorState);
+        LocationEventBus.emit('LOCATION_FAILED', { error: message });
+
+        // Controlled resolution with error status (NEVER throws uncaught - Rule 15, 16)
+        resolve({
+          latitude: 0,
+          longitude: 0,
+          rawLatitude: 0,
+          rawLongitude: 0,
+          accuracy: 0,
+          accuracyMeters: 0,
+          accuracyTier: 'LOW',
+          confidenceTier: 'LOW',
+          confidence: 0,
+          timestamp: Date.now(),
+          source: 'DEVICE',
+          status: errorState,
+          isUserLocation: false,
+          city: 'Location Unavailable',
+          displayName: errorState === 'DENIED' ? 'Location Permission Denied' : 'Location Unavailable',
+        });
+      };
+
+      // Browser Environment and API Availability Safety Guard (Rule 14)
+      if (typeof window === 'undefined' || !this.browserProvider.isAvailable()) {
+        fail('UNAVAILABLE', 'Geolocation is not available on this browser/environment.');
+        return;
+      }
+
+      try {
+        stopWatch = this.browserProvider.watchLocation(
           (incoming) => {
-            if (isSettled) return;
+            if (isSettled || reqId !== this.currentRequestId) return;
             readCount++;
 
-            // Immediate callback on first read (T+0) to move map & marker instantly
+            const rawIncoming: RawDeviceLocation = {
+              latitude: incoming.latitude,
+              longitude: incoming.longitude,
+              accuracyMeters: incoming.accuracyMeters,
+              timestamp: incoming.timestamp,
+              source: 'DEVICE',
+            };
+
+            // First reading (T+0): Immediately position marker & center map without delay
             if (readCount === 1) {
               bestReading = incoming;
-              onRawAcquired?.({
-                latitude: incoming.latitude,
-                longitude: incoming.longitude,
-                accuracyMeters: incoming.accuracyMeters,
-                timestamp: incoming.timestamp,
-                source: 'BROWSER_GEOLOCATION',
-              });
+              onRawAcquired?.(rawIncoming);
 
-              onProgress?.(
-                incoming.accuracyMeters <= 25
-                  ? 'LOCKED'
-                  : incoming.accuracyMeters <= 75
-                  ? 'IMPROVING'
-                  : 'APPROXIMATE',
-                incoming
-              );
+              const initialStatus: LocationAccuracyState =
+                incoming.accuracyMeters <= 25 ? 'READY' : incoming.accuracyMeters <= 75 ? 'IMPROVING' : 'APPROXIMATE';
 
-              // If already high precision (< 25m), lock immediately
+              useLocationStore.getState().validateAndSetDeviceLocation(rawIncoming, initialStatus, reqId);
+              onProgress?.(initialStatus, incoming);
+
+              // High precision fix (<= 25m): Lock immediately
               if (incoming.accuracyMeters <= 25) {
-                stopWatch();
-                finish(incoming, 'LOCKED');
+                finish(incoming, 'READY');
                 return;
               }
 
-              // Otherwise start auto-improve timer
+              // Otherwise start controlled acquisition window to improve reading
               improveTimer = setTimeout(() => {
-                if (!isSettled && bestReading) {
-                  stopWatch();
-                  const finalState = bestReading.accuracyMeters <= 75 ? 'LOCKED' : 'APPROXIMATE';
+                if (!isSettled && bestReading && reqId === this.currentRequestId) {
+                  const finalState: LocationAccuracyState = bestReading.accuracyMeters <= 75 ? 'READY' : 'APPROXIMATE';
                   finish(bestReading, finalState);
                 }
               }, autoImproveMs);
             } else {
-              // Consecutive reading: evaluate if accuracy improved
+              // Consecutive reading: Keep best valid reading (Rule 6)
               if (!bestReading || incoming.accuracyMeters < bestReading.accuracyMeters) {
                 const prevAcc = bestReading ? bestReading.accuracyMeters : 9999;
                 bestReading = incoming;
@@ -163,62 +224,48 @@ export class LocationIntelligenceEngine {
                 });
 
                 onProgress?.('IMPROVING', incoming);
+                useLocationStore.getState().validateAndSetDeviceLocation(rawIncoming, 'IMPROVING', reqId);
 
-                // Auto-lock if accuracy meets high confidence threshold
+                // Auto-lock if high confidence reached
                 if (incoming.accuracyMeters <= 25 || (incoming.accuracyMeters <= 50 && readCount >= 3)) {
-                  stopWatch();
-                  finish(incoming, 'LOCKED');
+                  finish(incoming, 'READY');
                 }
               }
             }
           },
-          async (err) => {
-            if (isSettled) return;
-            console.warn('[LocationIntelligenceEngine] Browser GPS unavailable:', err.message);
+          (err) => {
+            if (isSettled || reqId !== this.currentRequestId) return;
+            console.warn('[LocationIntelligenceEngine] Geolocation callback error handled safely:', err);
 
-            // 2. Fallback hierarchy: Attempt Network Geolocation
-            try {
-              const netReading = await this.networkProvider.getLocation();
-              finish(netReading, 'APPROXIMATE');
-            } catch {
-              // 3. Fallback hierarchy: Attempt Last Known Location
-              try {
-                const lastKnown = await this.lastKnownProvider.getLocation();
-                finish(lastKnown, 'STALE');
-              } catch {
-                isSettled = true;
-                this.isAcquiring = false;
-                onProgress?.('UNAVAILABLE');
-                LocationEventBus.emit('LOCATION_FAILED', { error: err.message });
-                reject(err);
+            let errorState: LocationAccuracyState = 'UNAVAILABLE';
+            if (err) {
+              if (err.code === 1 || err.name === 'NotAllowedError' || String(err.message).toLowerCase().includes('denied')) {
+                errorState = 'DENIED';
+                useLocationStore.getState().setPermissionStatus('denied');
+              } else if (err.code === 2) {
+                errorState = 'UNAVAILABLE';
+              } else if (err.code === 3) {
+                errorState = 'UNAVAILABLE';
               }
             }
+            fail(errorState, err?.message || 'Geolocation error');
           }
         );
 
-        // Overall watchdog timeout
+        // Overall watchdog safety timeout (Rule 15, 33)
         setTimeout(() => {
-          if (!isSettled) {
-            stopWatch();
+          if (!isSettled && reqId === this.currentRequestId) {
             if (bestReading) {
-              const finalState = (bestReading as ProviderReading).accuracyMeters <= 75 ? 'LOCKED' : 'APPROXIMATE';
+              const finalState: LocationAccuracyState = (bestReading as ProviderReading).accuracyMeters <= 75 ? 'READY' : 'APPROXIMATE';
               finish(bestReading, finalState);
             } else {
-              isSettled = true;
-              this.isAcquiring = false;
-              onProgress?.('UNAVAILABLE');
-              reject(new Error('Location acquisition timed out.'));
+              fail('UNAVAILABLE', 'Location acquisition timed out.');
             }
           }
         }, timeoutMs);
-      } else {
-        // Geolocation completely unsupported: attempt network fallback
-        this.networkProvider.getLocation()
-          .then((net) => finish(net, 'APPROXIMATE'))
-          .catch((err) => {
-            onProgress?.('UNAVAILABLE');
-            reject(err);
-          });
+      } catch (catastrophicErr: any) {
+        console.warn('[LocationIntelligenceEngine] Catastrophic geolocation launch error guarded:', catastrophicErr);
+        fail('ERROR', catastrophicErr?.message || 'Failed to start geolocation');
       }
     });
   }

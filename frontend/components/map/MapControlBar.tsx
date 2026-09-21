@@ -2,17 +2,13 @@
 
 import React from 'react';
 import { MapMode } from '@shared/types';
-import {
-  CompassIcon,
-  CubeIcon,
-  StreetViewIcon,
-} from '@/components/common/Icons';
+import { CompassIcon } from '@/components/common/Icons';
 
 interface MapControlBarProps {
   mode: MapMode;
   onModeChange: (mode: MapMode) => void;
-  streetViewActive: boolean;
-  onToggleStreetView: () => void;
+  streetViewActive?: boolean;
+  onToggleStreetView?: () => void;
   tilt: number;
   heading: number;
   onResetNorth?: () => void;
@@ -30,15 +26,14 @@ export default function MapControlBar({
   tilt,
   heading,
   onResetNorth,
-  is3DSupported = true,
   isStreetViewAvailable,
   className,
   style,
 }: MapControlBarProps) {
-  const is3D = mode === '3D';
   const isTiltedOrRotated = tilt > 0 || Math.abs(heading) > 1;
 
   const baseModes: { id: MapMode; label: string }[] = [
+    { id: '2D', label: '2D' },
     { id: 'ROADMAP', label: 'Road' },
     { id: 'SATELLITE', label: 'Sat' },
     { id: 'HYBRID', label: 'Hybrid' },
@@ -98,74 +93,7 @@ export default function MapControlBar({
         </button>
       )}
 
-      {/* 2D / 3D Toggle Pill */}
-      <div
-        style={{
-          display: 'inline-flex',
-          backgroundColor: 'rgba(255, 255, 255, 0.96)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: 'var(--radius-md, 8px)',
-          border: '1px solid var(--border-subtle, #E2E8F0)',
-          boxShadow: 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.08))',
-          padding: '2px',
-          height: '32px',
-          boxSizing: 'border-box',
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => {
-            if (is3D) onModeChange('ROADMAP');
-          }}
-          aria-pressed={!is3D}
-          style={{
-            height: '26px',
-            padding: '0 8px',
-            borderRadius: '6px',
-            border: 'none',
-            fontSize: '11px',
-            fontWeight: !is3D ? 700 : 500,
-            backgroundColor: !is3D ? 'var(--accent-primary, #2563EB)' : 'transparent',
-            color: !is3D ? '#FFFFFF' : 'var(--text-secondary, #64748B)',
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          2D
-        </button>
 
-        <button
-          type="button"
-          onClick={() => {
-            if (!is3D) onModeChange('3D');
-          }}
-          disabled={!is3DSupported}
-          aria-pressed={is3D}
-          title={is3DSupported ? 'Enable 3D perspective' : '3D perspective unavailable on this device'}
-          style={{
-            height: '26px',
-            padding: '0 8px',
-            borderRadius: '6px',
-            border: 'none',
-            fontSize: '11px',
-            fontWeight: is3D ? 700 : 500,
-            backgroundColor: is3D ? 'var(--accent-primary, #2563EB)' : 'transparent',
-            color: is3D ? '#FFFFFF' : 'var(--text-secondary, #64748B)',
-            cursor: is3DSupported ? 'pointer' : 'not-allowed',
-            opacity: is3DSupported ? 1 : 0.5,
-            transition: 'all 0.15s ease',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '4px',
-          }}
-        >
-          <CubeIcon size={12} color={is3D ? '#FFFFFF' : 'currentColor'} />
-          <span>3D</span>
-        </button>
-      </div>
 
       {/* Base Map Modes Group */}
       <div
@@ -211,55 +139,6 @@ export default function MapControlBar({
           );
         })}
       </div>
-
-      {/* Street View Toggle Button */}
-      <button
-        type="button"
-        onClick={onToggleStreetView}
-        aria-pressed={streetViewActive}
-        title={
-          isStreetViewAvailable === false
-            ? 'Street View imagery unavailable for this location'
-            : streetViewActive
-            ? 'Close Street View'
-            : 'Explore in Google Street View'
-        }
-        style={{
-          height: '32px',
-          padding: '0 10px',
-          borderRadius: 'var(--radius-md, 8px)',
-          backgroundColor: streetViewActive
-            ? 'var(--accent-primary, #2563EB)'
-            : 'rgba(255, 255, 255, 0.96)',
-          backdropFilter: 'blur(10px)',
-          border: streetViewActive
-            ? '1px solid var(--accent-primary, #2563EB)'
-            : '1px solid var(--border-subtle, #E2E8F0)',
-          boxShadow: 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.08))',
-          color: streetViewActive ? '#FFFFFF' : 'var(--text-primary, #1E293B)',
-          fontSize: '11px',
-          fontWeight: streetViewActive ? 700 : 600,
-          cursor: 'pointer',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '5px',
-          transition: 'all 0.15s ease',
-        }}
-      >
-        <StreetViewIcon size={14} color={streetViewActive ? '#FFFFFF' : 'var(--accent-primary, #2563EB)'} />
-        <span style={{ whiteSpace: 'nowrap' }}>Street View</span>
-        {isStreetViewAvailable === false && (
-          <span
-            style={{
-              width: '5px',
-              height: '5px',
-              borderRadius: '50%',
-              backgroundColor: '#EF4444',
-            }}
-            title="Unavailable"
-          />
-        )}
-      </button>
     </div>
   );
 }

@@ -70,13 +70,32 @@ export class LocationSearchService {
     const q = query.trim();
     if (!q || q.length < 2) return [];
 
+    // Direct Coordinate Input Support (e.g., "12.9716, 77.5946" or "12.9716 77.5946")
+    const coordMatch = q.match(/^(-?\d+(\.\d+)?)[,\s]+(-?\d+(\.\d+)?)$/);
+    if (coordMatch) {
+      const lat = parseFloat(coordMatch[1]);
+      const lng = parseFloat(coordMatch[3]);
+      if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+        return [
+          {
+            placeId: `coords_${lat.toFixed(5)}_${lng.toFixed(5)}`,
+            primaryText: `Coordinates: ${lat.toFixed(4)}°, ${lng.toFixed(4)}°`,
+            secondaryText: 'Custom global coordinates target',
+            fullText: `Geospatial coordinates (${lat.toFixed(5)}, ${lng.toFixed(5)})`,
+            types: ['geocode', 'coordinates'],
+            categoryType: 'COORDINATES' as any,
+            confidence: 'HIGH',
+          },
+        ];
+      }
+    }
+
     try {
-      const gMaps = (window as any).google?.maps;
-      if (!gMaps) {
-        await googleMapsLoader.loadMaps();
+      let placesLib = (window as any).google?.maps?.places;
+      if (!placesLib) {
+        placesLib = await googleMapsLoader.importLibrary('places');
       }
 
-      const placesLib = (window as any).google?.maps?.places;
       if (placesLib?.AutocompleteService) {
         if (!this.autocompleteService) {
           this.autocompleteService = new placesLib.AutocompleteService();
@@ -170,13 +189,35 @@ export class LocationSearchService {
     placeId: string,
     fallbackCoords?: { latitude: number; longitude: number }
   ): Promise<SelectedSearchLocation | null> {
+    // Direct coordinate resolution
+    if (placeId.startsWith('coords_')) {
+      const parts = placeId.split('_');
+      const lat = parseFloat(parts[1]);
+      const lng = parseFloat(parts[2]);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        return {
+          placeId,
+          latitude: lat,
+          longitude: lng,
+          displayName: `Coordinates (${lat.toFixed(4)}, ${lng.toFixed(4)})`,
+          formattedAddress: `Latitude ${lat.toFixed(4)}, Longitude ${lng.toFixed(4)}`,
+          city: `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? 'N' : 'S'}`,
+          country: 'Global Coordinate',
+          types: ['coordinates'],
+          categoryType: 'COORDINATES' as any,
+          confidence: 'HIGH',
+          source: 'SEARCH',
+          timestamp: Date.now(),
+        };
+      }
+    }
+
     try {
-      const gMaps = (window as any).google?.maps;
-      if (!gMaps) {
-        await googleMapsLoader.loadMaps();
+      let placesLib = (window as any).google?.maps?.places;
+      if (!placesLib) {
+        placesLib = await googleMapsLoader.importLibrary('places');
       }
 
-      const placesLib = (window as any).google?.maps?.places;
       if (placesLib?.PlacesService) {
         if (!this.placesService) {
           const dummyDiv = document.createElement('div');

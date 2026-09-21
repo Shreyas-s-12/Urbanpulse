@@ -19,6 +19,14 @@ import MonitoringDrawer from '@/features/intelligence/MonitoringDrawer';
 import RiskRadarModal from '@/features/intelligence/RiskRadarModal';
 import MissionModal from '@/features/intelligence/MissionModal';
 import MarkdownRenderer from '@/components/common/MarkdownRenderer';
+import {
+  NexusRankingResponse,
+  NexusComparisonResponse,
+  NexusConditionResponse,
+  NexusExplanationResponse,
+  NexusForecastResponse,
+  NexusScenarioResponse,
+} from '@/features/agent/responses';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import UrbanPulseLogo from '@/components/common/UrbanPulseLogo';
 import PulseWireRail from '@/features/pulsewire/PulseWireRail';
@@ -118,7 +126,45 @@ function NexusMessageItem({ msg, isUser }: NexusMessageItemProps) {
           flexDirection: 'column',
         }}
       >
-        <MarkdownRenderer content={msg.content} isUser={isUser} />
+        {/* Render Specialized Structured Response Cards for Agent Messages if available */}
+        {!isUser && msg.structuredResponse?.type === 'RANKING' ? (
+          <NexusRankingResponse response={msg.structuredResponse} rawRanking={msg.data?.ranking} />
+        ) : !isUser && (msg.data?.ranking && !msg.structuredResponse) ? (
+          <NexusRankingResponse
+            response={{
+              type: 'RANKING',
+              title: `Top ${msg.data.ranking.results?.length || 10} ${msg.data.ranking.metric} in ${msg.data.ranking.scope}`,
+              summary: msg.data.ranking.rankingMetric || '',
+              results: msg.data.ranking.results,
+              metadata: msg.data.ranking,
+              sources: [{ name: msg.data.ranking.source }],
+            }}
+            rawRanking={msg.data.ranking}
+          />
+        ) : !isUser && msg.structuredResponse?.type === 'COMPARISON' ? (
+          <NexusComparisonResponse response={msg.structuredResponse} rawComparison={msg.data?.cityComparison || msg.data?.comparison} />
+        ) : !isUser && (msg.data?.cityComparison && !msg.structuredResponse) ? (
+          <NexusComparisonResponse
+            response={{
+              type: 'COMPARISON',
+              title: 'City Comparison',
+              summary: msg.data.cityComparison.verdict || '',
+              metadata: { cityComparison: msg.data.cityComparison },
+              sources: [{ name: 'UrbanPulse Multi-City Engine' }],
+            }}
+            rawComparison={msg.data.cityComparison}
+          />
+        ) : !isUser && msg.structuredResponse?.type === 'CURRENT_STATUS' ? (
+          <NexusConditionResponse response={msg.structuredResponse} data={msg.data} />
+        ) : !isUser && msg.structuredResponse?.type === 'EXPLANATION' ? (
+          <NexusExplanationResponse response={msg.structuredResponse} data={msg.data} />
+        ) : !isUser && msg.structuredResponse?.type === 'FORECAST' ? (
+          <NexusForecastResponse response={msg.structuredResponse} data={msg.data} />
+        ) : !isUser && msg.structuredResponse?.type === 'SCENARIO' ? (
+          <NexusScenarioResponse response={msg.structuredResponse} data={msg.data} />
+        ) : (
+          <MarkdownRenderer content={msg.content} isUser={isUser} />
+        )}
 
         {/* Know More contextual action toggle */}
         {hasSupportingData && (
@@ -188,31 +234,64 @@ function NexusMessageItem({ msg, isUser }: NexusMessageItemProps) {
                 >
                   VERIFIED SOURCES & FRESHNESS
                 </span>
-                {msg.sources.map((src, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      fontSize: '11px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      color: 'var(--text-secondary)',
-                    }}
-                  >
-                    <span
+                {msg.sources.map((src, idx) => {
+                  const targetUrl = (src as any).articleUrl || (src as any).url || (src.detail && /^https?:\/\//i.test(src.detail) ? src.detail : null);
+                  const validUrl = targetUrl && /^https?:\/\//i.test(targetUrl) && !/^(javascript|data|vbscript|file):/i.test(targetUrl) ? targetUrl : null;
+                  const displayDetail = src.detail && !/^https?:\/\//i.test(src.detail) ? src.detail : '';
+
+                  return (
+                    <div
+                      key={idx}
                       style={{
-                        width: '6px',
-                        height: '6px',
-                        borderRadius: '50%',
-                        backgroundColor: src.freshness === 'LIVE' ? '#10B981' : '#F59E0B',
-                        flexShrink: 0,
+                        fontSize: '11px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '6px',
+                        color: 'var(--text-secondary)',
                       }}
-                    />
-                    <span>
-                      <strong style={{ color: 'var(--text-primary)' }}>{src.type}</strong>: {src.detail} ({src.source})
-                    </span>
-                  </div>
-                ))}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                        <span
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            borderRadius: '50%',
+                            backgroundColor: src.freshness === 'LIVE' ? '#10B981' : '#F59E0B',
+                            flexShrink: 0,
+                          }}
+                        />
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <strong style={{ color: 'var(--text-primary)' }}>{src.type || 'Source'}</strong>
+                          {displayDetail ? `: ${displayDetail}` : ''}
+                          {src.source ? ` (${src.source})` : ''}
+                        </span>
+                      </div>
+
+                      {validUrl && (
+                        <a
+                          href={validUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Open source reference in a new tab"
+                          style={{
+                            fontSize: '10.5px',
+                            fontWeight: 650,
+                            color: 'var(--accent-primary, #0284C7)',
+                            textDecoration: 'none',
+                            flexShrink: 0,
+                            padding: '1px 6px',
+                            borderRadius: '4px',
+                            backgroundColor: 'rgba(2, 132, 199, 0.08)',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          Know more →
+                        </a>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
 
@@ -250,12 +329,24 @@ function NexusMessageItem({ msg, isUser }: NexusMessageItemProps) {
                   </span>
                 </div>
 
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                    (msg.location.name || msg.location.city || '') + ' ' + (msg.location.address || '')
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (msg.location?.latitude && msg.location?.longitude) {
+                      const locName = msg.location.displayName || msg.location.name || msg.location.city || 'Selected Location';
+                      useAgentStore.getState().setActiveLocation({
+                        displayName: locName,
+                        name: locName,
+                        city: msg.location.city || locName,
+                        state: msg.location.state || '',
+                        country: msg.location.country || '',
+                        latitude: msg.location.latitude,
+                        longitude: msg.location.longitude,
+                        isUserLocation: false,
+                        source: 'SEARCH',
+                      });
+                    }
+                  }}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -263,17 +354,18 @@ function NexusMessageItem({ msg, isUser }: NexusMessageItemProps) {
                     fontSize: '10.5px',
                     fontWeight: 600,
                     color: 'var(--accent-primary)',
-                    textDecoration: 'none',
                     padding: '2px 6px',
                     borderRadius: '4px',
                     backgroundColor: 'var(--bg-app)',
                     border: '1px solid var(--border-subtle)',
+                    cursor: 'pointer',
                     flexShrink: 0,
                   }}
+                  title="Focus on canvas map"
                 >
-                  <ExternalLinkIcon size={10} color="var(--accent-primary)" />
-                  <span>Map</span>
-                </a>
+                  <PinIcon size={10} color="var(--accent-primary)" />
+                  <span>Focus</span>
+                </button>
               </div>
             )}
           </div>

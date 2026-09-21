@@ -7,81 +7,38 @@ import { useLocationStore } from '@/stores/useLocationStore';
 import { RawDeviceLocation } from '@shared/types';
 import { locationService } from '@/services/locationService';
 import LocationSearchDrawer from '@/components/location/LocationSearchDrawer';
+import { useResearchStore } from '@/stores/useResearchStore';
 
 export default function TopBar() {
+  const { isResearchModeOpen, toggleResearchMode } = useResearchStore();
   const {
     currentLocation,
     currentDeviceLocation,
-    activeLocationMode,
     locationAccuracyState,
-    gpsAccuracyMeters,
-    setLocationAccuracyState,
+    activeLocationMode,
     isResolvingLocation,
     setIsResolvingLocation,
     setSearchDrawerOpen,
-    isHeatmapActive,
-    toggleHeatmap,
   } = useLocationStore();
 
-  // Initial detection on mount if no location set
-  useEffect(() => {
-    if (!currentLocation && !currentDeviceLocation) {
-      handleLocateMe();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const gpsAccuracyMeters = currentDeviceLocation?.accuracyMeters;
 
+  // Explicit on-demand location detection via locationService
   const handleLocateMe = async () => {
-    setIsResolvingLocation(true);
-    setLocationAccuracyState('LOCATING');
-    const seq = useLocationStore.getState().getNextSequenceNumber();
-
     try {
-      if (typeof window === 'undefined' || !navigator.geolocation) {
-        throw new Error('Geolocation is not supported by this browser.');
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          const rawDev: RawDeviceLocation = {
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-            accuracyMeters: pos.coords.accuracy || 15,
-            timestamp: pos.timestamp || Date.now(),
-            source: 'BROWSER_GEOLOCATION',
-          };
-
-          const finalState = pos.coords.accuracy <= 75 ? 'LOCKED' : 'APPROXIMATE';
-          useLocationStore.getState().validateAndSetDeviceLocation(rawDev, finalState, seq);
-
-          // Asynchronously enrich with address context without overriding raw coords
-          try {
-            const meta = await locationService.reverseGeocodeMetadata(pos.coords.latitude, pos.coords.longitude);
-            if (meta) {
-              useLocationStore.getState().updateDeviceAddressMetadata(meta);
-            }
-          } catch {}
-
-          setIsResolvingLocation(false);
-        },
-        (err) => {
-          console.warn('Geolocation error:', err);
-          setLocationAccuracyState('UNAVAILABLE');
-          setIsResolvingLocation(false);
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
+      await locationService.requestDeviceLocation();
     } catch (err) {
-      console.warn('Geolocation unavailable:', err);
-      setLocationAccuracyState('UNAVAILABLE');
-      setIsResolvingLocation(false);
+      console.warn('[TopBar] Location acquisition error handled safely:', err);
     }
   };
 
-  const isLocating = isResolvingLocation || locationAccuracyState === 'LOCATING';
-  const isLocked = activeLocationMode === 'DEVICE' && locationAccuracyState === 'LOCKED';
+  const isLocating = isResolvingLocation || locationAccuracyState === 'LOCATING' || locationAccuracyState === 'IMPROVING';
+  const isReady = activeLocationMode === 'DEVICE' && (locationAccuracyState === 'READY' || locationAccuracyState === 'LOCKED' || locationAccuracyState === 'FOUND');
   const isApprox = activeLocationMode === 'DEVICE' && locationAccuracyState === 'APPROXIMATE';
+  const isDenied = locationAccuracyState === 'DENIED';
+  const isTimeout = locationAccuracyState === 'TIMEOUT';
   const isUnavailable = locationAccuracyState === 'UNAVAILABLE';
+  const isError = locationAccuracyState === 'ERROR';
 
   return (
     <header
@@ -107,9 +64,9 @@ export default function TopBar() {
             textDecoration: 'none',
             display: 'flex',
             alignItems: 'center',
+            gap: '8px',
             flexShrink: 0,
             transition: 'opacity 0.15s ease',
-            paddingRight: 'var(--space-1)',
           }}
           onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.85')}
           onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
@@ -175,37 +132,44 @@ export default function TopBar() {
       </div>
 
       {/* Right: [ ◎ My Location ] | [ Intelligence Heatmap ] | [ Live Data ] */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
         {/* [ ◎ My Location ] Button */}
         <button
           onClick={handleLocateMe}
           disabled={isLocating}
+          data-testid="my-location-button"
           aria-label="Use my current location"
           title={
             isLocating
-              ? 'Acquiring GPS fix...'
-              : isLocked && gpsAccuracyMeters
-              ? `GPS locked within ±${Math.round(gpsAccuracyMeters)}m`
+              ? 'Acquiring device GPS position...'
+              : isReady && gpsAccuracyMeters
+              ? `Location found within ±${Math.round(gpsAccuracyMeters)}m`
+              : isDenied
+              ? 'Location access is blocked in your browser. Click to try again.'
+              : isTimeout
+              ? 'Location request timed out. Click to try again.'
               : isUnavailable
-              ? "Couldn't determine your location. Click to try again."
+              ? "Your device couldn't provide a location right now. Click to try again."
+              : isError
+              ? 'Location error. Click to try again.'
               : 'Detect my exact device location'
           }
           style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
-            backgroundColor: isLocked
+            backgroundColor: isReady
               ? 'rgba(16, 185, 129, 0.08)'
               : isApprox
               ? 'rgba(245, 158, 11, 0.08)'
-              : isUnavailable
+              : isDenied || isUnavailable || isTimeout || isError
               ? 'rgba(239, 68, 68, 0.06)'
               : 'var(--bg-app)',
-            border: isLocked
+            border: isReady
               ? '1px solid rgba(16, 185, 129, 0.35)'
               : isApprox
               ? '1px solid rgba(245, 158, 11, 0.35)'
-              : isUnavailable
+              : isDenied || isUnavailable || isTimeout || isError
               ? '1px solid rgba(239, 68, 68, 0.3)'
               : '1px solid var(--border-subtle)',
             borderRadius: 'var(--radius-md)',
@@ -213,11 +177,11 @@ export default function TopBar() {
             height: '38px',
             fontSize: '12px',
             fontWeight: 500,
-            color: isLocked
+            color: isReady
               ? '#10B981'
               : isApprox
               ? '#F59E0B'
-              : isUnavailable
+              : isDenied || isUnavailable || isTimeout || isError
               ? '#EF4444'
               : 'var(--text-secondary)',
             whiteSpace: 'nowrap',
@@ -233,13 +197,13 @@ export default function TopBar() {
               </svg>
               <span>Locating...</span>
             </>
-          ) : isLocked ? (
+          ) : isReady ? (
             <>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="9"></circle>
                 <circle cx="12" cy="12" r="3" fill="#10B981"></circle>
               </svg>
-              <span>My Location {gpsAccuracyMeters ? `(±${Math.round(gpsAccuracyMeters)}m)` : ''}</span>
+              <span>Location Found {gpsAccuracyMeters ? `(±${Math.round(gpsAccuracyMeters)}m)` : ''}</span>
             </>
           ) : isApprox ? (
             <>
@@ -247,16 +211,34 @@ export default function TopBar() {
                 <circle cx="12" cy="12" r="9"></circle>
                 <circle cx="12" cy="12" r="3" fill="#F59E0B"></circle>
               </svg>
-              <span>Approx {gpsAccuracyMeters ? `±${Math.round(gpsAccuracyMeters)}m` : ''}</span>
+              <span>Approximate Location {gpsAccuracyMeters ? `(±${Math.round(gpsAccuracyMeters)}m)` : ''}</span>
             </>
-          ) : isUnavailable ? (
+          ) : isDenied ? (
             <>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="12" y1="8" x2="12" y2="12"></line>
                 <line x1="12" y1="16" x2="12.01" y2="16"></line>
               </svg>
-              <span>Location unavailable • Try again</span>
+              <span>Location access is blocked • Try Again</span>
+            </>
+          ) : isTimeout ? (
+            <>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span>Location timed out • Try Again</span>
+            </>
+          ) : isUnavailable || isError ? (
+            <>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span>Location unavailable • Try Again</span>
             </>
           ) : (
             <>
@@ -269,47 +251,67 @@ export default function TopBar() {
           )}
         </button>
 
-        {/* [ Intelligence Heatmap ] Toggle Button (Section 5, 7) */}
-        <button
-          onClick={toggleHeatmap}
-          title="Toggle Intelligence Heatmap (Independent of GPS/Location permissions)"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            backgroundColor: isHeatmapActive ? 'rgba(245, 158, 11, 0.12)' : 'var(--bg-app)',
-            border: isHeatmapActive ? '1px solid rgba(245, 158, 11, 0.45)' : '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-md)',
-            padding: '0 12px',
-            height: '38px',
-            fontSize: '12px',
-            fontWeight: 600,
-            color: isHeatmapActive ? '#D97706' : 'var(--text-secondary)',
-            whiteSpace: 'nowrap',
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-          }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-            <polyline points="2 17 12 22 22 17"></polyline>
-            <polyline points="2 12 12 17 22 12"></polyline>
-          </svg>
-          <span>Intelligence Heatmap</span>
-          <span
+        {/* [ Choose on Map ] Fallback Action Button when Location is Blocked or Unavailable (Sections 3, 20) */}
+        {(isDenied || isUnavailable || isTimeout) && (
+          <button
+            onClick={() => {
+              useLocationStore.getState().setIsChoosingOnMap(true);
+            }}
+            data-testid="choose-on-map-button"
+            title="Pick a location manually on the map"
             style={{
-              fontSize: '9.5px',
-              fontWeight: 800,
-              padding: '1px 5px',
-              borderRadius: '4px',
-              backgroundColor: isHeatmapActive ? '#D97706' : 'var(--border-subtle)',
-              color: isHeatmapActive ? '#FFFFFF' : 'var(--text-muted)',
-              letterSpacing: '0.4px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              backgroundColor: 'rgba(37, 99, 235, 0.08)',
+              border: '1px solid rgba(37, 99, 235, 0.35)',
+              borderRadius: 'var(--radius-md)',
+              padding: '0 10px',
+              height: '38px',
+              fontSize: '11px',
+              fontWeight: 600,
+              color: '#2563EB',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              transition: 'all 0.15s ease',
             }}
           >
-            {isHeatmapActive ? 'ON' : 'OFF'}
-          </span>
-        </button>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span>Choose on Map</span>
+          </button>
+        )}
+
+
+
+        {/* Radius Selector */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: 'var(--bg-app)', padding: '2px 8px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+          <span style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--text-muted)' }}>Radius:</span>
+          <select
+            value={useLocationStore((s) => s.selectedRadiusKm)}
+            onChange={(e) => useLocationStore.getState().setSelectedRadiusKm(Number(e.target.value) as any)}
+            aria-label="Intelligence surveillance radius"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              fontSize: '11px',
+              fontWeight: 700,
+              color: 'var(--text-primary)',
+              cursor: 'pointer',
+              outline: 'none',
+              padding: '4px 2px',
+            }}
+          >
+            <option value={5}>5 km</option>
+            <option value={10}>10 km</option>
+            <option value={25}>25 km</option>
+            <option value={50}>50 km</option>
+            <option value={100}>100 km</option>
+            <option value={250}>250 km</option>
+          </select>
+        </div>
 
         {/* [ Live Data ] Provenance Indicator */}
         <div
@@ -340,6 +342,52 @@ export default function TopBar() {
           />
           LIVE DATA
         </div>
+
+        {/* [ Research Mode ] Workbench Toggle Button */}
+        <button
+          type="button"
+          onClick={() => toggleResearchMode()}
+          title={isResearchModeOpen ? 'Close Research Mode Workbench' : 'Open Research Mode Workbench (Multimodal Intelligence)'}
+          aria-label="Toggle Research Mode Workbench"
+          aria-pressed={isResearchModeOpen}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '0 12px',
+            height: '34px',
+            borderRadius: 'var(--radius-full)',
+            backgroundColor: isResearchModeOpen ? '#1E293B' : 'var(--bg-surface)',
+            border: isResearchModeOpen ? '1px solid #3B82F6' : '1px solid var(--border-subtle)',
+            fontSize: '11.5px',
+            fontWeight: 700,
+            color: isResearchModeOpen ? '#60A5FA' : 'var(--text-secondary)',
+            cursor: 'pointer',
+            transition: 'all 0.15s ease',
+            boxShadow: isResearchModeOpen ? '0 2px 8px rgba(30, 41, 59, 0.25)' : 'var(--shadow-xs)',
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 18h8"></path>
+            <path d="M3 22h18"></path>
+            <path d="M14 22a7 7 0 1 0-14 0"></path>
+            <path d="M9 14h2"></path>
+            <path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z"></path>
+            <path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"></path>
+          </svg>
+          <span>Research Mode</span>
+          {isResearchModeOpen && (
+            <span
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: '#60A5FA',
+                boxShadow: '0 0 6px #60A5FA',
+              }}
+            />
+          )}
+        </button>
       </div>
 
       {/* Location Search Drawer Modal */}

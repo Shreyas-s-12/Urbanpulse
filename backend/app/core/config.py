@@ -32,6 +32,7 @@ class Settings(BaseSettings):
 
     # Geospatial, Maps & Weather
     GOOGLE_MAPS_API_KEY: str = ""
+    TOMTOM_API_KEY: str = Field("", validation_alias=AliasChoices("TOMTOM_API_KEY"))
     OPENMETEO_API_URL: str = "https://api.open-meteo.com/v1/forecast"
     NOMINATIM_USER_AGENT: str = Field(
         "urbanpulse-platform",

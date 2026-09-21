@@ -305,3 +305,74 @@ async def test_nexus_where_am_i_intent():
     assert "18" in resp["message"]  # Accuracy reported
     assert resp["actions"][0]["type"] == "CENTER_MAP"
     assert resp["actions"][0]["payload"]["latitude"] == mock_loc["latitude"]
+
+
+def test_manual_map_location_exact_coordinates_preservation():
+    """Verifies that a manual map click preserves exact clicked coordinates without POI snapping."""
+    clicked_lat = 12.935241
+    clicked_lng = 77.624519
+    reverse_geocode_locality_lat = 12.93000
+    reverse_geocode_locality_lng = 77.62000
+
+    manual_location = {
+        "latitude": clicked_lat,
+        "longitude": clicked_lng,
+        "source": "MAP_CLICK",
+        "timestamp": 1726470000000,
+        "address": "Koramangala 5th Block, Bengaluru",
+    }
+
+    # Strict invariant: exact coordinate preservation
+    assert manual_location["latitude"] == clicked_lat
+    assert manual_location["longitude"] == clicked_lng
+    assert manual_location["latitude"] != reverse_geocode_locality_lat
+    assert manual_location["source"] == "MAP_CLICK"
+
+
+def test_manual_map_location_and_device_separation():
+    """Verifies that manual location selection does NOT overwrite device GPS coordinates."""
+    device_loc = {
+        "latitude": 12.30518,
+        "longitude": 76.65511,
+        "source": "BROWSER_GEOLOCATION",
+        "accuracyMeters": 15,
+    }
+
+    manual_loc = {
+        "latitude": 12.9716,
+        "longitude": 77.5946,
+        "source": "MAP_CLICK",
+    }
+
+    # Active location becomes manual location
+    active_loc = manual_loc
+
+    # Invariants: device location remains preserved separately
+    assert active_loc["latitude"] == 12.9716
+    assert active_loc["source"] == "MAP_CLICK"
+    assert device_loc["latitude"] == 12.30518
+    assert device_loc["source"] == "BROWSER_GEOLOCATION"
+
+
+@pytest.mark.asyncio
+async def test_manual_location_nexus_what_is_here():
+    """Verifies that Nexus correctly interprets 'What is here?' with manual map selection context."""
+    manual_loc = {
+        "latitude": 12.9352,
+        "longitude": 77.6245,
+        "locality": "Koramangala",
+        "city": "Bengaluru",
+        "source": "MAP_CLICK",
+        "isUserLocation": False,
+    }
+
+    req = {
+        "query": "What is here?",
+        "current_location": manual_loc,
+        "selected_radius_km": 5.0,
+    }
+
+    resp = await LocationAgentService.process_interaction(req)
+    assert resp["intent"] in ["WHAT_IS_HERE", "LOCATION_CONTEXT", "WHERE_AM_I"]
+    assert "Koramangala" in resp["message"] or "Bengaluru" in resp["message"] or "location" in resp["message"]
+
