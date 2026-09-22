@@ -77,14 +77,14 @@ export default function GeoTerrain3D({ height = 180, interactive = false }: GeoT
         style={{
           height: `${height}px`,
           width: '100%',
-          backgroundColor: '#F8FAFC',
+          backgroundColor: 'var(--bg-card)',
           borderRadius: '8px',
-          border: '1px solid #E2E8F0',
+          border: '1px solid var(--border-subtle)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#64748B',
+          color: 'var(--text-secondary)',
           fontSize: '11px',
           gap: '6px',
         }}
@@ -104,7 +104,8 @@ export default function GeoTerrain3D({ height = 180, interactive = false }: GeoT
       style={{
         height: `${height}px`,
         width: '100%',
-        backgroundColor: '#0F172A',
+        backgroundColor: 'var(--bg-panel)',
+        border: '1px solid var(--border-subtle)',
         borderRadius: '8px',
         overflow: 'hidden',
         position: 'relative',

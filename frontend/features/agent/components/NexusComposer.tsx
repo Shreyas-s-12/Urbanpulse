@@ -33,8 +33,8 @@ export default function NexusComposer({
       style={{
         height: '64px',
         padding: '10px 16px',
-        borderTop: '1px solid var(--border, #E2E7EF)',
-        backgroundColor: 'var(--bg-header, #FFFFFF)',
+        borderTop: '1px solid var(--border)',
+        backgroundColor: 'var(--bg-header)',
         display: 'flex',
         alignItems: 'center',
         gap: '10px',
@@ -54,21 +54,21 @@ export default function NexusComposer({
           height: '44px',
           padding: '0 14px',
           borderRadius: '10px',
-          border: '1px solid var(--border-hover, #CBD5E1)',
-          backgroundColor: 'var(--assistant-card-bg, #FFFFFF)',
+          border: '1px solid var(--input-border)',
+          backgroundColor: 'var(--bg-input)',
           fontSize: '13px',
-          color: 'var(--text-primary, #172033)',
+          color: 'var(--text-primary)',
           outline: 'none',
           transition: 'all 0.15s ease',
           boxSizing: 'border-box',
           opacity: isProcessing ? 0.7 : 1,
         }}
         onFocus={(e) => {
-          e.currentTarget.style.borderColor = 'var(--accent-primary, #2563EB)';
-          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(37, 99, 235, 0.12)';
+          e.currentTarget.style.borderColor = 'var(--accent-primary)';
+          e.currentTarget.style.boxShadow = 'var(--focus-ring)';
         }}
         onBlur={(e) => {
-          e.currentTarget.style.borderColor = 'var(--border-hover, #CBD5E1)';
+          e.currentTarget.style.borderColor = 'var(--input-border)';
           e.currentTarget.style.boxShadow = 'none';
         }}
       />
@@ -89,9 +89,9 @@ export default function NexusComposer({
           padding: 0,
           borderRadius: '9px',
           backgroundColor: isProcessing || !inputQuery.trim()
-            ? 'var(--text-disabled, #A7B0BE)'
-            : '#2563EB',
-          color: '#FFFFFF',
+            ? 'var(--text-disabled)'
+            : 'var(--button)',
+          color: 'var(--button-foreground)',
           fontSize: '13px',
           fontWeight: 600,
           border: 'none',
@@ -104,12 +104,12 @@ export default function NexusComposer({
         }}
         onMouseEnter={(e) => {
           if (!isProcessing && inputQuery.trim()) {
-            e.currentTarget.style.backgroundColor = '#1D4ED8';
+            e.currentTarget.style.backgroundColor = 'var(--button-hover, var(--accent-primary-hover))';
           }
         }}
         onMouseLeave={(e) => {
           if (!isProcessing && inputQuery.trim()) {
-            e.currentTarget.style.backgroundColor = '#2563EB';
+            e.currentTarget.style.backgroundColor = 'var(--button)';
           }
         }}
       >

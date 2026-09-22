@@ -89,7 +89,7 @@ export default function PulseWireRail() {
           height: '34px',
           padding: '0 12px',
           borderRadius: 'var(--radius-full)',
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          backgroundColor: 'var(--overlay-bg)',
           backdropFilter: 'blur(8px)',
           border: '1px solid var(--border-subtle)',
           boxShadow: 'var(--shadow-sm)',
@@ -116,7 +116,7 @@ export default function PulseWireRail() {
         <span
           style={{
             fontSize: '10px',
-            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            backgroundColor: 'var(--badge-info-bg)',
             color: 'var(--accent-primary)',
             padding: '2px 6px',
             borderRadius: '10px',
@@ -146,14 +146,14 @@ export default function PulseWireRail() {
       style={{
         width: 'clamp(310px, 22vw, 340px)',
         height: '100%',
-        backgroundColor: 'var(--bg-panel, #FFFFFF)',
-        borderRight: '1px solid var(--border, #E2E7EF)',
+        backgroundColor: 'var(--bg-panel)',
+        borderRight: '1px solid var(--border)',
         display: 'flex',
         flexDirection: 'column',
         zIndex: 25,
         flexShrink: 0,
         position: 'relative',
-        boxShadow: 'var(--card-shadow, 0 2px 8px rgba(15, 23, 42, 0.05))',
+        boxShadow: 'var(--card-shadow)',
       }}
     >
       {/* 1. Header: PulseWire 24H (56-64px height) */}
@@ -161,11 +161,11 @@ export default function PulseWireRail() {
         style={{
           height: '60px',
           padding: '0 16px',
-          borderBottom: '1px solid var(--border, #E2E7EF)',
+          borderBottom: '1px solid var(--border)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          backgroundColor: 'var(--bg-header, #FFFFFF)',
+          backgroundColor: 'var(--bg-header)',
           flexShrink: 0,
         }}
       >
@@ -173,16 +173,16 @@ export default function PulseWireRail() {
           <PulseWireHoloRadar size={24} />
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary, #172033)', letterSpacing: '-0.01em' }}>
+              <span style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
                 PulseWire
               </span>
               <span
                 style={{
                   fontSize: '10px',
                   fontWeight: 750,
-                  color: status === 'ERROR' ? 'var(--badge-hazard-text, #DC2626)' : (status === 'LOADING' ? 'var(--badge-approx-text, #C2410C)' : 'var(--badge-live-text, #15803D)'),
-                  backgroundColor: status === 'ERROR' ? 'var(--badge-hazard-bg, #FEF2F2)' : (status === 'LOADING' ? 'var(--badge-approx-bg, #FFF7ED)' : 'var(--badge-live-bg, #ECFDF5)'),
-                  border: `1px solid ${status === 'ERROR' ? 'var(--badge-hazard-border, #FECACA)' : (status === 'LOADING' ? 'var(--badge-approx-border, #FED7AA)' : 'var(--badge-live-border, #BBF7D0)')}`,
+                  color: status === 'ERROR' ? 'var(--badge-hazard-text)' : (status === 'LOADING' ? 'var(--badge-approx-text)' : 'var(--badge-live-text)'),
+                  backgroundColor: status === 'ERROR' ? 'var(--badge-hazard-bg)' : (status === 'LOADING' ? 'var(--badge-approx-bg)' : 'var(--badge-live-bg)'),
+                  border: `1px solid ${status === 'ERROR' ? 'var(--badge-hazard-border)' : (status === 'LOADING' ? 'var(--badge-approx-border)' : 'var(--badge-live-border)')}`,
                   padding: '2px 6px',
                   borderRadius: '4px',
                   display: 'inline-flex',
@@ -195,14 +195,14 @@ export default function PulseWireRail() {
                     width: '5px',
                     height: '5px',
                     borderRadius: '50%',
-                    backgroundColor: status === 'ERROR' ? '#EF4444' : (status === 'LOADING' ? '#F59E0B' : '#15803D'),
+                    backgroundColor: status === 'ERROR' ? 'var(--status-critical-text)' : (status === 'LOADING' ? 'var(--status-warning-text)' : 'var(--status-good-text)'),
                     display: 'inline-block',
                   }}
                 />
                 {status === 'ERROR' ? 'OFFLINE' : (status === 'LOADING' ? 'FETCHING' : '24H')}
               </span>
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted, #7B8798)', marginTop: '1px' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '1px' }}>
               World & Civic Intelligence · 24h Window
             </div>
           </div>
@@ -217,17 +217,17 @@ export default function PulseWireRail() {
             width: '28px',
             height: '28px',
             borderRadius: '6px',
-            border: '1px solid var(--border, #E2E7EF)',
-            backgroundColor: 'var(--bg-subtle, #F9FAFC)',
+            border: '1px solid var(--border)',
+            backgroundColor: 'var(--bg-subtle)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            color: 'var(--text-secondary, #566174)',
+            color: 'var(--text-secondary)',
             transition: 'background-color 0.15s ease',
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-card-hover, #F3F6FA)')}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-subtle, #F9FAFC)')}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-card-hover)')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-subtle)')}
         >
           <CollapseIcon size={14} />
         </button>
@@ -237,8 +237,8 @@ export default function PulseWireRail() {
       <div
         style={{
           padding: '8px 12px',
-          borderBottom: '1px solid var(--border, #E2E7EF)',
-          backgroundColor: 'var(--bg-subtle, #F9FAFC)',
+          borderBottom: '1px solid var(--border)',
+          backgroundColor: 'var(--bg-subtle)',
           display: 'flex',
           alignItems: 'center',
           gap: '6px',
@@ -256,9 +256,9 @@ export default function PulseWireRail() {
                 flex: 1,
                 height: '30px',
                 borderRadius: '6px',
-                border: isCurrent ? '1px solid var(--accent-primary, #2563EB)' : '1px solid var(--border, #E2E7EF)',
-                backgroundColor: isCurrent ? 'var(--accent-primary, #2563EB)' : 'var(--bg-card, #FFFFFF)',
-                color: isCurrent ? '#FFFFFF' : 'var(--text-secondary, #566174)',
+                border: isCurrent ? '1px solid var(--accent-primary)' : '1px solid var(--border)',
+                backgroundColor: isCurrent ? 'var(--button)' : 'var(--bg-card)',
+                color: isCurrent ? 'var(--button-foreground)' : 'var(--text-secondary)',
                 fontSize: '11.5px',
                 fontWeight: isCurrent ? 700 : 500,
                 cursor: 'pointer',
@@ -275,8 +275,8 @@ export default function PulseWireRail() {
       <div
         style={{
           padding: '10px 14px',
-          borderBottom: '1px solid var(--border, #E2E7EF)',
-          backgroundColor: 'var(--bg-panel, #FFFFFF)',
+          borderBottom: '1px solid var(--border)',
+          backgroundColor: 'var(--bg-panel)',
           display: 'flex',
           flexDirection: 'column',
           gap: '8px',
@@ -285,13 +285,13 @@ export default function PulseWireRail() {
       >
         {/* Dynamic Location & Real Count */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: 'var(--text-secondary, #566174)' }}>
-            <PinIcon size={13} color="var(--accent-primary, #2563EB)" />
-            <strong style={{ color: 'var(--text-primary, #172033)' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: 'var(--text-secondary)' }}>
+            <PinIcon size={13} color="var(--accent-primary)" />
+            <strong style={{ color: 'var(--text-primary)' }}>
               {activeCityLabel}
             </strong>
           </span>
-          <span style={{ color: 'var(--text-muted, #7B8798)', fontSize: '11.5px' }}>
+          <span style={{ color: 'var(--text-muted)', fontSize: '11.5px' }}>
             {activeCityLabel} · {updateCountLabel}
           </span>
         </div>
@@ -306,10 +306,10 @@ export default function PulseWireRail() {
             height: '32px',
             padding: '0 12px',
             borderRadius: '6px',
-            border: '1px solid var(--border, #E2E7EF)',
-            backgroundColor: 'var(--bg-input, #F9FAFC)',
+            border: '1px solid var(--border)',
+            backgroundColor: 'var(--bg-input)',
             fontSize: '12px',
-            color: 'var(--text-primary, #172033)',
+            color: 'var(--text-primary)',
             outline: 'none',
           }}
         />
@@ -330,9 +330,9 @@ export default function PulseWireRail() {
                   fontSize: '11.5px',
                   fontWeight: isSel ? 700 : 500,
                   cursor: 'pointer',
-                  border: isSel ? '1px solid var(--accent-primary, #2563EB)' : '1px solid var(--border, #E2E7EF)',
-                  backgroundColor: isSel ? 'var(--accent-primary, #2563EB)' : 'var(--bg-card-hover, #F3F6FA)',
-                  color: isSel ? '#FFFFFF' : 'var(--text-secondary, #566174)',
+                  border: isSel ? '1px solid var(--accent-primary)' : '1px solid var(--border)',
+                  backgroundColor: isSel ? 'var(--button)' : 'var(--bg-card-hover)',
+                  color: isSel ? 'var(--button-foreground)' : 'var(--text-secondary)',
                   whiteSpace: 'nowrap',
                   transition: 'all 0.15s ease',
                 }}

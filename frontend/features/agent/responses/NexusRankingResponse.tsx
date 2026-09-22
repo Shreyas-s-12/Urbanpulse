@@ -25,19 +25,33 @@ export const NexusRankingResponse: React.FC<NexusRankingResponseProps> = ({ resp
   const getCategoryColor = (cat: string) => {
     const c = (cat || '').toUpperCase();
     if (c.includes('SEVERE') || c.includes('HAZARDOUS') || c.includes('VERY UNHEALTHY') || c.includes('HOTTEST') || c.includes('HEAVY') || c.includes('GRIDLOCK')) {
-      return { bg: '#FEE2E2', text: '#DC2626', border: '#FCA5A5' };
+      return { bg: 'var(--status-critical-bg)', text: 'var(--status-critical-text)', border: 'var(--status-critical-border)' };
     }
     if (c.includes('POOR') || c.includes('UNHEALTHY') || c.includes('HIGH') || c.includes('WARM') || c.includes('MODERATE')) {
-      return { bg: '#FEF3C7', text: '#D97706', border: '#FCD34D' };
+      return { bg: 'var(--status-warning-bg)', text: 'var(--status-warning-text)', border: 'var(--status-warning-border)' };
     }
     if (c.includes('GOOD') || c.includes('SATISFACTORY') || c.includes('COOL') || c.includes('FREE')) {
-      return { bg: '#DCFCE7', text: '#16A34A', border: '#86EFAC' };
+      return { bg: 'var(--status-good-bg)', text: 'var(--status-good-text)', border: 'var(--status-good-border)' };
     }
-    return { bg: 'var(--bg-surface-secondary, #F1F5F9)', text: 'var(--text-secondary)', border: 'var(--border-subtle)' };
+    return { bg: 'var(--bg-surface-secondary)', text: 'var(--text-secondary)', border: 'var(--border-subtle)' };
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', fontSize: '12.5px' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        width: '100%',
+        fontSize: '12.5px',
+        backgroundColor: 'var(--assistant-card-bg)',
+        border: '1px solid var(--assistant-card-border)',
+        borderRadius: '12px',
+        padding: '12px 14px',
+        boxShadow: 'var(--card-shadow)',
+        boxSizing: 'border-box',
+      }}
+    >
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '6px' }}>
         <div>
@@ -48,7 +62,7 @@ export const NexusRankingResponse: React.FC<NexusRankingResponseProps> = ({ resp
             {response.title}
           </h4>
         </div>
-        <span style={{ fontSize: '10.5px', fontWeight: 600, padding: '2px 7px', borderRadius: '4px', backgroundColor: 'var(--bg-surface-secondary, #F1F5F9)', color: 'var(--text-secondary)' }}>
+        <span style={{ fontSize: '10.5px', fontWeight: 600, padding: '2px 7px', borderRadius: '4px', backgroundColor: 'var(--bg-surface-secondary)', color: 'var(--text-secondary)' }}>
           {coverage} Coverage
         </span>
       </div>
@@ -65,7 +79,7 @@ export const NexusRankingResponse: React.FC<NexusRankingResponseProps> = ({ resp
         <div style={{ overflowX: 'auto', borderRadius: '6px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', textAlign: 'left' }}>
             <thead>
-              <tr style={{ backgroundColor: 'var(--bg-surface-secondary, #F8FAFC)', borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}>
+              <tr style={{ backgroundColor: 'var(--bg-surface-secondary)', borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}>
                 <th style={{ padding: '6px 8px', fontWeight: 700, width: '45px' }}>Rank</th>
                 <th style={{ padding: '6px 8px', fontWeight: 700 }}>Entity</th>
                 <th style={{ padding: '6px 8px', fontWeight: 700, textAlign: 'right' }}>Observed</th>
@@ -87,7 +101,7 @@ export const NexusRankingResponse: React.FC<NexusRankingResponseProps> = ({ resp
                     key={idx}
                     style={{
                       borderBottom: idx === results.length - 1 ? 'none' : '1px solid var(--border-subtle)',
-                      backgroundColor: idx % 2 === 0 ? 'transparent' : 'rgba(0,0,0,0.015)',
+                      backgroundColor: idx % 2 === 0 ? 'transparent' : 'var(--bg-surface-secondary)',
                     }}
                   >
                     <td style={{ padding: '6px 8px', fontWeight: 800, color: 'var(--accent-primary)' }}>
@@ -150,9 +164,9 @@ export const NexusRankingResponse: React.FC<NexusRankingResponseProps> = ({ resp
                 fontSize: '11px',
                 fontWeight: 650,
                 borderRadius: '6px',
-                backgroundColor: 'var(--accent-primary-light, #EFF6FF)',
-                color: 'var(--accent-primary, #2563EB)',
-                border: '1px solid rgba(37, 99, 235, 0.25)',
+                backgroundColor: 'var(--badge-info-bg)',
+                color: 'var(--badge-info-text)',
+                border: '1px solid var(--badge-info-border)',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
               }}

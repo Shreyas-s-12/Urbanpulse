@@ -64,10 +64,11 @@ export default function ModernLocationCard({ onClose, onCenterOnMe }: ModernLoca
         right: '16px',
         zIndex: 36,
         width: '310px',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: 'var(--overlay-bg)',
+        backdropFilter: 'blur(12px)',
         borderRadius: '12px',
-        border: '1px solid rgba(226, 232, 240, 0.95)',
-        boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.04)',
+        border: '1px solid var(--border)',
+        boxShadow: 'var(--shadow-panel)',
         padding: '14px',
         display: 'flex',
         flexDirection: 'column',
@@ -77,16 +78,16 @@ export default function ModernLocationCard({ onClose, onCenterOnMe }: ModernLoca
       }}
     >
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '8px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '8px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#2563EB' }} />
-          <span style={{ fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.04em', color: '#64748B' }}>
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--accent-primary)' }} />
+          <span style={{ fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.04em', color: 'var(--text-secondary)' }}>
             {title}
           </span>
         </div>
         <button
           onClick={onClose}
-          style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
+          style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}
           aria-label="Close"
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -99,16 +100,16 @@ export default function ModernLocationCard({ onClose, onCenterOnMe }: ModernLoca
       {/* Address Details */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
         {street && (
-          <span style={{ fontSize: '13.5px', fontWeight: 700, color: '#0F172A', lineHeight: 1.3 }}>
+          <span style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
             {street}
           </span>
         )}
         {locality && (
-          <span style={{ fontSize: '12.5px', fontWeight: 600, color: '#334155' }}>
+          <span style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-secondary)' }}>
             {locality}
           </span>
         )}
-        <span style={{ fontSize: '11.5px', color: '#64748B' }}>
+        <span style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
           {region || formatted}
         </span>
       </div>
@@ -119,23 +120,23 @@ export default function ModernLocationCard({ onClose, onCenterOnMe }: ModernLoca
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          backgroundColor: '#F8FAFC',
+          backgroundColor: 'var(--bg-surface-secondary)',
           borderRadius: '8px',
           padding: '7px 10px',
-          border: '1px solid #EDF2F7',
+          border: '1px solid var(--border-subtle)',
           fontSize: '11px',
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <span style={{ color: '#64748B', fontSize: '10px' }}>PRECISION</span>
-          <span style={{ fontWeight: 700, color: '#0F172A' }}>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '10px' }}>PRECISION</span>
+          <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
             {accMeters ? `±${accMeters}m` : '±15m'} ({confidenceTier})
           </span>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'right' }}>
-          <span style={{ color: '#64748B', fontSize: '10px' }}>FRESHNESS</span>
-          <span style={{ fontWeight: 600, color: '#475569' }}>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '10px' }}>FRESHNESS</span>
+          <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>
             {freshness}
           </span>
         </div>
@@ -147,8 +148,8 @@ export default function ModernLocationCard({ onClose, onCenterOnMe }: ModernLoca
           onClick={onCenterOnMe}
           style={{
             flex: 1,
-            backgroundColor: '#2563EB',
-            color: '#FFFFFF',
+            backgroundColor: 'var(--button)',
+            color: 'var(--button-foreground)',
             border: 'none',
             borderRadius: '6px',
             padding: '7px 0',
@@ -157,8 +158,8 @@ export default function ModernLocationCard({ onClose, onCenterOnMe }: ModernLoca
             cursor: 'pointer',
             transition: 'background-color 0.15s',
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1D4ED8')}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#2563EB')}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--button-hover)')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--button)')}
         >
           Center on me
         </button>
@@ -169,9 +170,9 @@ export default function ModernLocationCard({ onClose, onCenterOnMe }: ModernLoca
             startPinAdjustment();
           }}
           style={{
-            backgroundColor: '#FFFFFF',
-            color: '#334155',
-            border: '1px solid #CBD5E1',
+            backgroundColor: 'var(--button-secondary)',
+            color: 'var(--button-secondary-foreground)',
+            border: '1px solid var(--button-secondary-border)',
             borderRadius: '6px',
             padding: '7px 10px',
             fontSize: '11px',
@@ -187,9 +188,9 @@ export default function ModernLocationCard({ onClose, onCenterOnMe }: ModernLoca
           <button
             onClick={handleImprove}
             style={{
-              backgroundColor: '#FFFFFF',
-              color: '#2563EB',
-              border: '1px solid #BFDBFE',
+              backgroundColor: 'var(--accent-primary-light)',
+              color: 'var(--accent-primary)',
+              border: '1px solid var(--accent-primary)',
               borderRadius: '6px',
               padding: '7px 10px',
               fontSize: '11px',

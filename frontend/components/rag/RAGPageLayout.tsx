@@ -30,7 +30,7 @@ export default function RAGPageLayout({
     <div
       style={{
         minHeight: '100vh',
-        backgroundColor: 'var(--bg-app, #080B10)',
+        backgroundColor: 'var(--bg-app)',
         color: 'var(--text-primary)',
         display: 'flex',
         flexDirection: 'column',
@@ -41,8 +41,8 @@ export default function RAGPageLayout({
       <header
         style={{
           height: '62px',
-          backgroundColor: 'var(--bg-header, #0C1119)',
-          borderBottom: '1px solid var(--border-subtle, #1B2531)',
+          backgroundColor: 'var(--bg-header)',
+          borderBottom: '1px solid var(--border-subtle)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -50,7 +50,7 @@ export default function RAGPageLayout({
           position: 'sticky',
           top: 0,
           zIndex: 40,
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.3)',
+          boxShadow: 'var(--shadow-sm)',
         }}
       >
         {/* Left: Branding & Module Title */}
@@ -63,7 +63,7 @@ export default function RAGPageLayout({
             <UrbanPulseLogo size="sm" showWordmark={false} />
           </Link>
 
-          <div style={{ width: '1px', height: '26px', backgroundColor: 'var(--border-subtle, #1B2531)' }} />
+          <div style={{ width: '1px', height: '26px', backgroundColor: 'var(--border-subtle)' }} />
 
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -74,9 +74,9 @@ export default function RAGPageLayout({
                 style={{
                   fontSize: '9.5px',
                   fontWeight: 700,
-                  backgroundColor: 'rgba(59, 130, 246, 0.12)',
-                  color: 'var(--accent-primary, #60A5FA)',
-                  border: '1px solid rgba(59, 130, 246, 0.3)',
+                  backgroundColor: 'var(--badge-info-bg)',
+                  color: 'var(--badge-info-text)',
+                  border: '1px solid var(--badge-info-border)',
                   padding: '1px 6px',
                   borderRadius: '4px',
                   textTransform: 'uppercase',
@@ -95,8 +95,8 @@ export default function RAGPageLayout({
         {/* Center: Shared Location Context Header */}
         <div
           style={{
-            backgroundColor: 'var(--bg-card, #111821)',
-            border: '1px solid var(--border-subtle, #1B2531)',
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border-subtle)',
             borderRadius: '8px',
             padding: '5px 14px',
             display: 'flex',
@@ -105,7 +105,7 @@ export default function RAGPageLayout({
             maxWidth: '440px',
           }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #60A5FA)" strokeWidth="2.2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth="2.2">
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
             <circle cx="12" cy="10" r="3" />
           </svg>
@@ -135,24 +135,24 @@ export default function RAGPageLayout({
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
-            backgroundColor: 'var(--bg-elevated, #141B26)',
-            border: '1px solid var(--border, #263241)',
+            backgroundColor: 'var(--button-secondary)',
+            border: '1px solid var(--button-secondary-border)',
             borderRadius: '6px',
             padding: '7px 14px',
             fontSize: '12px',
             fontWeight: 600,
-            color: 'var(--text-primary)',
+            color: 'var(--button-secondary-foreground)',
             textDecoration: 'none',
-            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.4)',
+            boxShadow: 'var(--shadow-sm)',
             transition: 'all 0.15s ease',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--bg-card-hover, #17202C)';
-            e.currentTarget.style.borderColor = 'var(--accent-primary, #3B82F6)';
+            e.currentTarget.style.backgroundColor = 'var(--button-secondary-hover)';
+            e.currentTarget.style.borderColor = 'var(--accent-primary)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--bg-elevated, #141B26)';
-            e.currentTarget.style.borderColor = 'var(--border, #263241)';
+            e.currentTarget.style.backgroundColor = 'var(--button-secondary)';
+            e.currentTarget.style.borderColor = 'var(--button-secondary-border)';
           }}
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">

@@ -37,14 +37,14 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       <div
         style={{
           maxWidth: '82%',
-          backgroundColor: isUser ? 'var(--accent-primary)' : 'var(--bg-surface)',
-          color: isUser ? '#FFFFFF' : 'var(--text-primary)',
+          backgroundColor: isUser ? 'var(--button)' : 'var(--assistant-card-bg)',
+          color: isUser ? 'var(--button-foreground)' : 'var(--text-primary)',
           padding: '14px 18px',
           borderRadius: isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
           fontSize: '13px',
           lineHeight: 1.55,
-          border: isUser ? 'none' : '1px solid var(--border-subtle)',
-          boxShadow: isUser ? 'var(--shadow-sm)' : 'var(--shadow-xs)',
+          border: isUser ? 'none' : '1px solid var(--assistant-card-border)',
+          boxShadow: isUser ? 'var(--shadow-sm)' : 'var(--card-shadow)',
         }}
       >
         <MarkdownRenderer content={content} isUser={isUser} />
@@ -103,8 +103,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                   fontSize: '11px',
                   padding: '4px 10px',
                   borderRadius: 'var(--radius-full)',
-                  backgroundColor: 'var(--bg-app)',
-                  border: '1px solid var(--border-subtle)',
+                  backgroundColor: 'var(--bg-surface-secondary)',
+                  border: '1px solid var(--assistant-card-border)',
                   color: 'var(--accent-primary)',
                   fontWeight: 600,
                   transition: 'all 0.1s ease',

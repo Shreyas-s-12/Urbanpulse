@@ -338,8 +338,8 @@ export function GoogleMapErrorBoundary({ children, onRetry }: { children: ReactN
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: '#F8FAFC',
-              color: 'var(--text-primary, #0F172A)',
+              backgroundColor: 'var(--bg-app)',
+              color: 'var(--text-primary)',
               padding: '32px',
               textAlign: 'center',
               gap: '16px',
@@ -350,12 +350,12 @@ export function GoogleMapErrorBoundary({ children, onRetry }: { children: ReactN
                 width: '52px',
                 height: '52px',
                 borderRadius: '50%',
-                backgroundColor: classified.isRealMapOffline ? 'rgba(37, 99, 235, 0.08)' : 'rgba(239, 68, 68, 0.08)',
-                border: classified.isRealMapOffline ? '1px solid rgba(37, 99, 235, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)',
+                backgroundColor: classified.isRealMapOffline ? 'var(--badge-info-bg)' : 'var(--status-critical-bg)',
+                border: classified.isRealMapOffline ? '1px solid var(--badge-info-border)' : '1px solid var(--status-critical-border)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: classified.isRealMapOffline ? 'var(--accent-primary, #2563EB)' : '#DC2626',
+                color: classified.isRealMapOffline ? 'var(--badge-info-text)' : 'var(--status-critical-text)',
               }}
             >
               {classified.isRealMapOffline ? (
@@ -382,8 +382,8 @@ export function GoogleMapErrorBoundary({ children, onRetry }: { children: ReactN
                   textTransform: 'uppercase',
                   padding: '2px 8px',
                   borderRadius: '4px',
-                  backgroundColor: classified.isRealMapOffline ? 'rgba(37, 99, 235, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                  color: classified.isRealMapOffline ? '#2563EB' : '#DC2626',
+                  backgroundColor: classified.isRealMapOffline ? 'var(--badge-info-bg)' : 'var(--status-critical-bg)',
+                  color: classified.isRealMapOffline ? 'var(--badge-info-text)' : 'var(--status-critical-text)',
                   marginBottom: '8px',
                 }}
               >
@@ -392,7 +392,7 @@ export function GoogleMapErrorBoundary({ children, onRetry }: { children: ReactN
               <h3 style={{ fontSize: '17px', fontWeight: 800, margin: 0, textTransform: 'uppercase' }}>
                 MAP UNAVAILABLE
               </h3>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary, #64748B)', maxWidth: '440px', lineHeight: 1.5, marginTop: '6px' }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', maxWidth: '440px', lineHeight: 1.5, marginTop: '6px' }}>
                 {classified.message}
               </p>
             </div>
@@ -404,8 +404,8 @@ export function GoogleMapErrorBoundary({ children, onRetry }: { children: ReactN
                   height: '36px',
                   padding: '0 24px',
                   borderRadius: 'var(--radius-sm, 6px)',
-                  backgroundColor: 'var(--accent-primary, #2563EB)',
-                  color: '#FFFFFF',
+                  backgroundColor: 'var(--button)',
+                  color: 'var(--button-foreground)',
                   fontSize: '12px',
                   fontWeight: 700,
                   border: 'none',
@@ -427,14 +427,14 @@ export function GoogleMapErrorBoundary({ children, onRetry }: { children: ReactN
               <div
                 style={{
                   fontSize: '11px',
-                  color: 'var(--text-muted, #94A3B8)',
+                  color: 'var(--text-muted)',
                   fontFamily: 'monospace',
                   maxWidth: '460px',
                   wordBreak: 'break-word',
-                  backgroundColor: '#F1F5F9',
+                  backgroundColor: 'var(--bg-surface-secondary)',
                   padding: '8px 12px',
                   borderRadius: '6px',
-                  border: '1px solid #E2E8F0',
+                  border: '1px solid var(--border-subtle)',
                   textAlign: 'left',
                 }}
               >

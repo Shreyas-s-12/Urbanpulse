@@ -16,10 +16,11 @@ export default function PinAdjusterOverlay() {
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 40,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: 'var(--overlay-bg)',
+        backdropFilter: 'blur(12px)',
         borderRadius: '12px',
-        border: '1px solid #CBD5E1',
-        boxShadow: '0 8px 24px rgba(15, 23, 42, 0.16)',
+        border: '1px solid var(--border)',
+        boxShadow: 'var(--shadow-panel)',
         padding: '12px 18px',
         display: 'flex',
         alignItems: 'center',
@@ -29,10 +30,10 @@ export default function PinAdjusterOverlay() {
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
+        <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>
           Adjust Location Pin
         </span>
-        <span style={{ fontSize: '11px', color: '#64748B' }}>
+        <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
           Click anywhere on the map to reposition your active pin.
         </span>
       </div>
@@ -41,9 +42,9 @@ export default function PinAdjusterOverlay() {
         <button
           onClick={cancelPinAdjustment}
           style={{
-            backgroundColor: '#F1F5F9',
-            border: '1px solid #E2E8F0',
-            color: '#475569',
+            backgroundColor: 'var(--button-secondary)',
+            border: '1px solid var(--button-secondary-border)',
+            color: 'var(--button-secondary-foreground)',
             borderRadius: '6px',
             padding: '6px 12px',
             fontSize: '11.5px',
@@ -57,9 +58,9 @@ export default function PinAdjusterOverlay() {
         <button
           onClick={confirmManualPin}
           style={{
-            backgroundColor: '#2563EB',
+            backgroundColor: 'var(--button)',
             border: 'none',
-            color: '#FFFFFF',
+            color: 'var(--button-foreground)',
             borderRadius: '6px',
             padding: '6px 14px',
             fontSize: '11.5px',

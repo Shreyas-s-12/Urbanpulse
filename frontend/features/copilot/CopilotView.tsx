@@ -124,10 +124,10 @@ export default function CopilotView() {
             width: 'clamp(360px, 90vw, 640px)',
             height: '100%',
             maxHeight: 'calc(100vh - 80px)',
-            backgroundColor: 'var(--bg-panel, #FFFFFF)',
-            borderRadius: 'var(--radius-lg, 12px)',
-            border: '1px solid var(--border, #E2E7EF)',
-            boxShadow: 'var(--card-shadow, 0 10px 25px -5px rgba(0, 0, 0, 0.08))',
+            backgroundColor: 'var(--bg-panel)',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--border)',
+            boxShadow: 'var(--card-shadow)',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
@@ -138,22 +138,22 @@ export default function CopilotView() {
           <div
             style={{
               height: '60px',
-              padding: '0 var(--space-4, 16px)',
-              borderBottom: '1px solid var(--border, #E2E7EF)',
+              padding: '0 var(--space-4)',
+              borderBottom: '1px solid var(--border)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              backgroundColor: 'var(--bg-header, #FFFFFF)',
+              backgroundColor: 'var(--bg-header)',
               flexShrink: 0,
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <NexusHoloOrb size={34} />
               <div>
-                <h1 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary, #172033)', margin: 0, lineHeight: 1.2 }}>
+                <h1 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1.2 }}>
                   UrbanPulse Nexus
                 </h1>
-                <p style={{ fontSize: '12px', color: 'var(--text-secondary, #566174)', margin: 0, lineHeight: 1 }}>
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1 }}>
                   Spatial Intelligence & Decision Layer
                 </p>
               </div>
@@ -163,10 +163,10 @@ export default function CopilotView() {
               style={{
                 fontSize: '11.5px',
                 padding: '4px 10px',
-                borderRadius: 'var(--radius-full, 9999px)',
-                backgroundColor: 'var(--accent-primary-light, #EFF6FF)',
-                color: 'var(--accent-primary, #2563EB)',
-                border: '1px solid var(--accent-primary-soft, #BFDBFE)',
+                borderRadius: 'var(--radius-full)',
+                backgroundColor: 'var(--badge-info-bg)',
+                color: 'var(--badge-info-text)',
+                border: '1px solid var(--badge-info-border)',
                 fontWeight: 700,
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -178,7 +178,7 @@ export default function CopilotView() {
               }}
               title={cityName}
             >
-              <PinIcon size={12} color="var(--accent-primary, #2563EB)" />
+              <PinIcon size={12} color="currentColor" />
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{cityName}</span>
             </span>
           </div>
@@ -190,7 +190,7 @@ export default function CopilotView() {
               minHeight: 0,
               padding: '16px',
               overflowY: 'auto',
-              backgroundColor: 'var(--conversation-bg, #F8FAFC)',
+              backgroundColor: 'var(--conversation-bg)',
               display: 'flex',
               flexDirection: 'column',
               gap: '14px',
@@ -215,14 +215,14 @@ export default function CopilotView() {
                     style={{
                       maxWidth: isUser ? '88%' : '100%',
                       width: isUser ? 'fit-content' : '100%',
-                      backgroundColor: isUser ? '#2563EB' : 'var(--assistant-card-bg, #FFFFFF)',
-                      color: isUser ? '#FFFFFF' : 'var(--text-primary, #172033)',
+                      backgroundColor: isUser ? 'var(--button)' : 'var(--assistant-card-bg)',
+                      color: isUser ? 'var(--button-foreground)' : 'var(--text-primary)',
                       padding: isUser ? '10px 14px' : '12px 14px',
                       borderRadius: isUser ? '14px 14px 4px 14px' : '12px',
                       fontSize: '13px',
                       lineHeight: 1.45,
-                      border: isUser ? 'none' : '1px solid var(--assistant-card-border, #E2E7EF)',
-                      boxShadow: isUser ? 'none' : 'var(--card-shadow, 0 2px 8px rgba(15, 23, 42, 0.05))',
+                      border: isUser ? 'none' : '1px solid var(--assistant-card-border)',
+                      boxShadow: isUser ? 'none' : 'var(--card-shadow)',
                       boxSizing: 'border-box',
                     }}
                   >
@@ -234,13 +234,13 @@ export default function CopilotView() {
                         style={{
                           marginTop: '10px',
                           paddingTop: '8px',
-                          borderTop: isUser ? '1px solid rgba(255,255,255,0.2)' : '1px solid var(--border-subtle, #EDF0F4)',
+                          borderTop: isUser ? '1px solid rgba(255,255,255,0.2)' : '1px solid var(--border-subtle)',
                           display: 'flex',
                           flexDirection: 'column',
                           gap: '4px',
                         }}
                       >
-                        <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: isUser ? 'rgba(255,255,255,0.8)' : 'var(--text-muted, #7B8798)' }}>
+                        <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: isUser ? 'var(--button-foreground)' : 'var(--text-muted)' }}>
                           PROVENANCE:
                         </span>
                         {msg.citedLiveSignals.map((cite, idx) => (
@@ -248,13 +248,13 @@ export default function CopilotView() {
                             key={idx}
                             style={{
                               fontSize: '11px',
-                              color: isUser ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary, #566174)',
+                              color: isUser ? 'var(--button-foreground)' : 'var(--text-secondary)',
                               display: 'flex',
                               gap: '6px',
                               alignItems: 'center',
                             }}
                           >
-                            <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: isUser ? '#FFFFFF' : 'var(--accent-primary, #2563EB)' }} />
+                            <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: isUser ? 'var(--button-foreground)' : 'var(--accent-primary)' }} />
                             <span><strong>[{cite.type}]</strong> {cite.detail} ({cite.source})</span>
                           </div>
                         ))}
@@ -274,22 +274,22 @@ export default function CopilotView() {
                             height: '32px',
                             padding: '0 12px',
                             borderRadius: '16px',
-                            backgroundColor: 'var(--assistant-card-bg, #FFFFFF)',
-                            border: '1px solid var(--assistant-card-border, #E2E7EF)',
-                            color: 'var(--text-secondary, #566174)',
+                            backgroundColor: 'var(--assistant-card-bg)',
+                            border: '1px solid var(--assistant-card-border)',
+                            color: 'var(--text-secondary)',
                             fontWeight: 500,
                             cursor: 'pointer',
                             transition: 'all 0.15s ease',
                           }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = 'var(--accent-primary, #2563EB)';
-                            e.currentTarget.style.backgroundColor = 'var(--accent-primary-light, #EFF6FF)';
-                            e.currentTarget.style.color = 'var(--accent-primary, #2563EB)';
+                            e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                            e.currentTarget.style.backgroundColor = 'var(--accent-primary-light)';
+                            e.currentTarget.style.color = 'var(--accent-primary)';
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = 'var(--assistant-card-border, #E2E7EF)';
-                            e.currentTarget.style.backgroundColor = 'var(--assistant-card-bg, #FFFFFF)';
-                            e.currentTarget.style.color = 'var(--text-secondary, #566174)';
+                            e.currentTarget.style.borderColor = 'var(--assistant-card-border)';
+                            e.currentTarget.style.backgroundColor = 'var(--assistant-card-bg)';
+                            e.currentTarget.style.color = 'var(--text-secondary)';
                           }}
                         >
                           {action}
@@ -307,8 +307,8 @@ export default function CopilotView() {
           <div
             style={{
               padding: '12px 16px',
-              borderTop: '1px solid var(--border, #E2E7EF)',
-              backgroundColor: 'var(--bg-panel, #FFFFFF)',
+              borderTop: '1px solid var(--border)',
+              backgroundColor: 'var(--bg-panel)',
               display: 'flex',
               alignItems: 'center',
               gap: '10px',
@@ -327,24 +327,21 @@ export default function CopilotView() {
                 flex: 1,
                 height: '46px',
                 padding: '0 16px',
-                borderRadius: 'var(--radius-md, 8px)',
-                border: '1px solid var(--border-strong, #CBD5E1)',
-                backgroundColor: 'var(--bg-input, #F9FAFC)',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--input-border)',
+                backgroundColor: 'var(--bg-input)',
                 fontSize: '13.5px',
-                color: 'var(--text-primary, #172033)',
+                color: 'var(--text-primary)',
                 outline: 'none',
                 transition: 'all 0.15s ease',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
               }}
               onFocus={(e) => {
-                e.currentTarget.style.borderColor = 'var(--accent-primary, #2563EB)';
-                e.currentTarget.style.backgroundColor = 'var(--bg-card, #FFFFFF)';
-                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(37, 99, 235, 0.12)';
+                e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                e.currentTarget.style.boxShadow = 'var(--focus-ring)';
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = 'var(--border-strong, #CBD5E1)';
-                e.currentTarget.style.backgroundColor = 'var(--bg-input, #F9FAFC)';
-                e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.02)';
+                e.currentTarget.style.borderColor = 'var(--input-border)';
+                e.currentTarget.style.boxShadow = 'none';
               }}
             />
             <VoiceControl
@@ -358,9 +355,9 @@ export default function CopilotView() {
               style={{
                 height: '46px',
                 padding: '0 20px',
-                borderRadius: 'var(--radius-md, 8px)',
-                backgroundColor: isSending || !inputQuery.trim() ? 'var(--text-disabled, #A7B0BE)' : 'var(--accent-primary, #2563EB)',
-                color: '#FFFFFF',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: isSending || !inputQuery.trim() ? 'var(--text-disabled)' : 'var(--button)',
+                color: 'var(--button-foreground)',
                 fontSize: '13.5px',
                 fontWeight: 600,
                 cursor: isSending || !inputQuery.trim() ? 'not-allowed' : 'pointer',

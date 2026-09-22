@@ -48,11 +48,11 @@ export default function MapLocationHUD({
         bottom: '24px',
         left: '16px',
         zIndex: 25,
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        backgroundColor: 'var(--overlay-bg)',
         backdropFilter: 'blur(12px)',
         borderRadius: '10px',
-        border: '1px solid var(--border-subtle, #E2E8F0)',
-        boxShadow: 'var(--shadow-panel, 0 4px 16px rgba(0, 0, 0, 0.08))',
+        border: '1px solid var(--border-subtle)',
+        boxShadow: 'var(--shadow-panel)',
         padding: '10px 14px',
         maxWidth: '340px',
         display: 'flex',
@@ -66,13 +66,13 @@ export default function MapLocationHUD({
       {/* Top Row: Location Name + Confidence badge */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
-          <PinIcon size={14} color="var(--accent-primary, #2563EB)" style={{ flexShrink: 0 }} />
+          <PinIcon size={14} color="var(--accent-primary)" style={{ flexShrink: 0 }} />
           <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             <span
               style={{
                 fontSize: '13px',
                 fontWeight: 800,
-                color: 'var(--text-primary, #0F172A)',
+                color: 'var(--text-primary)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.03em',
               }}
@@ -89,9 +89,9 @@ export default function MapLocationHUD({
               fontWeight: 700,
               padding: '1px 6px',
               borderRadius: '4px',
-              backgroundColor: 'var(--bg-app, #F8FAFC)',
-              border: '1px solid var(--border-subtle, #E2E8F0)',
-              color: 'var(--text-secondary, #64748B)',
+              backgroundColor: 'var(--bg-app)',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-secondary)',
               whiteSpace: 'nowrap',
               flexShrink: 0,
             }}
@@ -103,12 +103,12 @@ export default function MapLocationHUD({
       </div>
 
       {/* Subtitle / Region + Radius */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted, #94A3B8)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)' }}>
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {subtitle || `${location.latitude.toFixed(4)}°N, ${location.longitude.toFixed(4)}°E`}
         </span>
         {radiusKm && (
-          <span style={{ flexShrink: 0, fontWeight: 600, color: 'var(--accent-primary, #2563EB)', marginLeft: '6px' }}>
+          <span style={{ flexShrink: 0, fontWeight: 600, color: 'var(--accent-primary)', marginLeft: '6px' }}>
             {radiusKm} km radius
           </span>
         )}
@@ -123,34 +123,34 @@ export default function MapLocationHUD({
             gap: '8px',
             marginTop: '2px',
             paddingTop: '6px',
-            borderTop: '1px solid var(--border-subtle, #F1F5F9)',
+            borderTop: '1px solid var(--border-subtle)',
             fontSize: '11px',
             flexWrap: 'wrap',
           }}
         >
           {weather?.tempC !== undefined && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', color: 'var(--text-primary, #1E293B)' }}>
-              <ThermometerIcon size={12} color="var(--accent-primary, #2563EB)" />
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', color: 'var(--text-primary)' }}>
+              <ThermometerIcon size={12} color="var(--accent-primary)" />
               <span style={{ fontWeight: 700 }}>{Math.round(weather.tempC)}°C</span>
               {weather.condition && (
-                <span style={{ color: 'var(--text-muted, #94A3B8)', fontSize: '10px' }}>({weather.condition})</span>
+                <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>({weather.condition})</span>
               )}
             </div>
           )}
 
           {aqi?.value !== undefined && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', color: 'var(--text-primary, #1E293B)' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', color: 'var(--text-primary)' }}>
               <LeafIcon size={12} color="#10B981" />
               <span style={{ fontWeight: 700 }}>AQI {aqi.value}</span>
               {aqi.category && (
-                <span style={{ color: 'var(--text-muted, #94A3B8)', fontSize: '10px' }}>({aqi.category})</span>
+                <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>({aqi.category})</span>
               )}
             </div>
           )}
 
           {trafficSummary && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', color: 'var(--text-primary, #1E293B)' }}>
-              <CarIcon size={12} color="var(--accent-primary, #2563EB)" />
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', color: 'var(--text-primary)' }}>
+              <CarIcon size={12} color="var(--accent-primary)" />
               <span style={{ fontWeight: 600 }}>{trafficSummary}</span>
             </div>
           )}

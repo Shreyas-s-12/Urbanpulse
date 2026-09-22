@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { ResolvedLocation, UnifiedCityEvent, CandidateRoute } from '@shared/types';
+import { useSettingsStore, resolveEffectiveTheme } from '@/stores/useSettingsStore';
 
 interface SpatialMapProps {
   center: ResolvedLocation | null;
@@ -23,6 +24,9 @@ export default function SpatialMap({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [hoveredEvent, setHoveredEvent] = useState<UnifiedCityEvent | null>(null);
   const [animationTick, setAnimationTick] = useState(0);
+  const theme = useSettingsStore((s) => s.theme);
+  const effectiveTheme = resolveEffectiveTheme(theme);
+  const isDark = effectiveTheme === 'dark';
 
   // Animation loop for pulsing seismic rings and radar sweep
   useEffect(() => {
@@ -54,11 +58,11 @@ export default function SpatialMap({
     const kmToPixels = maxPixelRadius / Math.max(radiusKm, 5);
 
     // Clear background
-    ctx.fillStyle = '#EEF2F6';
+    ctx.fillStyle = isDark ? '#050B14' : '#EEF2F6';
     ctx.fillRect(0, 0, width, heightPx);
 
     // Draw Subtle Grid Lines (Lat/Long simulation)
-    ctx.strokeStyle = 'rgba(203, 213, 225, 0.4)';
+    ctx.strokeStyle = isDark ? 'rgba(30, 58, 95, 0.45)' : 'rgba(203, 213, 225, 0.4)';
     ctx.lineWidth = 1;
     for (let x = 0; x < width; x += 60) {
       ctx.beginPath();
@@ -74,7 +78,7 @@ export default function SpatialMap({
     }
 
     // Draw Simulated Regional Arterials and Roads
-    ctx.strokeStyle = '#CBD5E1';
+    ctx.strokeStyle = isDark ? '#1E3A5F' : '#CBD5E1';
     ctx.lineWidth = 2.5;
     ctx.beginPath();
     // Major Diagonal Expressway
@@ -83,7 +87,7 @@ export default function SpatialMap({
     ctx.stroke();
 
     // Outer Ring Bypass
-    ctx.strokeStyle = '#94A3B8';
+    ctx.strokeStyle = isDark ? '#2A5282' : '#94A3B8';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(cx, cy, maxPixelRadius * 0.65, 0, Math.PI * 2);
@@ -109,7 +113,7 @@ export default function SpatialMap({
     ctx.stroke();
 
     // Radius Label
-    ctx.fillStyle = 'var(--text-muted)';
+    ctx.fillStyle = isDark ? '#94A3B8' : '#64748B';
     ctx.font = '11px -apple-system, sans-serif';
     ctx.fillText(`${radiusKm} km Radial Boundary`, cx - 55, cy - maxPixelRadius - 8);
 
@@ -183,17 +187,17 @@ export default function SpatialMap({
 
       // Tooltip/Label on hover
       if (isHovered) {
-        ctx.fillStyle = '#11161B';
+        ctx.fillStyle = isDark ? '#F8FAFC' : '#11161B';
         ctx.font = 'bold 12px -apple-system, sans-serif';
         const label = `${ev.eventType}: ${ev.title.slice(0, 32)}... (${ev.severity}/100)`;
         const textWidth = ctx.measureText(label).width;
 
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
+        ctx.fillStyle = isDark ? 'rgba(16, 29, 49, 0.96)' : 'rgba(255, 255, 255, 0.96)';
         ctx.fillRect(px - textWidth / 2 - 8, py - 38, textWidth + 16, 26);
-        ctx.strokeStyle = '#CBD5E1';
+        ctx.strokeStyle = isDark ? '#1E3A5F' : '#CBD5E1';
         ctx.strokeRect(px - textWidth / 2 - 8, py - 38, textWidth + 16, 26);
 
-        ctx.fillStyle = '#11161B';
+        ctx.fillStyle = isDark ? '#F8FAFC' : '#11161B';
         ctx.fillText(label, px - textWidth / 2, py - 21);
       }
     });
@@ -201,7 +205,7 @@ export default function SpatialMap({
     // Draw User / Active Center Location Pin
     ctx.beginPath();
     ctx.arc(cx, cy, 8, 0, Math.PI * 2);
-    ctx.fillStyle = '#11161B';
+    ctx.fillStyle = isDark ? '#22D3EE' : '#11161B';
     ctx.fill();
     ctx.strokeStyle = '#FFFFFF';
     ctx.lineWidth = 2.5;
@@ -209,10 +213,10 @@ export default function SpatialMap({
 
     ctx.beginPath();
     ctx.arc(cx, cy, 18, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(17, 22, 27, 0.2)';
+    ctx.strokeStyle = isDark ? 'rgba(34, 211, 238, 0.25)' : 'rgba(17, 22, 27, 0.2)';
     ctx.lineWidth = 2;
     ctx.stroke();
-  }, [center, radiusKm, events, activeRoute, hoveredEvent, animationTick]);
+  }, [center, radiusKm, events, activeRoute, hoveredEvent, animationTick, isDark]);
 
   // Handle Canvas Mouse Move for Hover Detection
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -254,7 +258,7 @@ export default function SpatialMap({
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height, overflow: 'hidden', backgroundColor: '#EEF2F6' }}>
+    <div style={{ position: 'relative', width: '100%', height, overflow: 'hidden', backgroundColor: 'var(--bg-app)' }}>
       <canvas
         ref={canvasRef}
         onMouseMove={handleMouseMove}
@@ -268,7 +272,7 @@ export default function SpatialMap({
           position: 'absolute',
           bottom: '16px',
           left: '16px',
-          backgroundColor: 'rgba(255, 255, 255, 0.92)',
+          backgroundColor: 'var(--overlay-bg)',
           backdropFilter: 'blur(8px)',
           padding: '6px 12px',
           borderRadius: 'var(--radius-sm)',

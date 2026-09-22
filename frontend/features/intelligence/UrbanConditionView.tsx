@@ -137,7 +137,7 @@ export default function UrbanConditionView() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '240px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
             <span style={{ color: 'var(--text-muted)' }}>Status Level:</span>
-            <strong style={{ color: overallScore !== null && overallScore >= 75 ? 'var(--severity-low)' : 'var(--severity-critical)' }}>
+            <strong style={{ color: overallScore !== null && overallScore >= 75 ? 'var(--status-good-text)' : 'var(--status-critical-text)' }}>
               {conditionStatus}
             </strong>
           </div>
@@ -147,7 +147,7 @@ export default function UrbanConditionView() {
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
             <span style={{ color: 'var(--text-muted)' }}>Missing Feeds:</span>
-            <strong style={{ color: missingSignals > 0 ? '#D97706' : 'var(--severity-low)' }}>{missingSignals}</strong>
+            <strong style={{ color: missingSignals > 0 ? 'var(--status-warning-text)' : 'var(--status-good-text)' }}>{missingSignals}</strong>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
             <span style={{ color: 'var(--text-muted)' }}>Intelligence Radius:</span>
@@ -203,20 +203,29 @@ export default function UrbanConditionView() {
                   fontWeight: 700,
                   color:
                     trafficLevel === 'NORMAL'
-                      ? 'var(--severity-low)'
+                      ? 'var(--status-good-text)'
                       : trafficLevel === 'MODERATE'
-                        ? '#D97706'
+                        ? 'var(--status-warning-text)'
                         : trafficLevel === 'HEAVY' || trafficLevel === 'SEVERE'
-                          ? 'var(--severity-critical)'
+                          ? 'var(--status-critical-text)'
                           : 'var(--text-muted)',
                   backgroundColor:
                     trafficLevel === 'NORMAL'
-                      ? 'rgba(16, 185, 129, 0.12)'
+                      ? 'var(--status-good-bg)'
                       : trafficLevel === 'MODERATE'
-                        ? 'rgba(245, 158, 11, 0.12)'
+                        ? 'var(--status-warning-bg)'
                         : trafficLevel === 'HEAVY' || trafficLevel === 'SEVERE'
-                          ? 'rgba(239, 68, 68, 0.12)'
+                          ? 'var(--status-critical-bg)'
                           : 'var(--bg-app)',
+                  border: `1px solid ${
+                    trafficLevel === 'NORMAL'
+                      ? 'var(--status-good-border)'
+                      : trafficLevel === 'MODERATE'
+                        ? 'var(--status-warning-border)'
+                        : trafficLevel === 'HEAVY' || trafficLevel === 'SEVERE'
+                          ? 'var(--status-critical-border)'
+                          : 'var(--border-subtle)'
+                  }`,
                   padding: '2px 8px',
                   borderRadius: 'var(--radius-xs)',
                   textTransform: 'uppercase',
@@ -244,11 +253,11 @@ export default function UrbanConditionView() {
                   style={{
                     color:
                       trafficLevel === 'NORMAL'
-                        ? 'var(--severity-low)'
+                        ? 'var(--status-good-text)'
                         : trafficLevel === 'MODERATE'
-                          ? '#D97706'
+                          ? 'var(--status-warning-text)'
                           : trafficLevel === 'HEAVY' || trafficLevel === 'SEVERE'
-                            ? 'var(--severity-critical)'
+                            ? 'var(--status-critical-text)'
                             : 'var(--text-muted)',
                     fontWeight: 700,
                     marginTop: '1px',
@@ -338,8 +347,9 @@ export default function UrbanConditionView() {
                 style={{
                   fontSize: '12px',
                   fontWeight: 700,
-                  color: 'var(--accent-primary)',
-                  backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                  color: 'var(--badge-info-text)',
+                  backgroundColor: 'var(--badge-info-bg)',
+                  border: '1px solid var(--badge-info-border)',
                   padding: '2px 8px',
                   borderRadius: 'var(--radius-xs)',
                   textTransform: 'uppercase',
@@ -377,7 +387,7 @@ export default function UrbanConditionView() {
                 <div style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Road Hazards</div>
                 <div
                   style={{
-                    color: roadHazardCount > 0 ? 'var(--severity-critical)' : 'var(--text-primary)',
+                    color: roadHazardCount > 0 ? 'var(--status-critical-text)' : 'var(--text-primary)',
                     fontWeight: 700,
                     marginTop: '1px',
                   }}
@@ -460,16 +470,23 @@ export default function UrbanConditionView() {
                   fontWeight: 700,
                   color:
                     safetyStatus === 'AVAILABLE'
-                      ? 'var(--severity-low)'
+                      ? 'var(--status-good-text)'
                       : safetyStatus === 'PARTIAL'
-                        ? '#D97706'
+                        ? 'var(--status-warning-text)'
                         : 'var(--text-muted)',
                   backgroundColor:
                     safetyStatus === 'AVAILABLE'
-                      ? 'rgba(16, 185, 129, 0.12)'
+                      ? 'var(--status-good-bg)'
                       : safetyStatus === 'PARTIAL'
-                        ? 'rgba(245, 158, 11, 0.12)'
+                        ? 'var(--status-warning-bg)'
                         : 'var(--bg-app)',
+                  border: `1px solid ${
+                    safetyStatus === 'AVAILABLE'
+                      ? 'var(--status-good-border)'
+                      : safetyStatus === 'PARTIAL'
+                        ? 'var(--status-warning-border)'
+                        : 'var(--border-subtle)'
+                  }`,
                   padding: '2px 8px',
                   borderRadius: 'var(--radius-xs)',
                   textTransform: 'uppercase',
@@ -507,7 +524,7 @@ export default function UrbanConditionView() {
                 <div style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Public Alerts</div>
                 <div
                   style={{
-                    color: alertCount > 0 ? 'var(--severity-critical)' : 'var(--text-primary)',
+                    color: alertCount > 0 ? 'var(--status-critical-text)' : 'var(--text-primary)',
                     fontWeight: 700,
                     marginTop: '1px',
                   }}
@@ -579,18 +596,26 @@ function StandardPillarCard({ pillar }: { pillar: any }) {
     pillar.score === null
       ? 'var(--bg-app)'
       : pillar.score >= 80
-        ? 'rgba(19, 184, 135, 0.12)'
+        ? 'var(--status-good-bg)'
         : pillar.score >= 65
-          ? 'rgba(245, 158, 11, 0.12)'
-          : 'rgba(239, 68, 68, 0.12)';
+          ? 'var(--status-warning-bg)'
+          : 'var(--status-critical-bg)';
   const badgeColor =
     pillar.score === null
       ? 'var(--text-muted)'
       : pillar.score >= 80
-        ? 'var(--severity-low)'
+        ? 'var(--status-good-text)'
         : pillar.score >= 65
-          ? 'var(--severity-moderate)'
-          : 'var(--severity-high)';
+          ? 'var(--status-warning-text)'
+          : 'var(--status-critical-text)';
+  const badgeBorder =
+    pillar.score === null
+      ? 'var(--border-subtle)'
+      : pillar.score >= 80
+        ? 'var(--status-good-border)'
+        : pillar.score >= 65
+          ? 'var(--status-warning-border)'
+          : 'var(--status-critical-border)';
 
   return (
     <div
@@ -634,6 +659,7 @@ function StandardPillarCard({ pillar }: { pillar: any }) {
             fontWeight: 800,
             color: badgeColor,
             backgroundColor: badgeBg,
+            border: `1px solid ${badgeBorder}`,
             padding: '2px 8px',
             borderRadius: 'var(--radius-xs)',
           }}

@@ -92,7 +92,7 @@ export default function CityComparisonModal() {
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(17, 24, 39, 0.4)',
+        backgroundColor: 'var(--overlay-backdrop)',
         backdropFilter: 'blur(6px)',
         zIndex: 2000,
         display: 'flex',
@@ -104,15 +104,15 @@ export default function CityComparisonModal() {
     >
       <div
         style={{
-          backgroundColor: 'var(--bg-panel, #101620)',
-          border: '1px solid var(--border-subtle, #1B2531)',
+          backgroundColor: 'var(--bg-panel)',
+          border: '1px solid var(--border-subtle)',
           borderRadius: '16px',
           width: '100%',
           maxWidth: '860px',
           maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
+          boxShadow: 'var(--shadow-panel)',
           color: 'var(--text-primary)',
           overflow: 'hidden',
         }}
@@ -122,11 +122,11 @@ export default function CityComparisonModal() {
         <div
           style={{
             padding: '20px 24px',
-            borderBottom: '1px solid var(--border-subtle, #1B2531)',
+            borderBottom: '1px solid var(--border-subtle)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: 'var(--bg-header, #0C1119)',
+            backgroundColor: 'var(--bg-header)',
           }}
         >
           <div>
@@ -164,8 +164,8 @@ export default function CityComparisonModal() {
         <div
           style={{
             padding: '12px 24px',
-            backgroundColor: 'var(--bg-card, #111821)',
-            borderBottom: '1px solid var(--border-subtle, #1B2531)',
+            backgroundColor: 'var(--bg-card)',
+            borderBottom: '1px solid var(--border-subtle)',
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
@@ -182,8 +182,8 @@ export default function CityComparisonModal() {
               height: '32px',
               padding: '0 10px',
               borderRadius: '6px',
-              border: '1px solid var(--border, #263241)',
-              backgroundColor: 'var(--bg-input, #0D141D)',
+              border: '1px solid var(--input-border)',
+              backgroundColor: 'var(--bg-input)',
               fontSize: '12px',
               fontWeight: 600,
               color: 'var(--text-primary)',
@@ -205,8 +205,8 @@ export default function CityComparisonModal() {
               height: '32px',
               padding: '0 16px',
               borderRadius: '6px',
-              backgroundColor: 'var(--accent-primary)',
-              color: '#FFFFFF',
+              backgroundColor: 'var(--button)',
+              color: 'var(--button-foreground)',
               border: 'none',
               fontSize: '12px',
               fontWeight: 700,
@@ -218,18 +218,18 @@ export default function CityComparisonModal() {
         </div>
 
         {/* Content Body */}
-        <div style={{ padding: '24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', backgroundColor: 'var(--bg-panel, #101620)' }}>
+        <div style={{ padding: '24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', backgroundColor: 'var(--bg-panel)' }}>
           {/* Comparative Verdict Callout */}
           {verdict && (
             <div
               style={{
-                backgroundColor: 'var(--accent-primary-light)',
-                border: '1px solid rgba(37, 99, 235, 0.25)',
+                backgroundColor: 'var(--badge-info-bg)',
+                border: '1px solid var(--badge-info-border)',
                 borderRadius: '12px',
                 padding: '16px 18px',
               }}
             >
-              <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase', marginBottom: '4px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--badge-info-text)', textTransform: 'uppercase', marginBottom: '4px' }}>
                 Comparative Verdict
               </div>
               <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.5 }}>
@@ -240,11 +240,11 @@ export default function CityComparisonModal() {
 
           {/* Comparison Matrix Table */}
           {matrix.length > 0 && (
-            <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid var(--border-subtle, #1B2531)' }}>
+            <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border-subtle, #1B2531)' }}>
-                    <th style={{ textAlign: 'left', padding: '10px 14px', color: 'var(--text-muted)', fontWeight: 600, backgroundColor: 'var(--bg-header, #0C1119)' }}>
+                  <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                    <th style={{ textAlign: 'left', padding: '10px 14px', color: 'var(--text-muted)', fontWeight: 600, backgroundColor: 'var(--bg-header)' }}>
                       Signal Domain
                     </th>
                     {cities.map((city, idx) => (
@@ -255,7 +255,7 @@ export default function CityComparisonModal() {
                           padding: '10px 14px',
                           color: 'var(--text-primary)',
                           fontWeight: 700,
-                          backgroundColor: 'var(--bg-header, #0C1119)',
+                          backgroundColor: 'var(--bg-header)',
                         }}
                       >
                         {(city as any).cityName || city.location?.city || city.location?.displayName}
@@ -270,11 +270,11 @@ export default function CityComparisonModal() {
                       <tr
                         key={rIdx}
                         style={{
-                          borderBottom: '1px solid var(--border-subtle, #1B2531)',
-                          backgroundColor: isScore ? 'rgba(59, 130, 246, 0.12)' : (rIdx % 2 === 0 ? 'transparent' : 'var(--bg-card, #111821)'),
+                          borderBottom: '1px solid var(--border-subtle)',
+                          backgroundColor: isScore ? 'var(--badge-info-bg)' : (rIdx % 2 === 0 ? 'transparent' : 'var(--bg-surface-secondary)'),
                         }}
                       >
-                        <td style={{ padding: '12px 14px', color: isScore ? 'var(--accent-primary)' : 'var(--text-primary)', fontWeight: isScore ? 700 : 500 }}>
+                        <td style={{ padding: '12px 14px', color: isScore ? 'var(--badge-info-text)' : 'var(--text-primary)', fontWeight: isScore ? 700 : 500 }}>
                           {row.signal}
                         </td>
                         {cities.map((city, cIdx) => {
@@ -288,7 +288,7 @@ export default function CityComparisonModal() {
                                 padding: '12px 14px',
                                 fontWeight: isScore ? 800 : 600,
                                 fontSize: isScore ? '13px' : '12px',
-                                color: val === '—' ? 'var(--text-muted)' : (isScore ? 'var(--accent-primary)' : 'var(--text-primary)'),
+                                color: val === '—' ? 'var(--text-muted)' : (isScore ? 'var(--badge-info-text)' : 'var(--text-primary)'),
                               }}
                             >
                               {String(val)}
@@ -308,8 +308,8 @@ export default function CityComparisonModal() {
         <div
           style={{
             padding: '12px 24px',
-            borderTop: '1px solid var(--border-subtle, #1B2531)',
-            backgroundColor: 'var(--bg-header, #0C1119)',
+            borderTop: '1px solid var(--border-subtle)',
+            backgroundColor: 'var(--bg-header)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -321,15 +321,15 @@ export default function CityComparisonModal() {
           <button
             onClick={() => setShowComparisonModal(false)}
             style={{
-              backgroundColor: 'var(--bg-elevated, #141B26)',
+              backgroundColor: 'var(--bg-elevated)',
               color: 'var(--text-primary)',
-              border: '1px solid var(--border, #263241)',
+              border: '1px solid var(--border)',
               padding: '6px 14px',
               borderRadius: '8px',
               cursor: 'pointer',
               fontSize: '12px',
               fontWeight: 600,
-              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.4)',
+              boxShadow: 'var(--shadow-xs)',
             }}
           >
             Close

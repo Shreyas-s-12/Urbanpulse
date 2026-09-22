@@ -16,7 +16,21 @@ export const NexusComparisonResponse: React.FC<NexusComparisonResponseProps> = (
   const sourceName = (response.sources && response.sources[0]?.name) || 'UrbanPulse Comparative Engine';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', fontSize: '12.5px' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        width: '100%',
+        fontSize: '12.5px',
+        backgroundColor: 'var(--assistant-card-bg)',
+        border: '1px solid var(--assistant-card-border)',
+        borderRadius: '12px',
+        padding: '12px 14px',
+        boxShadow: 'var(--card-shadow)',
+        boxSizing: 'border-box',
+      }}
+    >
       {/* Header */}
       <div style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: '6px' }}>
         <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--accent-primary)' }}>
@@ -32,7 +46,7 @@ export const NexusComparisonResponse: React.FC<NexusComparisonResponseProps> = (
         <div style={{ overflowX: 'auto', borderRadius: '6px', border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-surface)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', textAlign: 'left' }}>
             <thead>
-              <tr style={{ backgroundColor: 'var(--bg-surface-secondary, #F8FAFC)', borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}>
+              <tr style={{ backgroundColor: 'var(--bg-surface-secondary)', borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}>
                 <th style={{ padding: '6px 8px', fontWeight: 700 }}>Signal</th>
                 {cities.map((c: any, idx: number) => (
                   <th key={idx} style={{ padding: '6px 8px', fontWeight: 750, color: 'var(--text-primary)', textAlign: 'right' }}>
@@ -47,7 +61,7 @@ export const NexusComparisonResponse: React.FC<NexusComparisonResponseProps> = (
                   key={rIdx}
                   style={{
                     borderBottom: rIdx === matrix.length - 1 ? 'none' : '1px solid var(--border-subtle)',
-                    backgroundColor: rIdx % 2 === 0 ? 'transparent' : 'rgba(0,0,0,0.015)',
+                    backgroundColor: rIdx % 2 === 0 ? 'transparent' : 'var(--bg-surface-secondary)',
                   }}
                 >
                   <td style={{ padding: '6px 8px', fontWeight: 650, color: 'var(--text-secondary)' }}>
@@ -75,7 +89,7 @@ export const NexusComparisonResponse: React.FC<NexusComparisonResponseProps> = (
           style={{
             padding: '8px 10px',
             borderRadius: '6px',
-            backgroundColor: 'var(--bg-surface-secondary, #F1F5F9)',
+            backgroundColor: 'var(--bg-surface-secondary)',
             borderLeft: '3px solid var(--accent-primary)',
             fontSize: '12px',
             lineHeight: 1.45,

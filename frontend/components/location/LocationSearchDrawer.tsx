@@ -172,7 +172,7 @@ export default function LocationSearchDrawer() {
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.4)',
+        backgroundColor: 'var(--overlay-backdrop)',
         backdropFilter: 'blur(4px)',
         zIndex: 100,
         display: 'flex',
@@ -188,9 +188,11 @@ export default function LocationSearchDrawer() {
           width: '100%',
           maxWidth: '560px',
           maxHeight: 'calc(85vh - 70px)',
-          backgroundColor: '#FFFFFF',
+          backgroundColor: 'var(--bg-panel)',
+          color: 'var(--text-primary)',
           borderRadius: '16px',
-          boxShadow: '0 20px 40px -8px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(15, 23, 42, 0.08)',
+          border: '1px solid var(--border)',
+          boxShadow: 'var(--shadow-panel)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -203,11 +205,11 @@ export default function LocationSearchDrawer() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: '1px solid #F1F5F9',
+            borderBottom: '1px solid var(--border-subtle)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.8px', color: '#64748B' }}>
+            <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.8px', color: 'var(--text-muted)' }}>
               WHERE TO?
             </span>
           </div>
@@ -218,7 +220,7 @@ export default function LocationSearchDrawer() {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              color: '#94A3B8',
+              color: 'var(--text-muted)',
               padding: '4px',
               borderRadius: '6px',
               display: 'flex',
@@ -235,21 +237,21 @@ export default function LocationSearchDrawer() {
         </div>
 
         {/* Search Input Box */}
-        <div style={{ padding: '12px 20px', borderBottom: '1px solid #F1F5F9' }}>
+        <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              backgroundColor: '#F8FAFC',
+              backgroundColor: 'var(--bg-input)',
               borderRadius: '12px',
-              border: '1.5px solid #E2E8F0',
+              border: '1.5px solid var(--input-border)',
               padding: '0 14px',
               height: '46px',
               gap: '10px',
               transition: 'all 0.15s ease',
             }}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
@@ -267,13 +269,13 @@ export default function LocationSearchDrawer() {
                 outline: 'none',
                 width: '100%',
                 fontSize: '14px',
-                color: '#0F172A',
+                color: 'var(--text-primary)',
                 fontWeight: 500,
               }}
             />
 
             {isSearching && (
-              <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 600, flexShrink: 0 }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0 }}>
                 Searching...
               </span>
             )}
@@ -290,7 +292,7 @@ export default function LocationSearchDrawer() {
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
-                  color: '#94A3B8',
+                  color: 'var(--text-muted)',
                   padding: '2px',
                 }}
               >
@@ -310,8 +312,8 @@ export default function LocationSearchDrawer() {
             gridTemplateColumns: '1fr 1fr',
             gap: '10px',
             padding: '12px 20px',
-            backgroundColor: '#F8FAFC',
-            borderBottom: '1px solid #F1F5F9',
+            backgroundColor: 'var(--bg-subtle)',
+            borderBottom: '1px solid var(--border-subtle)',
           }}
         >
           {/* Option 1: Use My Location */}
@@ -324,8 +326,8 @@ export default function LocationSearchDrawer() {
               gap: '10px',
               padding: '10px 14px',
               borderRadius: '10px',
-              backgroundColor: '#FFFFFF',
-              border: activeLocationMode === 'DEVICE' ? '1.5px solid #2563EB' : '1px solid #E2E8F0',
+              backgroundColor: 'var(--bg-card)',
+              border: activeLocationMode === 'DEVICE' ? '1.5px solid var(--accent-primary)' : '1px solid var(--border)',
               cursor: 'pointer',
               textAlign: 'left',
               transition: 'all 0.15s ease',
@@ -336,11 +338,11 @@ export default function LocationSearchDrawer() {
                 width: '28px',
                 height: '28px',
                 borderRadius: '50%',
-                backgroundColor: '#EFF6FF',
+                backgroundColor: 'var(--accent-primary-light)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#2563EB',
+                color: 'var(--accent-primary)',
                 flexShrink: 0,
               }}
             >
@@ -353,10 +355,10 @@ export default function LocationSearchDrawer() {
               </svg>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#0F172A' }}>
+              <span style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
                 Use my location
               </span>
-              <span style={{ fontSize: '10.5px', color: '#64748B' }}>
+              <span style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>
                 {gpsAccuracyMeters ? `±${Math.round(gpsAccuracyMeters)}m accuracy` : 'Device GPS position'}
               </span>
             </div>
@@ -372,8 +374,8 @@ export default function LocationSearchDrawer() {
               gap: '10px',
               padding: '10px 14px',
               borderRadius: '10px',
-              backgroundColor: '#FFFFFF',
-              border: '1px solid #E2E8F0',
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border)',
               cursor: 'pointer',
               textAlign: 'left',
               transition: 'all 0.15s ease',
@@ -384,11 +386,11 @@ export default function LocationSearchDrawer() {
                 width: '28px',
                 height: '28px',
                 borderRadius: '50%',
-                backgroundColor: '#F1F5F9',
+                backgroundColor: 'var(--bg-surface-secondary)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#475569',
+                color: 'var(--text-secondary)',
                 flexShrink: 0,
               }}
             >
@@ -398,10 +400,10 @@ export default function LocationSearchDrawer() {
               </svg>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#0F172A' }}>
+              <span style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
                 Choose on map
               </span>
-              <span style={{ fontSize: '10.5px', color: '#64748B' }}>
+              <span style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>
                 Tap or click any exact spot
               </span>
             </div>
@@ -415,7 +417,7 @@ export default function LocationSearchDrawer() {
             <div>
               {results.length > 0 ? (
                 <div>
-                  <div style={{ padding: '6px 20px 4px', fontSize: '10.5px', fontWeight: 700, color: '#94A3B8', letterSpacing: '0.5px' }}>
+                  <div style={{ padding: '6px 20px 4px', fontSize: '10.5px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>
                     SEARCH RESULTS
                   </div>
                   {results.map((item, idx) => (
@@ -429,7 +431,7 @@ export default function LocationSearchDrawer() {
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         padding: '10px 20px',
-                        background: selectedIndex === idx ? '#F1F5F9' : 'transparent',
+                        background: selectedIndex === idx ? 'var(--bg-card-hover)' : 'transparent',
                         border: 'none',
                         cursor: 'pointer',
                         textAlign: 'left',
@@ -443,12 +445,12 @@ export default function LocationSearchDrawer() {
                             width: '26px',
                             height: '26px',
                             borderRadius: '50%',
-                            backgroundColor: '#F8FAFC',
-                            border: '1px solid #E2E8F0',
+                            backgroundColor: 'var(--bg-card)',
+                            border: '1px solid var(--border-subtle)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            color: '#64748B',
+                            color: 'var(--text-muted)',
                             flexShrink: 0,
                           }}
                         >
@@ -458,11 +460,11 @@ export default function LocationSearchDrawer() {
                           </svg>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontSize: '13px', fontWeight: 600, color: '#0F172A' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
                             {item.primaryText}
                           </span>
                           {item.secondaryText && (
-                            <span style={{ fontSize: '11.5px', color: '#64748B' }}>
+                            <span style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
                               {item.secondaryText}
                             </span>
                           )}
@@ -475,8 +477,8 @@ export default function LocationSearchDrawer() {
                           fontSize: '10px',
                           fontWeight: 700,
                           textTransform: 'uppercase',
-                          color: '#475569',
-                          backgroundColor: '#F1F5F9',
+                          color: 'var(--text-secondary)',
+                          backgroundColor: 'var(--bg-surface-secondary)',
                           padding: '2px 8px',
                           borderRadius: '12px',
                           letterSpacing: '0.4px',
@@ -496,8 +498,8 @@ export default function LocationSearchDrawer() {
                       width: '40px',
                       height: '40px',
                       borderRadius: '50%',
-                      backgroundColor: '#FEF2F2',
-                      color: '#EF4444',
+                      backgroundColor: 'var(--status-critical-bg)',
+                      color: 'var(--status-critical-text)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -510,19 +512,19 @@ export default function LocationSearchDrawer() {
                       <line x1="12" y1="16" x2="12.01" y2="16"></line>
                     </svg>
                   </div>
-                  <h4 style={{ margin: '0 0 6px', fontSize: '14px', fontWeight: 700, color: '#0F172A' }}>
+                  <h4 style={{ margin: '0 0 6px', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
                     Location not found
                   </h4>
-                  <p style={{ margin: '0 0 16px', fontSize: '12px', color: '#64748B', maxWidth: '340px', marginInline: 'auto' }}>
+                  <p style={{ margin: '0 0 16px', fontSize: '12px', color: 'var(--text-muted)', maxWidth: '340px', marginInline: 'auto' }}>
                     We could not resolve &ldquo;{query}&rdquo;. Check spelling, try a broader area, or choose a point on the map.
                   </p>
                   <button
                     type="button"
                     onClick={handleChooseOnMap}
                     style={{
-                      backgroundColor: '#EFF6FF',
-                      color: '#2563EB',
-                      border: '1px solid #BFDBFE',
+                      backgroundColor: 'var(--badge-info-bg)',
+                      color: 'var(--badge-info-text)',
+                      border: '1px solid var(--badge-info-border)',
                       borderRadius: '8px',
                       padding: '8px 16px',
                       fontSize: '12px',
@@ -547,7 +549,7 @@ export default function LocationSearchDrawer() {
               {/* Saved Places (Section 76) */}
               {savedFavorites.length > 0 && (
                 <div style={{ marginBottom: '14px' }}>
-                  <div style={{ padding: '6px 20px 4px', fontSize: '10.5px', fontWeight: 700, color: '#94A3B8', letterSpacing: '0.5px' }}>
+                  <div style={{ padding: '6px 20px 4px', fontSize: '10.5px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>
                     SAVED PLACES
                   </div>
                   {savedFavorites.map((fav) => (
@@ -583,11 +585,11 @@ export default function LocationSearchDrawer() {
                             width: '26px',
                             height: '26px',
                             borderRadius: '50%',
-                            backgroundColor: '#EFF6FF',
+                            backgroundColor: 'var(--accent-primary-light)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            color: '#2563EB',
+                            color: 'var(--accent-primary)',
                             flexShrink: 0,
                           }}
                         >
@@ -596,10 +598,10 @@ export default function LocationSearchDrawer() {
                           </svg>
                         </div>
                         <div>
-                          <span style={{ fontSize: '13px', fontWeight: 600, color: '#0F172A', display: 'block' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'block' }}>
                             {fav.customName || fav.label}
                           </span>
-                          <span style={{ fontSize: '11.5px', color: '#64748B' }}>
+                          <span style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
                             {fav.displayName}
                           </span>
                         </div>
@@ -610,7 +612,7 @@ export default function LocationSearchDrawer() {
                           e.stopPropagation();
                           removeFavoriteLocation(fav.id);
                         }}
-                        style={{ background: 'none', border: 'none', color: '#CBD5E1', cursor: 'pointer', padding: '4px' }}
+                        style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}
                         title="Remove saved place"
                       >
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -634,7 +636,7 @@ export default function LocationSearchDrawer() {
                       justifyContent: 'space-between',
                     }}
                   >
-                    <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#94A3B8', letterSpacing: '0.5px' }}>
+                    <span style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>
                       RECENT SEARCHES
                     </span>
                     <button
@@ -644,7 +646,7 @@ export default function LocationSearchDrawer() {
                         background: 'none',
                         border: 'none',
                         fontSize: '11px',
-                        color: '#64748B',
+                        color: 'var(--text-muted)',
                         cursor: 'pointer',
                         fontWeight: 600,
                       }}
@@ -674,11 +676,11 @@ export default function LocationSearchDrawer() {
                           width: '26px',
                           height: '26px',
                           borderRadius: '50%',
-                          backgroundColor: '#F8FAFC',
+                          backgroundColor: 'var(--bg-card)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          color: '#64748B',
+                          color: 'var(--text-muted)',
                           flexShrink: 0,
                         }}
                       >
@@ -688,11 +690,11 @@ export default function LocationSearchDrawer() {
                         </svg>
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '13px', fontWeight: 600, color: '#0F172A' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
                           {rec.displayName}
                         </span>
                         {rec.formattedAddress && (
-                          <span style={{ fontSize: '11.5px', color: '#64748B' }}>
+                          <span style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
                             {rec.formattedAddress}
                           </span>
                         )}
@@ -705,7 +707,7 @@ export default function LocationSearchDrawer() {
               {/* Empty state when no recents or favorites */}
               {savedFavorites.length === 0 && recentLocations.length === 0 && (
                 <div style={{ padding: '28px 20px', textAlign: 'center' }}>
-                  <p style={{ margin: 0, fontSize: '12.5px', color: '#94A3B8' }}>
+                  <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-muted)' }}>
                     Type a city, neighborhood, or street above, or choose a point on the map.
                   </p>
                 </div>

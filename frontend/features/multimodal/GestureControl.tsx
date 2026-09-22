@@ -123,9 +123,9 @@ export default function GestureControl() {
           height: '36px',
           padding: '0 12px',
           borderRadius: 'var(--radius-full)',
-          backgroundColor: isEnabled ? 'var(--hand-control-on-bg, #EFF6FF)' : 'var(--hand-control-off-bg, #F3F4F6)',
-          border: isEnabled ? '1px solid var(--hand-control-on-border, #BFDBFE)' : '1px solid var(--hand-control-off-border, #E2E7EF)',
-          color: isEnabled ? 'var(--hand-control-on-text, #2563EB)' : 'var(--hand-control-off-text, #64748B)',
+          backgroundColor: isEnabled ? 'var(--hand-control-on-bg)' : 'var(--hand-control-off-bg)',
+          border: isEnabled ? '1px solid var(--hand-control-on-border)' : '1px solid var(--hand-control-off-border)',
+          color: isEnabled ? 'var(--hand-control-on-text)' : 'var(--hand-control-off-text)',
           fontSize: '12px',
           fontWeight: 700,
           cursor: 'pointer',
@@ -134,14 +134,14 @@ export default function GestureControl() {
         }}
         onMouseEnter={(e) => {
           if (!isEnabled) {
-            e.currentTarget.style.backgroundColor = 'var(--bg-card-hover, #EEF2F6)';
-            e.currentTarget.style.color = 'var(--text-primary, #172033)';
+            e.currentTarget.style.backgroundColor = 'var(--bg-card-hover)';
+            e.currentTarget.style.color = 'var(--text-primary)';
           }
         }}
         onMouseLeave={(e) => {
           if (!isEnabled) {
-            e.currentTarget.style.backgroundColor = 'var(--hand-control-off-bg, #F3F4F6)';
-            e.currentTarget.style.color = 'var(--hand-control-off-text, #64748B)';
+            e.currentTarget.style.backgroundColor = 'var(--hand-control-off-bg)';
+            e.currentTarget.style.color = 'var(--hand-control-off-text)';
           }
         }}
       >
@@ -157,8 +157,8 @@ export default function GestureControl() {
             fontSize: '9.5px',
             padding: '2px 6px',
             borderRadius: '4px',
-            backgroundColor: isEnabled ? 'var(--accent-primary, #2563EB)' : 'rgba(100, 116, 139, 0.15)',
-            color: isEnabled ? '#FFFFFF' : 'var(--hand-control-off-text, #64748B)',
+            backgroundColor: isEnabled ? 'var(--button)' : 'var(--border-subtle)',
+            color: isEnabled ? 'var(--button-foreground)' : 'var(--hand-control-off-text)',
             fontWeight: 800,
           }}
         >

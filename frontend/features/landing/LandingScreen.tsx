@@ -92,8 +92,7 @@ export default function LandingScreen({ onStart, destination = '/signin' }: Land
           style={{
             position: 'absolute',
             inset: 0,
-            background:
-              'radial-gradient(circle at center, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.85) 55%, var(--bg-app) 100%)',
+            background: 'var(--landing-radial-overlay)',
             pointerEvents: 'none',
           }}
         />
@@ -101,8 +100,7 @@ export default function LandingScreen({ onStart, destination = '/signin' }: Land
           style={{
             position: 'absolute',
             inset: 0,
-            background:
-              'linear-gradient(to bottom, rgba(255,255,255,0.8) 0%, transparent 40%, transparent 60%, var(--bg-app) 100%)',
+            background: 'var(--landing-linear-overlay)',
             pointerEvents: 'none',
           }}
         />
@@ -122,11 +120,11 @@ export default function LandingScreen({ onStart, destination = '/signin' }: Land
           gap: '16px',
           padding: '36px 32px',
           borderRadius: '24px',
-          backgroundColor: 'rgba(255, 255, 255, 0.88)',
+          backgroundColor: 'var(--landing-card-bg)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.95)',
-          boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04)',
+          border: '1px solid var(--landing-card-border)',
+          boxShadow: 'var(--card-shadow)',
         }}
       >
         {/* Brand Mark with UrbanPulseLogo */}
@@ -136,9 +134,9 @@ export default function LandingScreen({ onStart, destination = '/signin' }: Land
             alignItems: 'center',
             padding: '8px 20px',
             borderRadius: '9999px',
-            backgroundColor: '#FFFFFF',
-            border: '1px solid #E2E8F0',
-            boxShadow: '0 2px 8px rgba(15, 23, 42, 0.06)',
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+            boxShadow: 'var(--shadow-sm)',
           }}
         >
           <UrbanPulseLogo size="sm" showWordmark={true} priority />
@@ -152,7 +150,7 @@ export default function LandingScreen({ onStart, destination = '/signin' }: Land
               fontWeight: 800,
               letterSpacing: '-1.5px',
               lineHeight: 1.15,
-              color: '#0F172A',
+              color: 'var(--text-primary)',
               margin: 0,
             }}
           >
@@ -162,7 +160,7 @@ export default function LandingScreen({ onStart, destination = '/signin' }: Land
             style={{
               fontSize: '18px',
               fontWeight: 700,
-              color: '#2563EB',
+              color: 'var(--accent-primary)',
               letterSpacing: '-0.2px',
               margin: 0,
             }}
@@ -177,7 +175,7 @@ export default function LandingScreen({ onStart, destination = '/signin' }: Land
             fontSize: '15px',
             fontWeight: 500,
             lineHeight: 1.6,
-            color: '#334155',
+            color: 'var(--text-secondary)',
             maxWidth: '520px',
             margin: 0,
             fontStyle: 'italic',
@@ -191,7 +189,7 @@ export default function LandingScreen({ onStart, destination = '/signin' }: Land
           style={{
             fontSize: '13.5px',
             lineHeight: 1.55,
-            color: '#64748B',
+            color: 'var(--text-muted)',
             maxWidth: '480px',
             margin: 0,
           }}
@@ -214,8 +212,8 @@ export default function LandingScreen({ onStart, destination = '/signin' }: Land
               fontSize: '15px',
               fontWeight: 700,
               borderRadius: '12px',
-              backgroundColor: '#2563EB',
-              color: '#FFFFFF',
+              backgroundColor: 'var(--button)',
+              color: 'var(--button-foreground)',
               border: 'none',
               textDecoration: 'none',
               cursor: 'pointer',
@@ -229,12 +227,12 @@ export default function LandingScreen({ onStart, destination = '/signin' }: Land
               letterSpacing: '0.5px',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#1D4ED8';
+              e.currentTarget.style.backgroundColor = 'var(--button-hover)';
               e.currentTarget.style.transform = 'translateY(-2px)';
               e.currentTarget.style.boxShadow = '0 8px 24px rgba(37, 99, 235, 0.5)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#2563EB';
+              e.currentTarget.style.backgroundColor = 'var(--button)';
               e.currentTarget.style.transform = 'translateY(0)';
               e.currentTarget.style.boxShadow = '0 4px 16px rgba(37, 99, 235, 0.4)';
             }}
@@ -256,13 +254,13 @@ export default function LandingScreen({ onStart, destination = '/signin' }: Land
           </Link>
 
           {/* Secondary Links: Already have an account? Sign in | Continue as Guest */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#64748B' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-muted)' }}>
             <div>
               <span>{t('landing.alreadyHaveAccount', 'Already have an account?')} </span>
               <Link
                 href="/signin"
                 style={{
-                  color: '#2563EB',
+                  color: 'var(--accent-primary)',
                   fontWeight: 600,
                   textDecoration: 'none',
                   marginLeft: '4px',
@@ -282,23 +280,23 @@ export default function LandingScreen({ onStart, destination = '/signin' }: Land
                 gap: '6px',
                 padding: '8px 18px',
                 borderRadius: '8px',
-                border: '1px solid #CBD5E1',
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                color: '#334155',
+                border: '1px solid var(--border)',
+                backgroundColor: 'var(--bg-card)',
+                color: 'var(--text-secondary)',
                 fontSize: '13px',
                 fontWeight: 600,
                 cursor: isGuestLoading ? 'wait' : 'pointer',
                 transition: 'all 0.15s ease',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#F1F5F9';
-                e.currentTarget.style.borderColor = '#94A3B8';
-                e.currentTarget.style.color = '#0F172A';
+                e.currentTarget.style.backgroundColor = 'var(--bg-card-hover)';
+                e.currentTarget.style.borderColor = 'var(--border-strong)';
+                e.currentTarget.style.color = 'var(--text-primary)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
-                e.currentTarget.style.borderColor = '#CBD5E1';
-                e.currentTarget.style.color = '#334155';
+                e.currentTarget.style.backgroundColor = 'var(--bg-card)';
+                e.currentTarget.style.borderColor = 'var(--border)';
+                e.currentTarget.style.color = 'var(--text-secondary)';
               }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -320,18 +318,18 @@ export default function LandingScreen({ onStart, destination = '/signin' }: Land
             alignItems: 'center',
             gap: '16px',
             fontSize: '12px',
-            color: '#475569',
+            color: 'var(--text-secondary)',
             fontWeight: 600,
           }}
         >
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <CheckIcon size={13} color="#2563EB" /> {t('landing.realTraffic', 'Real Google Traffic')}
+            <CheckIcon size={13} color="var(--accent-primary)" /> {t('landing.realTraffic', 'Real Google Traffic')}
           </span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <CheckIcon size={13} color="#2563EB" /> {t('landing.standardAQI', 'Standard-Aware AQI')}
+            <CheckIcon size={13} color="var(--accent-primary)" /> {t('landing.standardAQI', 'Standard-Aware AQI')}
           </span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <CheckIcon size={13} color="#2563EB" /> {t('landing.zeroMockData', 'Zero Mock Data')}
+            <CheckIcon size={13} color="var(--accent-primary)" /> {t('landing.zeroMockData', 'Zero Mock Data')}
           </span>
         </div>
       </main>

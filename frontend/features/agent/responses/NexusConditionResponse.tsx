@@ -34,11 +34,11 @@ export const NexusConditionResponse: React.FC<NexusConditionResponseProps> = ({ 
         flexDirection: 'column',
         gap: '10px',
         width: '100%',
-        backgroundColor: 'var(--assistant-card-bg, #FFFFFF)',
-        border: '1px solid var(--assistant-card-border, #E2E7EF)',
+        backgroundColor: 'var(--assistant-card-bg)',
+        border: '1px solid var(--assistant-card-border)',
         borderRadius: '12px',
         padding: '12px 14px',
-        boxShadow: 'var(--card-shadow, 0 2px 8px rgba(15, 23, 42, 0.05))',
+        boxShadow: 'var(--card-shadow)',
         boxSizing: 'border-box',
       }}
     >
@@ -50,7 +50,7 @@ export const NexusConditionResponse: React.FC<NexusConditionResponseProps> = ({ 
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: '0.04em',
-            color: 'var(--accent-primary, #2563EB)',
+            color: 'var(--accent-primary)',
             display: 'block',
           }}
         >
@@ -61,7 +61,7 @@ export const NexusConditionResponse: React.FC<NexusConditionResponseProps> = ({ 
             margin: '4px 0 0 0',
             fontSize: '14px',
             fontWeight: 600,
-            color: 'var(--text-primary, #172033)',
+            color: 'var(--text-primary)',
             lineHeight: 1.3,
           }}
         >
@@ -75,9 +75,9 @@ export const NexusConditionResponse: React.FC<NexusConditionResponseProps> = ({ 
           style={{
             padding: '10px 12px',
             borderRadius: '8px',
-            backgroundColor: 'var(--weather-summary-bg, #EFF6FF)',
-            border: '1px solid var(--weather-summary-border, #BFDBFE)',
-            color: 'var(--weather-summary-text, #1D4ED8)',
+            backgroundColor: 'var(--badge-info-bg)',
+            border: '1px solid var(--badge-info-border)',
+            color: 'var(--badge-info-text)',
             fontSize: '12.5px',
             lineHeight: 1.45,
             fontWeight: 500,
@@ -102,18 +102,18 @@ export const NexusConditionResponse: React.FC<NexusConditionResponseProps> = ({ 
               style={{
                 padding: '8px 10px',
                 borderRadius: '8px',
-                backgroundColor: 'var(--nested-metric-bg, #F8FAFC)',
-                border: '1px solid var(--nested-metric-border, #E8EDF3)',
+                backgroundColor: 'var(--bg-surface-secondary)',
+                border: '1px solid var(--border-subtle)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '2px',
                 boxSizing: 'border-box',
               }}
             >
-              <span style={{ fontSize: '10px', color: 'var(--text-muted, #7B8798)', fontWeight: 500 }}>
+              <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 500 }}>
                 {key}
               </span>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary, #172033)' }}>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
                 {String(val)}
               </span>
             </div>
@@ -128,16 +128,16 @@ export const NexusConditionResponse: React.FC<NexusConditionResponseProps> = ({ 
           justifyContent: 'space-between',
           alignItems: 'center',
           fontSize: '10.5px',
-          color: 'var(--text-muted, #7B8798)',
+          color: 'var(--text-muted)',
           paddingTop: '2px',
           flexWrap: 'wrap',
           gap: '6px',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span>Source: <strong style={{ color: 'var(--text-secondary, #566174)' }}>{sourceName}</strong></span>
+          <span>Source: <strong style={{ color: 'var(--text-secondary)' }}>{sourceName}</strong></span>
           <span>•</span>
-          <span>Confidence: <strong style={{ color: 'var(--text-secondary, #566174)' }}>{confidence}%</strong></span>
+          <span>Confidence: <strong style={{ color: 'var(--text-secondary)' }}>{confidence}%</strong></span>
         </div>
 
         <button
@@ -149,7 +149,7 @@ export const NexusConditionResponse: React.FC<NexusConditionResponseProps> = ({ 
             gap: '3px',
             fontSize: '10.5px',
             fontWeight: 600,
-            color: 'var(--accent-primary, #2563EB)',
+            color: 'var(--accent-primary)',
             backgroundColor: 'transparent',
             border: 'none',
             padding: '2px 4px',
@@ -174,10 +174,10 @@ export const NexusConditionResponse: React.FC<NexusConditionResponseProps> = ({ 
           style={{
             padding: '8px 10px',
             borderRadius: '6px',
-            backgroundColor: 'var(--nested-metric-bg, #F8FAFC)',
-            border: '1px solid var(--nested-metric-border, #E8EDF3)',
+            backgroundColor: 'var(--bg-surface-secondary)',
+            border: '1px solid var(--border-subtle)',
             fontSize: '11px',
-            color: 'var(--text-secondary, #566174)',
+            color: 'var(--text-secondary)',
             display: 'flex',
             flexDirection: 'column',
             gap: '4px',
@@ -190,10 +190,10 @@ export const NexusConditionResponse: React.FC<NexusConditionResponseProps> = ({ 
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span style={{ fontWeight: 600 }}>Signal Freshness:</span>
-            <span style={{ color: '#10B981', fontWeight: 600 }}>Live Telemetry</span>
+            <span style={{ color: 'var(--status-good-text)', fontWeight: 600 }}>Live Telemetry</span>
           </div>
           {response.sources && response.sources.length > 0 && response.sources[0]?.detail && (
-            <div style={{ fontSize: '10.5px', color: 'var(--text-muted, #7B8798)', marginTop: '2px' }}>
+            <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', marginTop: '2px' }}>
               {response.sources[0].detail}
             </div>
           )}

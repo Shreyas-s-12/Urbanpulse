@@ -65,7 +65,7 @@ export default function PulseWireArticleFeed({
   if (status === 'LOADING' && validArticles.length === 0) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '6px 0' }}>
-        <div style={{ fontSize: '11px', color: 'var(--text-muted, #748091)', fontWeight: 600, padding: '2px 4px' }}>
+        <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, padding: '2px 4px' }}>
           Loading recent updates...
         </div>
         {[1, 2, 3].map((i) => (
@@ -74,8 +74,8 @@ export default function PulseWireArticleFeed({
             style={{
               height: '92px',
               borderRadius: '10px',
-              backgroundColor: 'var(--bg-card, #111821)',
-              border: '1px solid var(--border, #263241)',
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border)',
               padding: '12px',
               display: 'flex',
               flexDirection: 'column',
@@ -83,9 +83,9 @@ export default function PulseWireArticleFeed({
               animation: 'pulse 1.2s ease-in-out infinite',
             }}
           >
-            <div style={{ width: '60px', height: '14px', borderRadius: '4px', backgroundColor: 'var(--border, #263241)' }} />
-            <div style={{ width: '85%', height: '16px', borderRadius: '4px', backgroundColor: 'var(--border, #263241)' }} />
-            <div style={{ width: '50%', height: '12px', borderRadius: '4px', backgroundColor: 'var(--border-subtle, #1B2531)' }} />
+            <div style={{ width: '60px', height: '14px', borderRadius: '4px', backgroundColor: 'var(--border)' }} />
+            <div style={{ width: '85%', height: '16px', borderRadius: '4px', backgroundColor: 'var(--border)' }} />
+            <div style={{ width: '50%', height: '12px', borderRadius: '4px', backgroundColor: 'var(--border-subtle)' }} />
           </div>
         ))}
       </div>
@@ -99,9 +99,9 @@ export default function PulseWireArticleFeed({
         style={{
           padding: '24px 16px',
           textAlign: 'center',
-          backgroundColor: 'rgba(239, 68, 68, 0.10)',
+          backgroundColor: 'var(--badge-hazard-bg)',
           borderRadius: '10px',
-          border: '1px solid rgba(239, 68, 68, 0.25)',
+          border: '1px solid var(--badge-hazard-border)',
           margin: 'auto 0',
           display: 'flex',
           flexDirection: 'column',
@@ -109,10 +109,10 @@ export default function PulseWireArticleFeed({
           gap: '8px',
         }}
       >
-        <div style={{ fontSize: '13px', fontWeight: 700, color: '#F87171' }}>
+        <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--badge-hazard-text)' }}>
           PulseWire unavailable
         </div>
-        <div style={{ fontSize: '11px', color: '#FCA5A5', lineHeight: 1.4, maxWidth: '240px' }}>
+        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.4, maxWidth: '240px' }}>
           {error || 'Unable to retrieve recent news right now.'}
         </div>
         {onRetry && (
@@ -123,8 +123,8 @@ export default function PulseWireArticleFeed({
               marginTop: '4px',
               padding: '5px 14px',
               borderRadius: '6px',
-              backgroundColor: '#DC2626',
-              color: '#FFFFFF',
+              backgroundColor: 'var(--button)',
+              color: 'var(--button-foreground)',
               fontSize: '11px',
               fontWeight: 700,
               border: 'none',
@@ -145,9 +145,9 @@ export default function PulseWireArticleFeed({
         style={{
           padding: '24px 16px',
           textAlign: 'center',
-          backgroundColor: 'var(--bg-card, #111821)',
+          backgroundColor: 'var(--bg-card)',
           borderRadius: '10px',
-          border: '1px solid var(--border, #263241)',
+          border: '1px solid var(--border)',
           margin: 'auto 0',
           display: 'flex',
           flexDirection: 'column',
@@ -155,12 +155,12 @@ export default function PulseWireArticleFeed({
           gap: '6px',
         }}
       >
-        <div style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--text-primary, #F3F6FA)' }}>
+        <div style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
           {selectedCategory !== 'ALL'
             ? `No recent ${selectedCategory} updates.`
             : 'No articles match your search filter.'}
         </div>
-        <div style={{ fontSize: '11px', color: 'var(--text-muted, #748091)' }}>
+        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
           Try switching to another category or resetting the search term.
         </div>
       </div>
@@ -174,9 +174,9 @@ export default function PulseWireArticleFeed({
         style={{
           padding: '28px 16px',
           textAlign: 'center',
-          backgroundColor: 'var(--bg-card, #111821)',
+          backgroundColor: 'var(--bg-card)',
           borderRadius: '10px',
-          border: '1px solid var(--border, #263241)',
+          border: '1px solid var(--border)',
           margin: 'auto 0',
           display: 'flex',
           flexDirection: 'column',
@@ -184,10 +184,10 @@ export default function PulseWireArticleFeed({
           gap: '8px',
         }}
       >
-        <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary, #F3F6FA)' }}>
+        <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>
           No recent updates
         </div>
-        <div style={{ fontSize: '11px', color: 'var(--text-muted, #748091)', lineHeight: 1.45, maxWidth: '250px' }}>
+        <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.45, maxWidth: '250px' }}>
           No verified news articles were found for {locationLabel} in the last 24 hours.
         </div>
         {onExpandToGlobal && (
@@ -198,8 +198,8 @@ export default function PulseWireArticleFeed({
               marginTop: '4px',
               padding: '5px 14px',
               borderRadius: '6px',
-              backgroundColor: '#2563EB',
-              color: '#FFFFFF',
+              backgroundColor: 'var(--button)',
+              color: 'var(--button-foreground)',
               fontSize: '11px',
               fontWeight: 700,
               border: 'none',

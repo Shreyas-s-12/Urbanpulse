@@ -37,12 +37,12 @@ const GoogleMapView = dynamic(() => import('@/components/map/GoogleMapView'), {
         position: 'relative',
         width: '100%',
         height: '100%',
-        backgroundColor: '#F8FAFC',
+        backgroundColor: 'var(--bg-app)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        color: '#64748B',
+        color: 'var(--text-muted)',
         fontSize: '13px',
         fontWeight: 600,
         gap: '12px',
@@ -53,7 +53,7 @@ const GoogleMapView = dynamic(() => import('@/components/map/GoogleMapView'), {
           width: '24px',
           height: '24px',
           borderRadius: '50%',
-          border: '2px solid var(--accent-primary, #2563EB)',
+          border: '2px solid var(--accent-primary)',
           borderTopColor: 'transparent',
           animation: 'spin 0.8s linear infinite',
         }}
@@ -171,12 +171,12 @@ export default function MainScreen() {
 
   const trafficColor =
     !isTrafficValid || trafficLoading
-      ? '#64748B'
+      ? 'var(--text-muted)'
       : traffic.trafficStatus === 'SEVERE' || traffic.trafficStatus === 'HEAVY'
-      ? '#DC2626'
+      ? 'var(--status-critical-text)'
       : traffic.trafficStatus === 'MODERATE'
-      ? '#D97706'
-      : '#16A34A';
+      ? 'var(--status-caution-text)'
+      : 'var(--status-good-text)';
 
   // Weather signal states
   const weatherStatusBadge = weatherLoading
@@ -268,14 +268,15 @@ export default function MainScreen() {
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: 25,
-              backgroundColor: 'rgba(15, 23, 42, 0.9)',
-              backdropFilter: 'blur(8px)',
-              color: '#FFFFFF',
+              backgroundColor: 'var(--overlay-bg)',
+              backdropFilter: 'blur(12px)',
+              color: 'var(--text-primary)',
               padding: '8px 20px',
               borderRadius: '20px',
               fontSize: '12px',
               fontWeight: 600,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              boxShadow: 'var(--shadow-md)',
+              border: '1px solid var(--border)',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
@@ -290,12 +291,12 @@ export default function MainScreen() {
                   width: '6px',
                   height: '6px',
                   borderRadius: '50%',
-                  backgroundColor: '#38BDF8',
+                  backgroundColor: 'var(--accent-primary)',
                 }}
               />
               <span style={{ fontWeight: 800, letterSpacing: '0.04em' }}>GLOBAL LOCATION INTELLIGENCE</span>
             </div>
-            <span style={{ fontSize: '11px', color: '#CBD5E1', fontWeight: 500 }}>
+            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 500 }}>
               Select any location to begin.
             </span>
           </div>
@@ -306,11 +307,11 @@ export default function MainScreen() {
           <button
             onClick={() => setEventsDrawerOpen(!eventsDrawerOpen)}
             style={{
-              backgroundColor: 'rgba(13, 20, 29, 0.94)',
+              backgroundColor: 'var(--overlay-bg)',
               backdropFilter: 'blur(12px)',
               borderRadius: '20px',
-              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
-              border: '1px solid var(--border, #263241)',
+              boxShadow: 'var(--shadow-md)',
+              border: '1px solid var(--border)',
               padding: '6px 14px',
               display: 'inline-flex',
               alignItems: 'center',
@@ -318,7 +319,7 @@ export default function MainScreen() {
               cursor: 'pointer',
               fontSize: '11px',
               fontWeight: 700,
-              color: 'var(--text-primary, #F3F6FA)',
+              color: 'var(--text-primary)',
             }}
             title="Toggle Events Near You Drawer"
           >
@@ -327,12 +328,12 @@ export default function MainScreen() {
                 width: '7px',
                 height: '7px',
                 borderRadius: '50%',
-                backgroundColor: events.length > 0 ? '#3B82F6' : '#64748B',
-                boxShadow: events.length > 0 ? '0 0 6px rgba(59, 130, 246, 0.8)' : 'none',
+                backgroundColor: events.length > 0 ? 'var(--accent-primary)' : 'var(--text-muted)',
+                boxShadow: events.length > 0 ? '0 0 6px var(--accent-primary)' : 'none',
               }}
             />
             <span>Events ({events.length})</span>
-            <ChevronDownIcon size={12} style={{ transform: eventsDrawerOpen ? 'rotate(180deg)' : 'none', color: 'var(--text-secondary, #AAB4C2)' }} />
+            <ChevronDownIcon size={12} style={{ transform: eventsDrawerOpen ? 'rotate(180deg)' : 'none', color: 'var(--text-secondary)' }} />
           </button>
         </div>
 
@@ -345,10 +346,10 @@ export default function MainScreen() {
               right: '16px',
               width: '320px',
               maxHeight: 'calc(100% - 72px)',
-              backgroundColor: 'var(--bg-panel, #101620)',
+              backgroundColor: 'var(--bg-panel)',
               borderRadius: '12px',
-              boxShadow: '0 12px 32px rgba(0, 0, 0, 0.5)',
-              border: '1px solid var(--border, #263241)',
+              boxShadow: 'var(--shadow-panel)',
+              border: '1px solid var(--border)',
               padding: '16px',
               display: 'flex',
               flexDirection: 'column',
@@ -358,16 +359,16 @@ export default function MainScreen() {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <div>
-                <h3 style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary, #F3F6FA)', margin: 0 }}>
+                <h3 style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
                   Events in Radius
                 </h3>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted, #748091)' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                   {eventsLoading ? 'Scanning signals...' : `${events.length} verified signals within ${selectedRadiusKm} km`}
                 </div>
               </div>
               <button
                 onClick={() => setEventsDrawerOpen(false)}
-                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted, #748091)', padding: '4px' }}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px' }}
               >
                 <CloseIcon size={14} />
               </button>
@@ -375,7 +376,7 @@ export default function MainScreen() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {events.length === 0 && !eventsLoading && (
-                <div style={{ padding: '20px 12px', textAlign: 'center', color: 'var(--text-muted, #748091)', fontSize: '11.5px' }}>
+                <div style={{ padding: '20px 12px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '11.5px' }}>
                   No verified incidents or road hazards currently active in this radius.
                 </div>
               )}
@@ -385,10 +386,10 @@ export default function MainScreen() {
                   onClick={() => setSelectedEvent(event)}
                   style={{
                     textAlign: 'left',
-                    backgroundColor: selectedEvent?.eventId === event.eventId ? 'var(--bg-card-hover, #17202C)' : 'var(--bg-card, #111821)',
+                    backgroundColor: selectedEvent?.eventId === event.eventId ? 'var(--bg-card-hover)' : 'var(--bg-card)',
                     borderRadius: '8px',
                     padding: '9px 11px',
-                    border: selectedEvent?.eventId === event.eventId ? '1px solid #3B82F6' : '1px solid var(--border, #263241)',
+                    border: selectedEvent?.eventId === event.eventId ? '1px solid var(--accent-primary)' : '1px solid var(--border)',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
                   }}
@@ -400,18 +401,18 @@ export default function MainScreen() {
                         fontWeight: 700,
                         padding: '2px 5px',
                         borderRadius: '4px',
-                        backgroundColor: event.severity >= 75 ? 'rgba(239, 68, 68, 0.15)' : event.severity >= 55 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(59, 130, 246, 0.15)',
-                        color: event.severity >= 75 ? '#F87171' : event.severity >= 55 ? '#FBBF24' : '#60A5FA',
-                        border: `1px solid ${event.severity >= 75 ? 'rgba(239, 68, 68, 0.3)' : event.severity >= 55 ? 'rgba(245, 158, 11, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`,
+                        backgroundColor: event.severity >= 75 ? 'var(--badge-hazard-bg)' : event.severity >= 55 ? 'var(--badge-warning-bg)' : 'var(--badge-info-bg)',
+                        color: event.severity >= 75 ? 'var(--badge-hazard-text)' : event.severity >= 55 ? 'var(--badge-warning-text)' : 'var(--badge-info-text)',
+                        border: `1px solid ${event.severity >= 75 ? 'var(--badge-hazard-border)' : event.severity >= 55 ? 'var(--badge-warning-border)' : 'var(--badge-info-border)'}`,
                       }}
                     >
                       {event.eventType} · SEV {event.severity}
                     </span>
-                    <span style={{ fontSize: '10px', color: 'var(--text-muted, #748091)' }}>
+                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
                       {event.distanceKm ?? '--'} km away
                     </span>
                   </div>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary, #F3F6FA)', lineHeight: 1.3 }}>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
                     {event.title}
                   </div>
                 </button>
@@ -425,9 +426,9 @@ export default function MainScreen() {
       <section
         aria-label="Location Intelligence Summary"
         style={{
-          backgroundColor: 'var(--bg-panel, #101620)',
-          borderTop: '1px solid var(--border, #263241)',
-          boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.4)',
+          backgroundColor: 'var(--bg-panel)',
+          borderTop: '1px solid var(--border)',
+          boxShadow: 'var(--shadow-panel)',
           zIndex: 40,
           display: 'flex',
           flexDirection: 'column',
@@ -441,8 +442,8 @@ export default function MainScreen() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: bottomPanelExpanded ? '1px solid var(--border-subtle, #1B2531)' : 'none',
-            backgroundColor: 'var(--bg-header, #0C1119)',
+            borderBottom: bottomPanelExpanded ? '1px solid var(--border-subtle)' : 'none',
+            backgroundColor: 'var(--bg-header)',
           }}
         >
           {/* Location Title & Context */}
@@ -452,19 +453,19 @@ export default function MainScreen() {
                 width: '28px',
                 height: '28px',
                 borderRadius: '6px',
-                backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                backgroundColor: 'var(--accent-primary-light)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
               }}
             >
-              <PinIcon size={14} color="#60A5FA" />
+              <PinIcon size={14} color="var(--accent-primary)" />
             </div>
 
             <div style={{ minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted, #748091)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                   {currentLocation ? 'Selected Location' : 'Global Intelligence'}
                 </span>
                 {currentLat && currentLng ? (
@@ -472,9 +473,9 @@ export default function MainScreen() {
                     style={{
                       fontSize: '9.5px',
                       fontWeight: 600,
-                      color: '#60A5FA',
-                      backgroundColor: 'rgba(59, 130, 246, 0.12)',
-                      border: '1px solid rgba(59, 130, 246, 0.25)',
+                      color: 'var(--accent-primary)',
+                      backgroundColor: 'var(--accent-primary-light)',
+                      border: '1px solid var(--accent-primary)',
                       padding: '1px 5px',
                       borderRadius: '4px',
                     }}
@@ -486,9 +487,9 @@ export default function MainScreen() {
                     style={{
                       fontSize: '9.5px',
                       fontWeight: 600,
-                      color: 'var(--text-muted, #748091)',
-                      backgroundColor: 'var(--bg-elevated, #141B26)',
-                      border: '1px solid var(--border, #263241)',
+                      color: 'var(--text-muted)',
+                      backgroundColor: 'var(--bg-elevated)',
+                      border: '1px solid var(--border)',
                       padding: '1px 5px',
                       borderRadius: '4px',
                     }}
@@ -500,9 +501,9 @@ export default function MainScreen() {
                   style={{
                     fontSize: '9.5px',
                     fontWeight: 700,
-                    color: conditionScore !== null && conditionScore >= 75 ? '#4ADE80' : '#FBBF24',
-                    backgroundColor: conditionScore !== null && conditionScore >= 75 ? 'rgba(34, 197, 94, 0.12)' : 'rgba(245, 158, 11, 0.12)',
-                    border: `1px solid ${conditionScore !== null && conditionScore >= 75 ? 'rgba(34, 197, 94, 0.25)' : 'rgba(245, 158, 11, 0.25)'}`,
+                    color: conditionScore !== null && conditionScore >= 75 ? 'var(--status-good-text)' : 'var(--status-warning-text)',
+                    backgroundColor: conditionScore !== null && conditionScore >= 75 ? 'var(--status-good-bg)' : 'var(--status-warning-bg)',
+                    border: `1px solid ${conditionScore !== null && conditionScore >= 75 ? 'var(--status-good-border)' : 'var(--status-warning-border)'}`,
                     padding: '1px 5px',
                     borderRadius: '4px',
                   }}
@@ -514,7 +515,7 @@ export default function MainScreen() {
                     : 'No location selected'}
                 </span>
               </div>
-              <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary, #F3F6FA)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: '1px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: '1px' }}>
                 {locationTitle}
               </div>
             </div>
@@ -530,9 +531,9 @@ export default function MainScreen() {
                 gap: '5px',
                 padding: '5px 12px',
                 borderRadius: '6px',
-                backgroundColor: 'rgba(59, 130, 246, 0.12)',
-                border: '1px solid #3B82F6',
-                color: '#60A5FA',
+                backgroundColor: 'var(--accent-primary-light)',
+                border: '1px solid var(--accent-primary)',
+                color: 'var(--accent-primary)',
                 fontSize: '11px',
                 fontWeight: 700,
                 cursor: 'pointer',
@@ -549,8 +550,8 @@ export default function MainScreen() {
                 gap: '5px',
                 padding: '5px 12px',
                 borderRadius: '6px',
-                backgroundColor: '#2563EB',
-                color: '#FFFFFF',
+                backgroundColor: 'var(--button)',
+                color: 'var(--button-foreground)',
                 fontSize: '11px',
                 fontWeight: 700,
                 textDecoration: 'none',
@@ -564,9 +565,9 @@ export default function MainScreen() {
               style={{
                 padding: '4px 8px',
                 borderRadius: '6px',
-                backgroundColor: 'var(--bg-elevated, #141B26)',
-                border: '1px solid var(--border, #263241)',
-                color: 'var(--text-secondary, #AAB4C2)',
+                backgroundColor: 'var(--bg-elevated)',
+                border: '1px solid var(--border)',
+                color: 'var(--text-secondary)',
                 fontSize: '11px',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -595,29 +596,29 @@ export default function MainScreen() {
           >
             {/* Column 1: Location Context */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-muted, #748091)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+              <div style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                 Location Context
               </div>
-              <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border, #263241)' }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary, #AAB4C2)', lineHeight: 1.4 }}>
+              <div style={{ backgroundColor: 'var(--bg-card)', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
                   {locationSubtitle}
                 </div>
-                <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '10.5px', color: 'var(--text-muted, #748091)' }}>
-                  <div>Radius: <strong style={{ color: 'var(--text-primary, #F3F6FA)' }}>{currentLocation ? `${selectedRadiusKm} km` : 'Global Canvas'}</strong></div>
-                  <div>Confidence: <strong style={{ color: currentLocation ? '#4ADE80' : 'var(--text-muted, #748091)' }}>{currentLocation ? 'Verified Geospatial Fix (88%)' : 'No target selected'}</strong></div>
-                  <div>Mode: <strong style={{ color: 'var(--text-primary, #F3F6FA)' }}>{currentLocation ? 'Active Location Analysis' : 'Neutral Global Baseline'}</strong></div>
+                <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '10.5px', color: 'var(--text-muted)' }}>
+                  <div>Radius: <strong style={{ color: 'var(--text-primary)' }}>{currentLocation ? `${selectedRadiusKm} km` : 'Global Canvas'}</strong></div>
+                  <div>Confidence: <strong style={{ color: currentLocation ? 'var(--status-good-text)' : 'var(--text-muted)' }}>{currentLocation ? 'Verified Geospatial Fix (88%)' : 'No target selected'}</strong></div>
+                  <div>Mode: <strong style={{ color: 'var(--text-primary)' }}>{currentLocation ? 'Active Location Analysis' : 'Neutral Global Baseline'}</strong></div>
                 </div>
               </div>
             </div>
 
             {/* Column 2: Urban Condition Score */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-muted, #748091)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+              <div style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                 Urban Condition
               </div>
-              <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border, #263241)', flex: 1 }}>
+              <div style={{ backgroundColor: 'var(--bg-card)', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border)', flex: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-primary, #F3F6FA)' }}>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)' }}>
                     {!currentLocation ? 'Neutral' : conditionLoading ? 'Evaluating...' : conditionScore !== null ? `${conditionScore}/100` : 'Unavailable'}
                   </div>
                   <span
@@ -626,15 +627,15 @@ export default function MainScreen() {
                       fontWeight: 700,
                       padding: '2px 6px',
                       borderRadius: '4px',
-                      backgroundColor: conditionScore !== null && conditionScore >= 75 ? 'rgba(34, 197, 94, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                      color: conditionScore !== null && conditionScore >= 75 ? '#4ADE80' : '#FBBF24',
-                      border: `1px solid ${conditionScore !== null && conditionScore >= 75 ? 'rgba(34, 197, 94, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
+                      backgroundColor: conditionScore !== null && conditionScore >= 75 ? 'var(--status-good-bg)' : 'var(--status-warning-bg)',
+                      color: conditionScore !== null && conditionScore >= 75 ? 'var(--status-good-text)' : 'var(--status-warning-text)',
+                      border: `1px solid ${conditionScore !== null && conditionScore >= 75 ? 'var(--status-good-border)' : 'var(--status-warning-border)'}`,
                     }}
                   >
                     {!currentLocation ? 'GLOBAL BASELINE' : conditionStatus}
                   </span>
                 </div>
-                <div style={{ fontSize: '11px', color: 'var(--text-secondary, #AAB4C2)', marginTop: '4px', lineHeight: 1.35 }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: 1.35 }}>
                   {conditionScore !== null
                     ? `Composite condition score evaluated from verified atmospheric sensors and local infrastructure reports.`
                     : currentLocation
@@ -643,7 +644,7 @@ export default function MainScreen() {
                 </div>
                 <Link
                   href={ROUTES.analytics}
-                  style={{ fontSize: '11px', color: '#60A5FA', fontWeight: 600, marginTop: '6px', display: 'inline-block', textDecoration: 'none' }}
+                  style={{ fontSize: '11px', color: 'var(--accent-primary)', fontWeight: 600, marginTop: '6px', display: 'inline-block', textDecoration: 'none' }}
                 >
                   View Urban Intelligence Breakdown →
                 </Link>
@@ -652,70 +653,70 @@ export default function MainScreen() {
 
             {/* Column 3: Structured Signal Cards */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-muted, #748091)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+              <div style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                 Verified Signals
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
                 {/* Weather Card */}
-                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border, #263241)' }}>
+                <div style={{ backgroundColor: 'var(--bg-card)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '9.5px', fontWeight: 700, color: 'var(--text-muted, #748091)' }}>WEATHER</span>
-                    <span style={{ fontSize: '8px', fontWeight: 700, color: weather ? '#4ADE80' : 'var(--text-muted, #748091)' }}>
+                    <span style={{ fontSize: '9.5px', fontWeight: 700, color: 'var(--text-muted)' }}>WEATHER</span>
+                    <span style={{ fontSize: '8px', fontWeight: 700, color: weather ? 'var(--status-good-text)' : 'var(--text-muted)' }}>
                       {currentLocation ? weatherStatusBadge : 'IDLE'}
                     </span>
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary, #F3F6FA)', marginTop: '2px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
                     {!currentLocation ? 'Select location' : weatherLoading ? 'Loading...' : weather?.temperatureC !== undefined ? `${weather.temperatureC}°C` : 'Unavailable'}
                   </div>
-                  <div style={{ fontSize: '9.5px', color: 'var(--text-muted, #748091)', marginTop: '1px' }}>
+                  <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', marginTop: '1px' }}>
                     {!currentLocation ? 'Awaiting target' : weather?.conditionLabel || 'Open-Meteo'}
                   </div>
                 </div>
 
                 {/* Traffic Card */}
-                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border, #263241)' }}>
+                <div style={{ backgroundColor: 'var(--bg-card)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '9.5px', fontWeight: 700, color: 'var(--text-muted, #748091)' }}>TRAFFIC</span>
-                    <span style={{ fontSize: '8px', fontWeight: 700, color: trafficStatusBadge === 'AVAILABLE' ? '#4ADE80' : 'var(--text-muted, #748091)' }}>
+                    <span style={{ fontSize: '9.5px', fontWeight: 700, color: 'var(--text-muted)' }}>TRAFFIC</span>
+                    <span style={{ fontSize: '8px', fontWeight: 700, color: trafficStatusBadge === 'AVAILABLE' ? 'var(--status-good-text)' : 'var(--text-muted)' }}>
                       {currentLocation ? trafficStatusBadge : 'IDLE'}
                     </span>
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: currentLocation ? trafficColor : 'var(--text-muted, #748091)', marginTop: '2px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: currentLocation ? trafficColor : 'var(--text-muted)', marginTop: '2px' }}>
                     {!currentLocation ? 'Select location' : trafficLabel}
                   </div>
-                  <div style={{ fontSize: '9.5px', color: 'var(--text-muted, #748091)', marginTop: '1px' }}>
+                  <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', marginTop: '1px' }}>
                     {!currentLocation ? 'Awaiting target' : trafficDetail}
                   </div>
                 </div>
 
                 {/* Roads Card */}
-                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border, #263241)' }}>
+                <div style={{ backgroundColor: 'var(--bg-card)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '9.5px', fontWeight: 700, color: 'var(--text-muted, #748091)' }}>ROADS</span>
-                    <span style={{ fontSize: '8px', fontWeight: 700, color: currentLocation ? '#4ADE80' : 'var(--text-muted, #748091)' }}>
+                    <span style={{ fontSize: '9.5px', fontWeight: 700, color: 'var(--text-muted)' }}>ROADS</span>
+                    <span style={{ fontSize: '8px', fontWeight: 700, color: currentLocation ? 'var(--status-good-text)' : 'var(--text-muted)' }}>
                       {currentLocation ? 'AVAILABLE' : 'IDLE'}
                     </span>
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: potholeCount > 0 ? '#F87171' : 'var(--text-primary, #F3F6FA)', marginTop: '2px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: potholeCount > 0 ? 'var(--status-critical-text)' : 'var(--text-primary)', marginTop: '2px' }}>
                     {!currentLocation ? 'Select location' : potholeCount > 0 ? `${potholeCount} Hazards` : 'Mapped'}
                   </div>
-                  <div style={{ fontSize: '9.5px', color: 'var(--text-muted, #748091)', marginTop: '1px' }}>
+                  <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', marginTop: '1px' }}>
                     {!currentLocation ? 'Awaiting target' : 'Surface: Asphalt (OSM)'}
                   </div>
                 </div>
 
                 {/* Air Quality Card */}
-                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border, #263241)' }}>
+                <div style={{ backgroundColor: 'var(--bg-card)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '9.5px', fontWeight: 700, color: 'var(--text-muted, #748091)' }}>AIR QUALITY</span>
-                    <span style={{ fontSize: '8px', fontWeight: 700, color: aqiStatusBadge === 'AVAILABLE' ? '#4ADE80' : 'var(--text-muted, #748091)' }}>
+                    <span style={{ fontSize: '9.5px', fontWeight: 700, color: 'var(--text-muted)' }}>AIR QUALITY</span>
+                    <span style={{ fontSize: '8px', fontWeight: 700, color: aqiStatusBadge === 'AVAILABLE' ? 'var(--status-good-text)' : 'var(--text-muted)' }}>
                       {currentLocation ? aqiStatusBadge : 'IDLE'}
                     </span>
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: currentLocation ? '#60A5FA' : 'var(--text-muted, #748091)', marginTop: '2px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: currentLocation ? 'var(--accent-primary)' : 'var(--text-muted)', marginTop: '2px' }}>
                     {!currentLocation ? 'Select location' : airQualityLabel}
                   </div>
-                  <div style={{ fontSize: '9.5px', color: 'var(--text-muted, #748091)', marginTop: '1px' }}>
+                  <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', marginTop: '1px' }}>
                     {!currentLocation ? 'Awaiting target' : airQualityDetail}
                   </div>
                 </div>
@@ -724,7 +725,7 @@ export default function MainScreen() {
 
             {/* Column 4: Dedicated Intelligence Systems */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-muted, #748091)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+              <div style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                 Dedicated Intelligence Modules
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
@@ -735,16 +736,16 @@ export default function MainScreen() {
                     flexDirection: 'column',
                     alignItems: 'center',
                     padding: '8px 4px',
-                    backgroundColor: 'var(--bg-card, #111821)',
-                    border: '1px solid var(--border, #263241)',
+                    backgroundColor: 'var(--bg-card)',
+                    border: '1px solid var(--border)',
                     borderRadius: '6px',
                     textDecoration: 'none',
                     textAlign: 'center',
                     transition: 'all 0.15s ease',
                   }}
                 >
-                  <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#60A5FA' }}>GeoRAG</span>
-                  <span style={{ fontSize: '9px', color: 'var(--text-muted, #748091)', marginTop: '1px' }}>Satellite</span>
+                  <span style={{ fontSize: '11.5px', fontWeight: 800, color: 'var(--accent-primary)' }}>GeoRAG</span>
+                  <span style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '1px' }}>Satellite</span>
                 </Link>
 
                 <Link
@@ -754,16 +755,16 @@ export default function MainScreen() {
                     flexDirection: 'column',
                     alignItems: 'center',
                     padding: '8px 4px',
-                    backgroundColor: 'var(--bg-card, #111821)',
-                    border: '1px solid var(--border, #263241)',
+                    backgroundColor: 'var(--bg-card)',
+                    border: '1px solid var(--border)',
                     borderRadius: '6px',
                     textDecoration: 'none',
                     textAlign: 'center',
                     transition: 'all 0.15s ease',
                   }}
                 >
-                  <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#F87171' }}>CrisisRAG</span>
-                  <span style={{ fontSize: '9px', color: 'var(--text-muted, #748091)', marginTop: '1px' }}>Emergency</span>
+                  <span style={{ fontSize: '11.5px', fontWeight: 800, color: 'var(--status-critical-text)' }}>CrisisRAG</span>
+                  <span style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '1px' }}>Emergency</span>
                 </Link>
 
                 <Link
@@ -773,16 +774,16 @@ export default function MainScreen() {
                     flexDirection: 'column',
                     alignItems: 'center',
                     padding: '8px 4px',
-                    backgroundColor: 'var(--bg-card, #111821)',
-                    border: '1px solid var(--border, #263241)',
+                    backgroundColor: 'var(--bg-card)',
+                    border: '1px solid var(--border)',
                     borderRadius: '6px',
                     textDecoration: 'none',
                     textAlign: 'center',
                     transition: 'all 0.15s ease',
                   }}
                 >
-                  <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#38BDF8' }}>AquaRAG</span>
-                  <span style={{ fontSize: '9px', color: 'var(--text-muted, #748091)', marginTop: '1px' }}>Water</span>
+                  <span style={{ fontSize: '11.5px', fontWeight: 800, color: 'var(--badge-info-text)' }}>AquaRAG</span>
+                  <span style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '1px' }}>Water</span>
                 </Link>
               </div>
 
@@ -792,9 +793,9 @@ export default function MainScreen() {
                   marginTop: '4px',
                   padding: '7px 10px',
                   borderRadius: '6px',
-                  backgroundColor: 'rgba(59, 130, 246, 0.12)',
-                  border: '1px solid #3B82F6',
-                  color: '#60A5FA',
+                  backgroundColor: 'var(--accent-primary-light)',
+                  border: '1px solid var(--accent-primary)',
+                  color: 'var(--accent-primary)',
                   fontSize: '11px',
                   fontWeight: 700,
                   cursor: 'pointer',
@@ -815,11 +816,11 @@ export default function MainScreen() {
             position: 'absolute',
             bottom: bottomPanelExpanded ? '280px' : '65px',
             right: '20px',
-            backgroundColor: 'var(--bg-panel, #101620)',
+            backgroundColor: 'var(--bg-panel)',
             borderRadius: '10px',
             padding: '14px 18px',
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
-            border: '1px solid var(--border, #263241)',
+            boxShadow: 'var(--shadow-panel)',
+            border: '1px solid var(--border)',
             maxWidth: '360px',
             zIndex: 45,
           }}
@@ -831,30 +832,30 @@ export default function MainScreen() {
                 fontWeight: 700,
                 padding: '2px 6px',
                 borderRadius: '4px',
-                backgroundColor: selectedEvent.severity >= 75 ? 'rgba(239, 68, 68, 0.15)' : 'rgba(59, 130, 246, 0.15)',
-                color: selectedEvent.severity >= 75 ? '#F87171' : '#60A5FA',
-                border: `1px solid ${selectedEvent.severity >= 75 ? 'rgba(239, 68, 68, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`,
+                backgroundColor: selectedEvent.severity >= 75 ? 'var(--badge-hazard-bg)' : 'var(--badge-info-bg)',
+                color: selectedEvent.severity >= 75 ? 'var(--badge-hazard-text)' : 'var(--badge-info-text)',
+                border: `1px solid ${selectedEvent.severity >= 75 ? 'var(--badge-hazard-border)' : 'var(--badge-info-border)'}`,
               }}
             >
               {selectedEvent.eventType} · SEV {selectedEvent.severity}/100
             </span>
             <button
               onClick={() => setSelectedEvent(null)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted, #748091)' }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
             >
               <CloseIcon size={14} />
             </button>
           </div>
-          <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary, #F3F6FA)' }}>
+          <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
             {selectedEvent.title}
           </h4>
           {selectedEvent.description && (
-            <p style={{ margin: '4px 0 0', fontSize: '11.5px', color: 'var(--text-secondary, #AAB4C2)', lineHeight: 1.4 }}>
+            <p style={{ margin: '4px 0 0', fontSize: '11.5px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
               {selectedEvent.description}
             </p>
           )}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-            <span style={{ fontSize: '10.5px', color: 'var(--text-muted, #748091)' }}>
+            <span style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>
               {selectedEvent.distanceKm} km away
             </span>
             {selectedEvent.latitude && selectedEvent.longitude && (
@@ -862,8 +863,8 @@ export default function MainScreen() {
                 type="button"
                 onClick={() => handleFocusEventOnMap(selectedEvent)}
                 style={{
-                  backgroundColor: '#2563EB',
-                  color: '#FFFFFF',
+                  backgroundColor: 'var(--button)',
+                  color: 'var(--button-foreground)',
                   border: 'none',
                   borderRadius: '6px',
                   padding: '5px 10px',

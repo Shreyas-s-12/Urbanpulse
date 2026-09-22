@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PUBLIC_ROUTES = new Set(['/', '/signin', '/signup', '/welcome']);
+const PUBLIC_ROUTES = new Set(['/', '/signin', '/signup', '/welcome', '/login', '/create-account', '/get-started']);
 
 const GUEST_ACCESSIBLE_ROUTES = new Set([
   '/overview',

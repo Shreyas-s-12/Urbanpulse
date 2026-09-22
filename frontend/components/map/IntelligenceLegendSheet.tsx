@@ -186,10 +186,10 @@ export default function IntelligenceLegendSheet({
               maxWidth: 'calc(100vw - 32px)',
               borderRadius: '14px',
             }),
-        backgroundColor: 'rgba(255, 255, 255, 0.97)',
+        backgroundColor: 'var(--overlay-bg)',
         backdropFilter: 'blur(16px)',
-        border: '1px solid #E2E8F0',
-        boxShadow: '0 8px 32px rgba(15, 23, 42, 0.14)',
+        border: '1px solid var(--border-subtle)',
+        boxShadow: 'var(--shadow-panel)',
         zIndex: 35,
         pointerEvents: 'auto',
         overflow: 'hidden',
@@ -219,7 +219,7 @@ export default function IntelligenceLegendSheet({
             style={{
               width: '36px',
               height: '4px',
-              backgroundColor: '#CBD5E1',
+              backgroundColor: 'var(--border)',
               borderRadius: '2px',
             }}
           />
@@ -233,7 +233,7 @@ export default function IntelligenceLegendSheet({
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '12px 16px 8px 16px',
-          borderBottom: selectedCell || isExpandedMobile ? '1px solid #F1F5F9' : 'none',
+          borderBottom: selectedCell || isExpandedMobile ? '1px solid var(--border-subtle)' : 'none',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -241,7 +241,7 @@ export default function IntelligenceLegendSheet({
             style={{
               fontSize: '13px',
               fontWeight: 700,
-              color: '#0F172A',
+              color: 'var(--text-primary)',
               letterSpacing: '-0.2px',
             }}
           >
@@ -252,8 +252,8 @@ export default function IntelligenceLegendSheet({
               style={{
                 fontSize: '10px',
                 fontWeight: 600,
-                color: '#2563EB',
-                backgroundColor: '#EFF6FF',
+                color: 'var(--accent-primary)',
+                backgroundColor: 'var(--accent-primary-light)',
                 padding: '2px 6px',
                 borderRadius: '4px',
               }}
@@ -273,7 +273,7 @@ export default function IntelligenceLegendSheet({
                 border: 'none',
                 padding: '4px',
                 cursor: 'pointer',
-                color: '#64748B',
+                color: 'var(--text-secondary)',
                 display: 'inline-flex',
                 alignItems: 'center',
               }}
@@ -292,7 +292,7 @@ export default function IntelligenceLegendSheet({
               border: 'none',
               padding: '4px',
               cursor: 'pointer',
-              color: '#94A3B8',
+              color: 'var(--text-muted)',
               borderRadius: '6px',
               display: 'inline-flex',
               alignItems: 'center',
@@ -302,7 +302,7 @@ export default function IntelligenceLegendSheet({
             title="Hide legend (keeps heatmap active)"
             aria-label="Hide legend"
           >
-            <CloseIcon size={14} color="#64748B" />
+            <CloseIcon size={14} color="var(--text-secondary)" />
           </button>
         </div>
       </div>
@@ -312,8 +312,8 @@ export default function IntelligenceLegendSheet({
         <div
           style={{
             padding: '8px 16px',
-            backgroundColor: '#F8FAFC',
-            borderBottom: '1px solid #E2E8F0',
+            backgroundColor: 'var(--bg-surface-secondary)',
+            borderBottom: '1px solid var(--border-subtle)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -321,8 +321,8 @@ export default function IntelligenceLegendSheet({
         >
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Selected:</span>
-              <span style={{ fontSize: '12px', color: '#0F172A', fontWeight: 700 }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 600 }}>Selected:</span>
+              <span style={{ fontSize: '12px', color: 'var(--text-primary)', fontWeight: 700 }}>
                 {selectedCell.rawValue !== undefined && selectedCell.rawValue !== null
                   ? `${selectedCell.rawValue} ${legendMetadata?.unit || ''}`
                   : `${Math.round(selectedCell.value)} ${legendMetadata?.unit || ''}`}
@@ -336,27 +336,27 @@ export default function IntelligenceLegendSheet({
                     borderRadius: '4px',
                     backgroundColor:
                       selectedCell.category === 'GOOD' || selectedCell.category === 'LOW'
-                        ? '#DCFCE7'
+                        ? 'var(--badge-success-bg)'
                         : selectedCell.category === 'MODERATE' || selectedCell.category === 'MEDIUM'
-                        ? '#FEF9C3'
+                        ? 'var(--badge-warning-bg)'
                         : selectedCell.category === 'HIGH' || selectedCell.category === 'UNHEALTHY'
-                        ? '#FFEDD5'
-                        : '#FEE2E2',
+                        ? 'var(--badge-warning-bg)'
+                        : 'var(--badge-danger-bg)',
                     color:
                       selectedCell.category === 'GOOD' || selectedCell.category === 'LOW'
-                        ? '#166534'
+                        ? 'var(--badge-success-text)'
                         : selectedCell.category === 'MODERATE' || selectedCell.category === 'MEDIUM'
-                        ? '#854D0E'
+                        ? 'var(--badge-warning-text)'
                         : selectedCell.category === 'HIGH' || selectedCell.category === 'UNHEALTHY'
-                        ? '#9A3412'
-                        : '#991B1B',
+                        ? 'var(--badge-warning-text)'
+                        : 'var(--badge-danger-text)',
                   }}
                 >
                   {selectedCell.category}
                 </span>
               )}
             </div>
-            <span style={{ fontSize: '10px', color: '#94A3B8' }}>
+            <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
               ({selectedCell.latitude.toFixed(4)}, {selectedCell.longitude.toFixed(4)})
             </span>
           </div>
@@ -366,7 +366,7 @@ export default function IntelligenceLegendSheet({
             onClick={() => setSelectedCell(null)}
             style={{
               fontSize: '11px',
-              color: '#2563EB',
+              color: 'var(--accent-primary)',
               background: 'none',
               border: 'none',
               cursor: 'pointer',
@@ -389,12 +389,12 @@ export default function IntelligenceLegendSheet({
               alignItems: 'center',
               justifyContent: 'space-between',
               padding: '8px 12px',
-              backgroundColor: '#FEF2F2',
+              backgroundColor: 'var(--badge-danger-bg)',
               borderRadius: '8px',
-              border: '1px solid #FCA5A5',
+              border: '1px solid var(--badge-danger-border)',
             }}
           >
-            <span style={{ fontSize: '11.5px', color: '#991B1B', fontWeight: 600 }}>
+            <span style={{ fontSize: '11.5px', color: 'var(--badge-danger-text)', fontWeight: 600 }}>
               {isBoundaryError
                 ? 'Administrative boundary service unavailable (ArcGIS)'
                 : metric === 'POPULATION'
@@ -427,10 +427,10 @@ export default function IntelligenceLegendSheet({
           <div
             style={{
               padding: '8px 12px',
-              backgroundColor: '#F1F5F9',
+              backgroundColor: 'var(--bg-surface-secondary)',
               borderRadius: '8px',
               textAlign: 'center',
-              color: '#64748B',
+              color: 'var(--text-secondary)',
               fontSize: '11.5px',
               fontWeight: 600,
             }}
@@ -461,7 +461,7 @@ export default function IntelligenceLegendSheet({
                 justifyContent: 'space-between',
                 fontSize: '10.5px',
                 fontWeight: 600,
-                color: '#64748B',
+                color: 'var(--text-secondary)',
                 lineHeight: 1,
               }}
             >
@@ -475,13 +475,13 @@ export default function IntelligenceLegendSheet({
               <div
                 style={{
                   fontSize: '9.5px',
-                  color: '#64748B',
+                  color: 'var(--text-secondary)',
                   marginTop: '6px',
                   lineHeight: '1.4',
                 }}
               >
                 <div><strong>Population Density</strong> • Dataset Year: 2010 (Visual) / 2020 (Stats)</div>
-                <div style={{ fontStyle: 'italic', color: '#94A3B8' }}>
+                <div style={{ fontStyle: 'italic', color: 'var(--text-muted)' }}>
                   NASA SEDAC & WorldPop SDI • Historical Census • Never labeled Live
                 </div>
               </div>
@@ -497,9 +497,9 @@ export default function IntelligenceLegendSheet({
             justifyContent: 'space-between',
             marginTop: '8px',
             paddingTop: '6px',
-            borderTop: '1px solid #F1F5F9',
+            borderTop: '1px solid var(--border-subtle)',
             fontSize: '9.5px',
-            color: '#94A3B8',
+            color: 'var(--text-muted)',
           }}
         >
           <span>

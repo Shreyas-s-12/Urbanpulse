@@ -76,7 +76,7 @@ export default function AskTheMapOverlay() {
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 1000,
-        backgroundColor: 'rgba(255, 255, 255, 0.96)',
+        backgroundColor: 'var(--overlay-bg)',
         backdropFilter: 'blur(12px)',
         border: '1px solid var(--border-subtle)',
         borderRadius: '16px',

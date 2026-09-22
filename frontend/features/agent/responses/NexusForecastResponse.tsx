@@ -15,18 +15,42 @@ export const NexusForecastResponse: React.FC<NexusForecastResponseProps> = ({ re
   const sourceName = (response.sources && response.sources[0]?.name) || meta.source || 'Open-Meteo & Historical Baselines';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', fontSize: '12.5px' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        width: '100%',
+        fontSize: '12.5px',
+        backgroundColor: 'var(--assistant-card-bg)',
+        border: '1px solid var(--assistant-card-border)',
+        borderRadius: '12px',
+        padding: '12px 14px',
+        boxShadow: 'var(--card-shadow)',
+        boxSizing: 'border-box',
+      }}
+    >
       {/* Title with FORECAST badge */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '4px' }}>
         <div>
-          <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0284C7' }}>
+          <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--badge-info-text)' }}>
             PREDICTIVE FORECAST
           </span>
           <h4 style={{ margin: '1px 0 0 0', fontSize: '13.5px', fontWeight: 750, color: 'var(--text-primary)' }}>
             {response.title}
           </h4>
         </div>
-        <span style={{ fontSize: '10.5px', fontWeight: 700, padding: '2px 7px', borderRadius: '4px', backgroundColor: '#E0F2FE', color: '#0369A1' }}>
+        <span
+          style={{
+            fontSize: '10.5px',
+            fontWeight: 700,
+            padding: '2px 7px',
+            borderRadius: '4px',
+            backgroundColor: 'var(--badge-info-bg)',
+            color: 'var(--badge-info-text)',
+            border: '1px solid var(--badge-info-border)',
+          }}
+        >
           {horizon}
         </span>
       </div>
@@ -40,7 +64,7 @@ export const NexusForecastResponse: React.FC<NexusForecastResponseProps> = ({ re
 
       {/* Sections / Pillar Projections */}
       {sections.map((sec, idx) => (
-        <div key={idx} style={{ padding: '6px 8px', borderRadius: '6px', backgroundColor: 'var(--bg-surface-secondary, #F8FAFC)', border: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+        <div key={idx} style={{ padding: '6px 8px', borderRadius: '6px', backgroundColor: 'var(--bg-surface-secondary)', border: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: '2px' }}>
           {sec.title && (
             <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)' }}>
               {sec.title}

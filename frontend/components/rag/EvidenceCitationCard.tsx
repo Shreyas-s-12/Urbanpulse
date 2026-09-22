@@ -22,10 +22,10 @@ interface EvidenceCitationCardProps {
 }
 
 const BADGE_COLORS: Record<EvidenceType, { bg: string; text: string; border: string }> = {
-  FACT: { bg: '#EFF6FF', text: '#1D4ED8', border: '#BFDBFE' },
-  MODEL_PREDICTION: { bg: '#FAF5FF', text: '#7E22CE', border: '#E9D5FF' },
-  INFERENCE: { bg: '#FFFBEB', text: '#B45309', border: '#FDE68A' },
-  HISTORICAL_CONTEXT: { bg: '#F1F5F9', text: '#475569', border: '#CBD5E1' },
+  FACT: { bg: 'var(--badge-info-bg)', text: 'var(--badge-info-text)', border: 'var(--badge-info-border)' },
+  MODEL_PREDICTION: { bg: 'var(--accent-primary-light)', text: 'var(--accent-primary)', border: 'var(--accent-primary)' },
+  INFERENCE: { bg: 'var(--badge-warning-bg)', text: 'var(--badge-warning-text)', border: 'var(--badge-warning-border)' },
+  HISTORICAL_CONTEXT: { bg: 'var(--badge-neutral-bg)', text: 'var(--badge-neutral-text)', border: 'var(--badge-neutral-border)' },
 };
 
 export default function EvidenceCitationCard({ citation }: EvidenceCitationCardProps) {
@@ -36,11 +36,11 @@ export default function EvidenceCitationCard({ citation }: EvidenceCitationCardP
   return (
     <div
       style={{
-        backgroundColor: '#FFFFFF',
+        backgroundColor: 'var(--bg-card)',
         borderRadius: '8px',
-        border: '1px solid #E2E8F0',
+        border: '1px solid var(--border-subtle)',
         padding: '12px 14px',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
+        boxShadow: 'var(--shadow-sm)',
         display: 'flex',
         flexDirection: 'column',
         gap: '6px',
@@ -64,19 +64,19 @@ export default function EvidenceCitationCard({ citation }: EvidenceCitationCardP
         >
           {citation.evidenceType.replace('_', ' ')}
         </span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: '#64748B' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--text-secondary)' }}>
           {citation.location && <span>{citation.location}</span>}
           <span>Relevance {relevancePct}%</span>
         </div>
       </div>
 
       {/* Document Title */}
-      <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#0F172A', lineHeight: 1.35 }}>
+      <div style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.35 }}>
         {citation.title}
       </div>
 
       {/* Evidence Snippet */}
-      <p style={{ margin: 0, fontSize: '11.5px', color: '#334155', lineHeight: 1.45 }}>
+      <p style={{ margin: 0, fontSize: '11.5px', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
         {citation.evidenceSnippet}
       </p>
 
@@ -87,10 +87,10 @@ export default function EvidenceCitationCard({ citation }: EvidenceCitationCardP
           justifyContent: 'space-between',
           alignItems: 'center',
           fontSize: '10.5px',
-          color: '#64748B',
+          color: 'var(--text-muted)',
           marginTop: '4px',
           paddingTop: '6px',
-          borderTop: '1px solid #F1F5F9',
+          borderTop: '1px solid var(--border-subtle)',
         }}
       >
         <span style={{ fontWeight: 600 }}>Source: {citation.source}</span>

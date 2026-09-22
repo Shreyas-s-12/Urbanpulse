@@ -63,6 +63,21 @@ const nextConfig = {
         destination: '/research',
         permanent: false,
       },
+      {
+        source: '/login',
+        destination: '/signin',
+        permanent: false,
+      },
+      {
+        source: '/create-account',
+        destination: '/signup',
+        permanent: false,
+      },
+      {
+        source: '/get-started',
+        destination: '/signup',
+        permanent: false,
+      },
     ];
   },
   async rewrites() {

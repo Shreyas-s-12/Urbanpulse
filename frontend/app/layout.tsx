@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-theme="light" style={{ colorScheme: 'light' }} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -34,19 +34,15 @@ export default function RootLayout({
                 if (theme === 'system') {
                   theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                 }
-                if (theme === 'dark') {
-                  document.documentElement.setAttribute('data-theme', 'dark');
-                  document.documentElement.style.colorScheme = 'dark';
-                } else {
-                  document.documentElement.setAttribute('data-theme', 'light');
-                  document.documentElement.style.colorScheme = 'light';
-                }
+                var effective = theme === 'dark' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', effective);
+                document.documentElement.style.colorScheme = effective;
               } catch (e) {}
             `,
           }}
         />
       </head>
-      <body>
+      <body style={{ backgroundColor: 'var(--background)', color: 'var(--text-primary)' }}>
         <ClientInitializer>
           <LanguageProvider>
             <AuthProvider>

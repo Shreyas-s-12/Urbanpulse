@@ -70,7 +70,7 @@ export default function AnomalyAlertModal() {
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(17, 24, 39, 0.4)',
+        backgroundColor: 'var(--overlay-backdrop)',
         backdropFilter: 'blur(6px)',
         zIndex: 2000,
         display: 'flex',
@@ -82,15 +82,15 @@ export default function AnomalyAlertModal() {
     >
       <div
         style={{
-          backgroundColor: 'var(--bg-panel, #101620)',
-          border: '1px solid var(--border-subtle, #1B2531)',
+          backgroundColor: 'var(--bg-panel)',
+          border: '1px solid var(--border-subtle)',
           borderRadius: '16px',
           width: '100%',
           maxWidth: '740px',
           maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
+          boxShadow: 'var(--shadow-panel)',
           color: 'var(--text-primary)',
           overflow: 'hidden',
         }}
@@ -100,11 +100,11 @@ export default function AnomalyAlertModal() {
         <div
           style={{
             padding: '20px 24px',
-            borderBottom: '1px solid var(--border-subtle, #1B2531)',
+            borderBottom: '1px solid var(--border-subtle)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: 'var(--bg-header, #0C1119)',
+            backgroundColor: 'var(--bg-header)',
           }}
         >
           <div>
@@ -139,21 +139,21 @@ export default function AnomalyAlertModal() {
         </div>
 
         {/* Body */}
-        <div style={{ padding: '24px', overflowY: 'auto', flex: 1, backgroundColor: 'var(--bg-panel, #101620)' }}>
+        <div style={{ padding: '24px', overflowY: 'auto', flex: 1, backgroundColor: 'var(--bg-panel)' }}>
           {anomaliesList.length === 0 ? (
             <div
               style={{
                 textAlign: 'center',
                 padding: '40px 20px',
-                backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                backgroundColor: 'var(--status-good-bg)',
                 borderRadius: '16px',
-                border: '1px solid rgba(16, 185, 129, 0.25)',
+                border: '1px solid var(--status-good-border)',
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-                <CheckIcon size={32} color="#10B981" />
+                <CheckIcon size={32} color="var(--status-good-text)" />
               </div>
-              <div style={{ fontSize: '16px', fontWeight: 700, color: '#34D399' }}>
+              <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--status-good-text)' }}>
                 All Signals Tracking Expected Baselines
               </div>
               <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '6px', maxWidth: '440px', margin: '6px auto 0' }}>
@@ -164,13 +164,15 @@ export default function AnomalyAlertModal() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {anomaliesList.map((anom, idx) => {
                 const isCrit = anom.severity === 'HIGH';
-                const sevColor = isCrit ? '#F87171' : '#FBBF24';
+                const sevColor = isCrit ? 'var(--status-critical-text)' : 'var(--status-warning-text)';
+                const sevBg = isCrit ? 'var(--status-critical-bg)' : 'var(--status-warning-bg)';
+                const sevBorder = isCrit ? 'var(--status-critical-border)' : 'var(--status-warning-border)';
                 return (
                   <div
                     key={idx}
                     style={{
-                      backgroundColor: 'var(--bg-card, #111821)',
-                      border: `1px solid ${isCrit ? 'rgba(239, 68, 68, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
+                      backgroundColor: 'var(--bg-card)',
+                      border: `1px solid ${sevBorder}`,
                       borderRadius: '14px',
                       padding: '16px 18px',
                       display: 'flex',
@@ -188,7 +190,8 @@ export default function AnomalyAlertModal() {
                             fontSize: '10px',
                             fontWeight: 800,
                             color: sevColor,
-                            backgroundColor: isCrit ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                            backgroundColor: sevBg,
+                            border: `1px solid ${sevBorder}`,
                             padding: '2px 8px',
                             borderRadius: '6px',
                             letterSpacing: '0.05em',
@@ -234,8 +237,8 @@ export default function AnomalyAlertModal() {
         <div
           style={{
             padding: '12px 24px',
-            borderTop: '1px solid var(--border-subtle, #1B2531)',
-            backgroundColor: 'var(--bg-header, #0C1119)',
+            borderTop: '1px solid var(--border-subtle)',
+            backgroundColor: 'var(--bg-header)',
             display: 'flex',
             justifyContent: 'flex-end',
           }}
@@ -243,15 +246,15 @@ export default function AnomalyAlertModal() {
           <button
             onClick={() => setShowAnomaliesModal(false)}
             style={{
-              backgroundColor: 'var(--bg-elevated, #141B26)',
+              backgroundColor: 'var(--bg-elevated)',
               color: 'var(--text-primary)',
-              border: '1px solid var(--border, #263241)',
+              border: '1px solid var(--border)',
               padding: '6px 14px',
               borderRadius: '8px',
               cursor: 'pointer',
               fontSize: '12px',
               fontWeight: 600,
-              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.4)',
+              boxShadow: 'var(--shadow-xs)',
             }}
           >
             Close

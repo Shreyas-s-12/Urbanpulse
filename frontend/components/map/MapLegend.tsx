@@ -78,14 +78,14 @@ export default function MapLegend({
   }
 
   const cardStyle: React.CSSProperties = {
-    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    backgroundColor: 'var(--overlay-bg)',
     backdropFilter: 'blur(12px)',
     borderRadius: '8px',
-    border: '1px solid var(--border-subtle, #E2E8F0)',
-    boxShadow: 'var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.08))',
+    border: '1px solid var(--border-subtle)',
+    boxShadow: 'var(--shadow-sm)',
     padding: '8px 12px',
     fontSize: '11px',
-    color: 'var(--text-primary, #1E293B)',
+    color: 'var(--text-primary)',
     width: '240px',
     pointerEvents: 'auto',
   };
@@ -118,7 +118,7 @@ export default function MapLegend({
               userSelect: 'none',
             }}
           >
-            <span style={{ fontSize: '10px', fontWeight: 800, color: '#64748B', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+            <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
               {trafficSection.title}
             </span>
             <ChevronDownIcon
@@ -126,7 +126,7 @@ export default function MapLegend({
               style={{
                 transform: trafficCollapsed ? 'rotate(180deg)' : 'rotate(0deg)',
                 transition: 'transform 0.15s ease',
-                color: '#64748B',
+                color: 'var(--text-secondary)',
               }}
             />
           </div>
@@ -136,13 +136,13 @@ export default function MapLegend({
               {trafficSection.items.map((item, idx) => (
                 <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ width: '12px', height: '3px', borderRadius: '2px', backgroundColor: item.color, flexShrink: 0 }} />
-                  <span style={{ fontSize: '10.5px', color: '#475569', fontWeight: 500 }}>
+                  <span style={{ fontSize: '10.5px', color: 'var(--text-secondary)', fontWeight: 500 }}>
                     {item.label}
                   </span>
                 </div>
               ))}
               {trafficSection.note && (
-                <div style={{ fontSize: '9px', color: '#94A3B8', marginTop: '2px' }}>
+                <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '2px' }}>
                   {trafficSection.note}
                 </div>
               )}
@@ -165,7 +165,7 @@ export default function MapLegend({
               userSelect: 'none',
             }}
           >
-            <span style={{ fontSize: '10px', fontWeight: 800, color: '#64748B', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+            <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
               {incidentSection.title}
             </span>
             <ChevronDownIcon
@@ -173,7 +173,7 @@ export default function MapLegend({
               style={{
                 transform: baseCollapsed ? 'rotate(180deg)' : 'rotate(0deg)',
                 transition: 'transform 0.15s ease',
-                color: '#64748B',
+                color: 'var(--text-secondary)',
               }}
             />
           </div>
@@ -183,7 +183,7 @@ export default function MapLegend({
               {incidentSection.items.map((item, idx) => (
                 <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: item.color, flexShrink: 0 }} />
-                  <span style={{ fontSize: '10.5px', color: '#475569', fontWeight: 500 }}>
+                  <span style={{ fontSize: '10.5px', color: 'var(--text-secondary)', fontWeight: 500 }}>
                     {item.label}
                   </span>
                 </div>

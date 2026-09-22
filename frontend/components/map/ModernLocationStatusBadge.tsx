@@ -96,11 +96,11 @@ export default function ModernLocationStatusBadge() {
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 35,
-        backgroundColor: 'rgba(255, 255, 255, 0.96)',
+        backgroundColor: 'var(--overlay-bg)',
         backdropFilter: 'blur(12px)',
         borderRadius: '24px',
-        border: '1px solid rgba(226, 232, 240, 0.9)',
-        boxShadow: '0 4px 16px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04)',
+        border: '1px solid var(--border)',
+        boxShadow: 'var(--shadow-panel)',
         padding: '6px 14px',
         display: 'inline-flex',
         alignItems: 'center',
@@ -144,12 +144,12 @@ export default function ModernLocationStatusBadge() {
             fontWeight: 700,
             letterSpacing: '0.04em',
             textTransform: 'uppercase',
-            color: '#0F172A',
+            color: 'var(--text-primary)',
           }}
         >
           {title}
         </span>
-        <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 500 }}>
+        <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 500 }}>
           {subtitle}
         </span>
       </div>
@@ -162,13 +162,13 @@ export default function ModernLocationStatusBadge() {
               import('@/services/locationService').then((m) => m.locationService.requestDeviceLocation());
             }}
             style={{
-              backgroundColor: '#EFF6FF',
-              border: '1px solid #BFDBFE',
+              backgroundColor: 'var(--accent-primary-light)',
+              border: '1px solid var(--accent-primary)',
               borderRadius: '12px',
               padding: '2px 8px',
               fontSize: '10px',
               fontWeight: 600,
-              color: '#2563EB',
+              color: 'var(--accent-primary)',
               cursor: 'pointer',
               whiteSpace: 'nowrap',
             }}
@@ -180,13 +180,13 @@ export default function ModernLocationStatusBadge() {
               useLocationStore.getState().setIsChoosingOnMap(true);
             }}
             style={{
-              backgroundColor: '#F1F5F9',
-              border: '1px solid #CBD5E1',
+              backgroundColor: 'var(--button-secondary)',
+              border: '1px solid var(--button-secondary-border)',
               borderRadius: '12px',
               padding: '2px 8px',
               fontSize: '10px',
               fontWeight: 600,
-              color: '#475569',
+              color: 'var(--button-secondary-foreground)',
               cursor: 'pointer',
               whiteSpace: 'nowrap',
             }}
@@ -201,7 +201,7 @@ export default function ModernLocationStatusBadge() {
         style={{
           background: 'none',
           border: 'none',
-          color: '#94A3B8',
+          color: 'var(--text-muted)',
           cursor: 'pointer',
           padding: '0 0 0 4px',
           fontSize: '12px',

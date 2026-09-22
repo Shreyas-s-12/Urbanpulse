@@ -8,16 +8,16 @@ interface PulseWireArticleItemProps {
 }
 
 const CATEGORY_THEMES: Record<string, { bg: string; text: string; border: string }> = {
-  TRAFFIC: { bg: 'var(--badge-hazard-bg, #FEF2F2)', text: 'var(--badge-hazard-text, #DC2626)', border: 'var(--badge-hazard-border, #FECACA)' },
-  WEATHER: { bg: 'var(--badge-info-bg, #EFF6FF)', text: 'var(--badge-info-text, #2563EB)', border: 'var(--badge-info-border, #BFDBFE)' },
-  HAZARD: { bg: 'var(--badge-approx-bg, #FFF7ED)', text: 'var(--badge-approx-text, #C2410C)', border: 'var(--badge-approx-border, #FED7AA)' },
-  CRIME: { bg: 'var(--badge-hazard-bg, #FEF2F2)', text: 'var(--badge-hazard-text, #DC2626)', border: 'var(--badge-hazard-border, #FECACA)' },
-  MUNICIPAL: { bg: 'rgba(168, 85, 247, 0.12)', text: '#9333EA', border: 'rgba(168, 85, 247, 0.25)' },
-  CIVIC: { bg: 'var(--badge-live-bg, #ECFDF5)', text: 'var(--badge-live-text, #15803D)', border: 'var(--badge-live-border, #BBF7D0)' },
-  ECONOMY: { bg: 'rgba(99, 102, 241, 0.12)', text: '#4F46E5', border: 'rgba(99, 102, 241, 0.25)' },
-  NATIONAL: { bg: 'rgba(168, 85, 247, 0.12)', text: '#9333EA', border: 'rgba(168, 85, 247, 0.25)' },
-  WORLD: { bg: 'var(--badge-info-bg, #EFF6FF)', text: 'var(--badge-info-text, #2563EB)', border: 'var(--badge-info-border, #BFDBFE)' },
-  GENERAL: { bg: 'var(--bg-subtle, #F3F6FA)', text: 'var(--text-secondary, #566174)', border: 'var(--border, #E2E7EF)' },
+  TRAFFIC: { bg: 'var(--badge-hazard-bg)', text: 'var(--badge-hazard-text)', border: 'var(--badge-hazard-border)' },
+  WEATHER: { bg: 'var(--badge-info-bg)', text: 'var(--badge-info-text)', border: 'var(--badge-info-border)' },
+  HAZARD: { bg: 'var(--badge-approx-bg)', text: 'var(--badge-approx-text)', border: 'var(--badge-approx-border)' },
+  CRIME: { bg: 'var(--badge-hazard-bg)', text: 'var(--badge-hazard-text)', border: 'var(--badge-hazard-border)' },
+  MUNICIPAL: { bg: 'var(--badge-info-bg)', text: 'var(--badge-info-text)', border: 'var(--badge-info-border)' },
+  CIVIC: { bg: 'var(--badge-live-bg)', text: 'var(--badge-live-text)', border: 'var(--badge-live-border)' },
+  ECONOMY: { bg: 'var(--badge-info-bg)', text: 'var(--badge-info-text)', border: 'var(--badge-info-border)' },
+  NATIONAL: { bg: 'var(--badge-info-bg)', text: 'var(--badge-info-text)', border: 'var(--badge-info-border)' },
+  WORLD: { bg: 'var(--badge-info-bg)', text: 'var(--badge-info-text)', border: 'var(--badge-info-border)' },
+  GENERAL: { bg: 'var(--bg-subtle)', text: 'var(--text-secondary)', border: 'var(--border)' },
 };
 
 export default function PulseWireArticleItem({ article }: PulseWireArticleItemProps) {
@@ -38,10 +38,10 @@ export default function PulseWireArticleItem({ article }: PulseWireArticleItemPr
       onMouseLeave={() => setIsHovered(false)}
       style={{
         padding: '14px 16px',
-        backgroundColor: isHovered ? 'var(--bg-card-hover, #F9FAFC)' : 'var(--bg-card, #FFFFFF)',
+        backgroundColor: isHovered ? 'var(--bg-card-hover)' : 'var(--bg-card)',
         borderRadius: '10px',
-        border: isHovered ? '1px solid var(--border-hover, #CBD5E1)' : '1px solid var(--border, #E2E7EF)',
-        boxShadow: isHovered ? 'var(--card-shadow-hover, 0 4px 12px rgba(15, 23, 42, 0.07))' : 'var(--card-shadow, 0 2px 8px rgba(15, 23, 42, 0.05))',
+        border: isHovered ? '1px solid var(--border-hover)' : '1px solid var(--border)',
+        boxShadow: isHovered ? 'var(--card-shadow-hover)' : 'var(--card-shadow)',
         display: 'flex',
         flexDirection: 'column',
         gap: '8px',
@@ -69,7 +69,7 @@ export default function PulseWireArticleItem({ article }: PulseWireArticleItemPr
         </span>
 
         {article.location && (
-          <span style={{ fontSize: '11px', color: 'var(--text-muted, #7B8798)', maxWidth: '130px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)', maxWidth: '130px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {article.location}
           </span>
         )}
@@ -84,7 +84,7 @@ export default function PulseWireArticleItem({ article }: PulseWireArticleItemPr
               fontSize: '13.5px',
               fontWeight: 700,
               lineHeight: 1.4,
-              color: 'var(--text-primary, #172033)',
+              color: 'var(--text-primary)',
               margin: '0 0 4px 0',
               letterSpacing: '-0.01em',
             }}
@@ -95,7 +95,7 @@ export default function PulseWireArticleItem({ article }: PulseWireArticleItemPr
               rel="noopener noreferrer"
               title={`Read full article on ${source}`}
               style={{
-                color: isHovered ? 'var(--accent-primary, #2563EB)' : 'var(--text-primary, #172033)',
+                color: isHovered ? 'var(--accent-primary)' : 'var(--text-primary)',
                 textDecoration: 'none',
                 transition: 'color 0.15s ease',
                 display: 'inline',
@@ -109,7 +109,7 @@ export default function PulseWireArticleItem({ article }: PulseWireArticleItemPr
           <div
             style={{
               fontSize: '11.5px',
-              color: 'var(--text-muted, #7B8798)',
+              color: 'var(--text-muted)',
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
@@ -117,7 +117,7 @@ export default function PulseWireArticleItem({ article }: PulseWireArticleItemPr
               marginBottom: description ? '6px' : '0',
             }}
           >
-            <span style={{ fontWeight: 650, color: 'var(--text-secondary, #566174)' }}>{source}</span>
+            <span style={{ fontWeight: 650, color: 'var(--text-secondary)' }}>{source}</span>
             <span>·</span>
             <span>{relativeTime}</span>
           </div>
@@ -128,7 +128,7 @@ export default function PulseWireArticleItem({ article }: PulseWireArticleItemPr
               style={{
                 fontSize: '12px',
                 lineHeight: 1.45,
-                color: 'var(--text-secondary, #566174)',
+                color: 'var(--text-secondary)',
                 margin: 0,
                 overflowWrap: 'break-word',
                 display: '-webkit-box',
@@ -151,8 +151,8 @@ export default function PulseWireArticleItem({ article }: PulseWireArticleItemPr
               borderRadius: '6px',
               overflow: 'hidden',
               flexShrink: 0,
-              border: '1px solid var(--border, #E2E7EF)',
-              backgroundColor: 'var(--bg-subtle, #F9FAFC)',
+              border: '1px solid var(--border)',
+              backgroundColor: 'var(--bg-subtle)',
             }}
           >
             <img
@@ -179,7 +179,7 @@ export default function PulseWireArticleItem({ article }: PulseWireArticleItemPr
           alignItems: 'center',
           marginTop: '4px',
           paddingTop: '8px',
-          borderTop: '1px solid var(--border-subtle, #EDF0F4)',
+          borderTop: '1px solid var(--border-subtle)',
         }}
       >
         <a
@@ -196,12 +196,12 @@ export default function PulseWireArticleItem({ article }: PulseWireArticleItemPr
             fontSize: '11.5px',
             fontWeight: 750,
             letterSpacing: '0.3px',
-            color: 'var(--accent-primary, #2563EB)',
+            color: 'var(--accent-primary)',
             textDecoration: 'none',
             padding: '0 12px',
             borderRadius: '6px',
-            backgroundColor: isHovered ? 'var(--accent-primary-light, #EFF6FF)' : 'var(--bg-subtle, #F3F6FA)',
-            border: '1px solid var(--border-subtle, #EDF0F4)',
+            backgroundColor: isHovered ? 'var(--accent-primary-light)' : 'var(--bg-subtle)',
+            border: '1px solid var(--border-subtle)',
             transition: 'all 0.15s ease',
           }}
         >

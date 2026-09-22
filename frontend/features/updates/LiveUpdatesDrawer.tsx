@@ -23,11 +23,11 @@ export default function LiveUpdatesDrawer() {
   const getFreshnessBadge = (freshness: string) => {
     switch (freshness) {
       case 'LIVE':
-        return { bg: 'rgba(239, 68, 68, 0.12)', color: '#DC2626', border: 'rgba(239, 68, 68, 0.25)' };
+        return { bg: 'var(--badge-hazard-bg)', color: 'var(--badge-hazard-text)', border: 'var(--badge-hazard-border)' };
       case 'RECENT':
-        return { bg: 'rgba(245, 158, 11, 0.12)', color: '#D97706', border: 'rgba(245, 158, 11, 0.25)' };
+        return { bg: 'var(--badge-warning-bg)', color: 'var(--badge-warning-text)', border: 'var(--badge-warning-border)' };
       default:
-        return { bg: 'rgba(100, 116, 139, 0.1)', color: '#64748B', border: 'rgba(100, 116, 139, 0.2)' };
+        return { bg: 'var(--bg-subtle)', color: 'var(--text-muted)', border: 'var(--border)' };
     }
   };
 
@@ -39,26 +39,26 @@ export default function LiveUpdatesDrawer() {
         right: '20px',
         width: '420px',
         maxHeight: 'calc(100% - 40px)',
-        backgroundColor: 'var(--bg-surface, #FFFFFF)',
+        backgroundColor: 'var(--bg-surface)',
         borderRadius: 'var(--radius-lg, 16px)',
-        border: '1px solid var(--border-subtle, #E2E8F0)',
-        boxShadow: 'var(--shadow-panel, 0 20px 25px -5px rgba(0, 0, 0, 0.08))',
+        border: '1px solid var(--border-subtle)',
+        boxShadow: 'var(--shadow-panel)',
         display: 'flex',
         flexDirection: 'column',
         zIndex: 50,
         overflow: 'hidden',
-        color: 'var(--text-primary, #11161B)',
+        color: 'var(--text-primary)',
       }}
     >
       {/* Header */}
       <div
         style={{
           padding: '16px 20px',
-          borderBottom: '1px solid var(--border-subtle, #E2E8F0)',
+          borderBottom: '1px solid var(--border-subtle)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          backgroundColor: 'var(--bg-surface, #FFFFFF)',
+          backgroundColor: 'var(--bg-surface)',
         }}
       >
         <div>
@@ -73,14 +73,14 @@ export default function LiveUpdatesDrawer() {
                 fontWeight: 700,
                 padding: '2px 6px',
                 borderRadius: 'var(--radius-xs, 4px)',
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                color: '#DC2626',
+                backgroundColor: 'var(--badge-hazard-bg)',
+                color: 'var(--badge-hazard-text)',
               }}
             >
               REAL-TIME
             </span>
           </div>
-          <div style={{ fontSize: '11px', color: 'var(--text-secondary, #65717D)', marginTop: '3px' }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '3px' }}>
             {cityName} • Verified Sensor Streams & Authoritative Protocols
           </div>
         </div>
@@ -89,7 +89,7 @@ export default function LiveUpdatesDrawer() {
           style={{
             background: 'transparent',
             border: 'none',
-            color: 'var(--text-muted, #8E9BA8)',
+            color: 'var(--text-muted)',
             cursor: 'pointer',
             padding: '6px',
             borderRadius: '6px',
@@ -116,7 +116,7 @@ export default function LiveUpdatesDrawer() {
               fontWeight: 700,
               textTransform: 'uppercase',
               letterSpacing: '0.04em',
-              color: 'var(--text-muted, #8E9BA8)',
+              color: 'var(--text-muted)',
               marginBottom: '10px',
               display: 'flex',
               alignItems: 'center',
@@ -132,10 +132,10 @@ export default function LiveUpdatesDrawer() {
               style={{
                 padding: '14px',
                 borderRadius: 'var(--radius-sm, 8px)',
-                backgroundColor: 'var(--bg-surface-secondary, #F0F3F5)',
-                border: '1px solid var(--border-subtle, #E2E8F0)',
+                backgroundColor: 'var(--bg-surface-secondary)',
+                border: '1px solid var(--border-subtle)',
                 fontSize: '12px',
-                color: 'var(--text-muted, #8E9BA8)',
+                color: 'var(--text-muted)',
               }}
             >
               Zero active seismic or severe hazard incidents detected in this radius.
@@ -150,9 +150,9 @@ export default function LiveUpdatesDrawer() {
                     style={{
                       padding: '12px 14px',
                       borderRadius: 'var(--radius-sm, 8px)',
-                      backgroundColor: 'var(--bg-surface, #FFFFFF)',
-                      border: '1px solid var(--border-subtle, #E2E8F0)',
-                      boxShadow: 'var(--shadow-xs, 0 1px 2px 0 rgba(0, 0, 0, 0.03))',
+                      backgroundColor: 'var(--bg-surface)',
+                      border: '1px solid var(--border-subtle)',
+                      boxShadow: 'var(--shadow-xs)',
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '6px',
@@ -191,11 +191,11 @@ export default function LiveUpdatesDrawer() {
                         fontSize: '11px',
                         color: 'var(--text-muted)',
                         marginTop: '4px',
-                        borderTop: '1px solid var(--border-subtle, #E2E8F0)',
+                        borderTop: '1px solid var(--border-subtle)',
                         paddingTop: '6px',
                       }}
                     >
-                      <span>Severity: <strong style={{ color: '#DC2626' }}>{ev.severity}/100</strong></span>
+                      <span>Severity: <strong style={{ color: 'var(--status-critical-text)' }}>{ev.severity}/100</strong></span>
                       <span>{ev.distanceKm ? `${ev.distanceKm} km away` : 'Active Radius'}</span>
                     </div>
                   </div>
@@ -213,7 +213,7 @@ export default function LiveUpdatesDrawer() {
               fontWeight: 700,
               textTransform: 'uppercase',
               letterSpacing: '0.04em',
-              color: 'var(--text-muted, #8E9BA8)',
+              color: 'var(--text-muted)',
               marginBottom: '10px',
               display: 'flex',
               alignItems: 'center',
@@ -221,7 +221,7 @@ export default function LiveUpdatesDrawer() {
             }}
           >
             <span>Authoritative Civic Protocols ({bulletins.length})</span>
-            <span style={{ fontSize: '11px', color: 'var(--accent-primary, #2563EB)' }}>Civic & Civil Defense RAG</span>
+            <span style={{ fontSize: '11px', color: 'var(--accent-primary)' }}>Civic & Civil Defense RAG</span>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -231,9 +231,9 @@ export default function LiveUpdatesDrawer() {
                 style={{
                   padding: '12px 14px',
                   borderRadius: 'var(--radius-sm, 8px)',
-                  backgroundColor: 'var(--bg-surface, #FFFFFF)',
-                  border: '1px solid var(--border-subtle, #E2E8F0)',
-                  boxShadow: 'var(--shadow-xs, 0 1px 2px 0 rgba(0, 0, 0, 0.03))',
+                  backgroundColor: 'var(--bg-surface)',
+                  border: '1px solid var(--border-subtle)',
+                  boxShadow: 'var(--shadow-xs)',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '6px',
@@ -246,8 +246,8 @@ export default function LiveUpdatesDrawer() {
                       fontWeight: 700,
                       padding: '2px 6px',
                       borderRadius: 'var(--radius-xs, 4px)',
-                      backgroundColor: 'rgba(37, 99, 235, 0.08)',
-                      color: 'var(--accent-primary, #2563EB)',
+                      backgroundColor: 'var(--badge-info-bg)',
+                      color: 'var(--badge-info-text)',
                     }}
                   >
                     {doc.category || 'CIVIC PROTOCOL'}

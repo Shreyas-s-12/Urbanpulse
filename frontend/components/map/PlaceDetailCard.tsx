@@ -101,7 +101,7 @@ export default function PlaceDetailCard({
         left: '16px',
         width: '320px',
         maxWidth: 'calc(100% - 32px)',
-        backgroundColor: 'rgba(255, 255, 255, 0.96)',
+        backgroundColor: 'var(--overlay-bg)',
         backdropFilter: 'blur(12px)',
         borderRadius: '12px',
         border: '1px solid var(--border-subtle)',
@@ -120,7 +120,7 @@ export default function PlaceDetailCard({
             width: '100%',
             height: '110px',
             position: 'relative',
-            backgroundColor: '#0F172A',
+            backgroundColor: 'var(--bg-surface-secondary)',
             overflow: 'hidden',
           }}
         >

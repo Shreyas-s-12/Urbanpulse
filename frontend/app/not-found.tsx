@@ -23,16 +23,16 @@ export default function NotFound() {
           width: '72px',
           height: '72px',
           borderRadius: '50%',
-          backgroundColor: '#EFF6FF',
-          color: '#2563EB',
+          backgroundColor: 'var(--brand-soft)',
+          color: 'var(--accent-primary)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           marginBottom: '24px',
           fontSize: '28px',
           fontWeight: 800,
-          border: '1px solid rgba(37, 99, 235, 0.2)',
-          boxShadow: '0 4px 12px rgba(37, 99, 235, 0.12)',
+          border: '1px solid var(--badge-info-border)',
+          boxShadow: 'var(--shadow-sm)',
         }}
       >
         404
@@ -41,7 +41,7 @@ export default function NotFound() {
         style={{
           fontSize: '32px',
           fontWeight: 800,
-          color: '#0F172A',
+          color: 'var(--text-primary)',
           margin: '0 0 12px 0',
           letterSpacing: '-0.8px',
         }}
@@ -51,7 +51,7 @@ export default function NotFound() {
       <p
         style={{
           fontSize: '15px',
-          color: '#64748B',
+          color: 'var(--text-secondary)',
           maxWidth: '480px',
           lineHeight: 1.6,
           margin: '0 0 28px 0',
@@ -65,14 +65,14 @@ export default function NotFound() {
           display: 'inline-flex',
           alignItems: 'center',
           gap: '8px',
-          backgroundColor: '#2563EB',
-          color: '#FFFFFF',
+          backgroundColor: 'var(--button)',
+          color: 'var(--button-foreground)',
           padding: '12px 24px',
           borderRadius: '10px',
           fontSize: '14px',
           fontWeight: 600,
           textDecoration: 'none',
-          boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)',
+          boxShadow: 'var(--shadow-md)',
           transition: 'all 0.15s ease',
         }}
       >

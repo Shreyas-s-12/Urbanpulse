@@ -142,7 +142,7 @@ export default function SiteAnalysisModal({
         style={{
           position: 'fixed',
           inset: 0,
-          backgroundColor: 'rgba(15, 23, 42, 0.55)',
+          backgroundColor: 'var(--overlay-bg)',
           backdropFilter: 'blur(6px)',
           zIndex: 100,
           display: 'flex',
@@ -153,10 +153,10 @@ export default function SiteAnalysisModal({
       >
         <div
           style={{
-            backgroundColor: '#FFFFFF',
+            backgroundColor: 'var(--bg-panel)',
             borderRadius: '16px',
-            border: '1px solid #E2E8F0',
-            boxShadow: '0 20px 48px -12px rgba(15, 23, 42, 0.25)',
+            border: '1px solid var(--border)',
+            boxShadow: 'var(--shadow-panel)',
             width: '100%',
             maxWidth: '860px',
             maxHeight: '90vh',
@@ -169,11 +169,11 @@ export default function SiteAnalysisModal({
           <div
             style={{
               padding: '18px 24px',
-              borderBottom: '1px solid #E2E8F0',
+              borderBottom: '1px solid var(--border)',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'flex-start',
-              backgroundColor: '#F8FAFC',
+              backgroundColor: 'var(--bg-header)',
             }}
           >
             <div>
@@ -183,9 +183,9 @@ export default function SiteAnalysisModal({
                     fontSize: '10.5px',
                     fontWeight: 700,
                     textTransform: 'uppercase',
-                    color: '#2563EB',
-                    backgroundColor: '#EFF6FF',
-                    border: '1px solid #BFDBFE',
+                    color: 'var(--badge-info-text)',
+                    backgroundColor: 'var(--badge-info-bg)',
+                    border: '1px solid var(--badge-info-border)',
                     padding: '2px 7px',
                     borderRadius: '4px',
                     letterSpacing: '0.4px',
@@ -193,14 +193,14 @@ export default function SiteAnalysisModal({
                 >
                   AI Site & Urban Decision Intelligence
                 </span>
-                <span style={{ fontSize: '11px', color: '#64748B' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                   Surveillance Radius: <strong>{radiusKm} km</strong>
                 </span>
               </div>
-              <h2 id="site-analysis-title" style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginTop: '4px', margin: 0 }}>
+              <h2 id="site-analysis-title" style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px', margin: 0 }}>
                 {placeName}
               </h2>
-              <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
                 {city}, {country} · Coordinates: {lat.toFixed(4)}°N, {lng.toFixed(4)}°E
               </div>
             </div>
@@ -211,7 +211,7 @@ export default function SiteAnalysisModal({
               style={{
                 background: 'transparent',
                 border: 'none',
-                color: '#64748B',
+                color: 'var(--text-muted)',
                 cursor: 'pointer',
                 padding: '6px',
                 borderRadius: '6px',
@@ -233,8 +233,8 @@ export default function SiteAnalysisModal({
               display: 'flex',
               gap: '6px',
               padding: '10px 24px',
-              borderBottom: '1px solid #E2E8F0',
-              backgroundColor: '#FFFFFF',
+              borderBottom: '1px solid var(--border)',
+              backgroundColor: 'var(--bg-panel)',
             }}
           >
             <button
@@ -246,9 +246,9 @@ export default function SiteAnalysisModal({
                 fontWeight: 700,
                 cursor: 'pointer',
                 border: '1px solid',
-                backgroundColor: activeTab === 'TERRAIN_SITE' ? '#2563EB' : '#F8FAFC',
-                color: activeTab === 'TERRAIN_SITE' ? '#FFFFFF' : '#475569',
-                borderColor: activeTab === 'TERRAIN_SITE' ? '#2563EB' : '#E2E8F0',
+                backgroundColor: activeTab === 'TERRAIN_SITE' ? 'var(--button)' : 'var(--bg-subtle)',
+                color: activeTab === 'TERRAIN_SITE' ? 'var(--button-foreground)' : 'var(--text-secondary)',
+                borderColor: activeTab === 'TERRAIN_SITE' ? 'var(--button)' : 'var(--border)',
                 transition: 'all 0.15s ease',
               }}
             >
@@ -263,9 +263,9 @@ export default function SiteAnalysisModal({
                 fontWeight: 700,
                 cursor: 'pointer',
                 border: '1px solid',
-                backgroundColor: activeTab === 'SCENARIO_ENGINE' ? '#2563EB' : '#F8FAFC',
-                color: activeTab === 'SCENARIO_ENGINE' ? '#FFFFFF' : '#475569',
-                borderColor: activeTab === 'SCENARIO_ENGINE' ? '#2563EB' : '#E2E8F0',
+                backgroundColor: activeTab === 'SCENARIO_ENGINE' ? 'var(--button)' : 'var(--bg-subtle)',
+                color: activeTab === 'SCENARIO_ENGINE' ? 'var(--button-foreground)' : 'var(--text-secondary)',
+                borderColor: activeTab === 'SCENARIO_ENGINE' ? 'var(--button)' : 'var(--border)',
                 transition: 'all 0.15s ease',
               }}
             >
@@ -280,9 +280,9 @@ export default function SiteAnalysisModal({
                 fontWeight: 700,
                 cursor: 'pointer',
                 border: '1px solid',
-                backgroundColor: activeTab === 'SUITABILITY' ? '#2563EB' : '#F8FAFC',
-                color: activeTab === 'SUITABILITY' ? '#FFFFFF' : '#475569',
-                borderColor: activeTab === 'SUITABILITY' ? '#2563EB' : '#E2E8F0',
+                backgroundColor: activeTab === 'SUITABILITY' ? 'var(--button)' : 'var(--bg-subtle)',
+                color: activeTab === 'SUITABILITY' ? 'var(--button-foreground)' : 'var(--text-secondary)',
+                borderColor: activeTab === 'SUITABILITY' ? 'var(--button)' : 'var(--border)',
                 transition: 'all 0.15s ease',
               }}
             >
@@ -291,76 +291,76 @@ export default function SiteAnalysisModal({
           </div>
 
           {/* Modal Body */}
-          <div style={{ padding: '20px 24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ padding: '20px 24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: 'var(--bg-panel)' }}>
             {/* Tab 1: Terrain & Site Indicators */}
             {activeTab === 'TERRAIN_SITE' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div style={{ fontSize: '12px', color: '#475569', lineHeight: 1.5 }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                   Geospatial terrain and physical site indicators derived from digital elevation models, multispectral Sentinel-2 remote sensing, and municipal infrastructure mapping.
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
-                  <div style={{ backgroundColor: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                    <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#64748B' }}>Elevation (MSL)</div>
-                    <div style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>
+                  <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--text-muted)' }}>Elevation (MSL)</div>
+                    <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
                       {siteIndicators.elevationM} m
                     </div>
-                    <div style={{ fontSize: '10px', color: '#64748B', marginTop: '2px' }}>SRTM / Copernicus DEM</div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>SRTM / Copernicus DEM</div>
                   </div>
 
-                  <div style={{ backgroundColor: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                    <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#64748B' }}>Terrain Slope</div>
-                    <div style={{ fontSize: '20px', fontWeight: 800, color: '#2563EB', marginTop: '2px' }}>
+                  <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--text-muted)' }}>Terrain Slope</div>
+                    <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--accent-primary)', marginTop: '2px' }}>
                       {siteIndicators.slopePercent}%
                     </div>
-                    <div style={{ fontSize: '10px', color: '#64748B', marginTop: '2px' }}>{siteIndicators.terrainMorphology}</div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>{siteIndicators.terrainMorphology}</div>
                   </div>
 
-                  <div style={{ backgroundColor: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                    <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#64748B' }}>Solar Radiance</div>
-                    <div style={{ fontSize: '20px', fontWeight: 800, color: '#D97706', marginTop: '2px' }}>
+                  <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--text-muted)' }}>Solar Radiance</div>
+                    <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--status-warning-text)', marginTop: '2px' }}>
                       {siteIndicators.solarExposureKwh} kWh/m²
                     </div>
-                    <div style={{ fontSize: '10px', color: '#64748B', marginTop: '2px' }}>Daily Horizontal Irradiance</div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>Daily Horizontal Irradiance</div>
                   </div>
 
-                  <div style={{ backgroundColor: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                    <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#64748B' }}>Prevailing Wind</div>
-                    <div style={{ fontSize: '20px', fontWeight: 800, color: '#0284C7', marginTop: '2px' }}>
+                  <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--text-muted)' }}>Prevailing Wind</div>
+                    <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--cyan)', marginTop: '2px' }}>
                       {siteIndicators.windSpeedKmh} km/h
                     </div>
-                    <div style={{ fontSize: '10px', color: '#64748B', marginTop: '2px' }}>Westerlies Inflow</div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>Westerlies Inflow</div>
                   </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
-                  <div style={{ backgroundColor: '#FFFFFF', padding: '14px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>Drainage & Basin Gradient</div>
-                    <div style={{ fontSize: '12.5px', color: '#334155', marginTop: '6px', fontWeight: 600 }}>{siteIndicators.drainageDirection}</div>
-                    <div style={{ fontSize: '11px', color: '#64748B', marginTop: '4px' }}>
-                      Flood Inundation Susceptibility: <strong style={{ color: '#0F172A' }}>{siteIndicators.floodExposure}</strong>
+                  <div style={{ backgroundColor: 'var(--bg-card)', padding: '14px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>Drainage & Basin Gradient</div>
+                    <div style={{ fontSize: '12.5px', color: 'var(--text-secondary)', marginTop: '6px', fontWeight: 600 }}>{siteIndicators.drainageDirection}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                      Flood Inundation Susceptibility: <strong style={{ color: 'var(--text-primary)' }}>{siteIndicators.floodExposure}</strong>
                     </div>
                   </div>
 
-                  <div style={{ backgroundColor: '#FFFFFF', padding: '14px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>Soil & Surface Classification</div>
-                    <div style={{ fontSize: '12.5px', color: '#334155', marginTop: '6px', fontWeight: 600 }}>{siteIndicators.landUse}</div>
-                    <div style={{ fontSize: '11px', color: '#64748B', marginTop: '4px' }}>
-                      Subsurface Infiltration: <strong style={{ color: '#0F172A' }}>{siteIndicators.soilPermeability}</strong>
+                  <div style={{ backgroundColor: 'var(--bg-card)', padding: '14px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>Soil & Surface Classification</div>
+                    <div style={{ fontSize: '12.5px', color: 'var(--text-secondary)', marginTop: '6px', fontWeight: 600 }}>{siteIndicators.landUse}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                      Subsurface Infiltration: <strong style={{ color: 'var(--text-primary)' }}>{siteIndicators.soilPermeability}</strong>
                     </div>
                   </div>
                 </div>
 
                 {/* Direct Cross-RAG Links */}
-                <div style={{ display: 'flex', gap: '8px', paddingTop: '8px', borderTop: '1px solid #E2E8F0' }}>
+                <div style={{ display: 'flex', gap: '8px', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
                   <button
                     onClick={() => { onClose(); onOpenRAG?.('georag'); }}
                     style={{
                       padding: '7px 12px',
                       borderRadius: '6px',
-                      backgroundColor: '#EFF6FF',
-                      border: '1px solid #BFDBFE',
-                      color: '#2563EB',
+                      backgroundColor: 'var(--badge-info-bg)',
+                      border: '1px solid var(--badge-info-border)',
+                      color: 'var(--badge-info-text)',
                       fontSize: '11.5px',
                       fontWeight: 700,
                       cursor: 'pointer',
@@ -373,9 +373,9 @@ export default function SiteAnalysisModal({
                     style={{
                       padding: '7px 12px',
                       borderRadius: '6px',
-                      backgroundColor: '#F0F9FF',
-                      border: '1px solid #BAE6FD',
-                      color: '#0284C7',
+                      backgroundColor: 'var(--cyan-soft)',
+                      border: '1px solid var(--cyan)',
+                      color: 'var(--cyan)',
                       fontSize: '11.5px',
                       fontWeight: 700,
                       cursor: 'pointer',
@@ -390,7 +390,7 @@ export default function SiteAnalysisModal({
             {/* Tab 2: Scenario Simulator */}
             {activeTab === 'SCENARIO_ENGINE' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div style={{ fontSize: '12px', color: '#475569' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
                   Simulate environmental stress tests and civil disruption scenarios grounded in elevation, historical observations, and regional infrastructure links.
                 </div>
 
@@ -406,15 +406,15 @@ export default function SiteAnalysisModal({
                         border: '1px solid',
                         textAlign: 'left',
                         cursor: 'pointer',
-                        backgroundColor: selectedScenario === sc.id ? '#EFF6FF' : '#F8FAFC',
-                        borderColor: selectedScenario === sc.id ? '#2563EB' : '#E2E8F0',
+                        backgroundColor: selectedScenario === sc.id ? 'var(--badge-info-bg)' : 'var(--bg-subtle)',
+                        borderColor: selectedScenario === sc.id ? 'var(--accent-primary)' : 'var(--border)',
                         transition: 'all 0.15s ease',
                       }}
                     >
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: selectedScenario === sc.id ? '#2563EB' : '#0F172A' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: selectedScenario === sc.id ? 'var(--badge-info-text)' : 'var(--text-primary)' }}>
                         {sc.name}
                       </div>
-                      <div style={{ fontSize: '10px', color: '#64748B', marginTop: '2px' }}>
+                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
                         {sc.trigger}
                       </div>
                     </button>
@@ -422,9 +422,9 @@ export default function SiteAnalysisModal({
                 </div>
 
                 {/* Active Scenario Details */}
-                <div style={{ backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '10px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '16px', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)' }}>
                       Scenario Impact Model: {currentScenario.name}
                     </div>
                     <span
@@ -433,21 +433,21 @@ export default function SiteAnalysisModal({
                         fontWeight: 700,
                         padding: '2px 8px',
                         borderRadius: '4px',
-                        backgroundColor: '#DCFCE7',
-                        color: '#16A34A',
-                        border: '1px solid #BBF7D0',
+                        backgroundColor: 'var(--status-good-bg)',
+                        color: 'var(--status-good-text)',
+                        border: '1px solid var(--status-good-border)',
                       }}
                     >
                       {Math.round(currentScenario.confidence * 100)}% Model Confidence
                     </span>
                   </div>
 
-                  <div style={{ fontSize: '12px', color: '#334155', lineHeight: 1.5 }}>
-                    <strong>Potential Impact:</strong> {currentScenario.impact}
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                    <strong style={{ color: 'var(--text-primary)' }}>Potential Impact:</strong> {currentScenario.impact}
                   </div>
 
                   <div>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
                       Affected Systems
                     </div>
                     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
@@ -458,10 +458,10 @@ export default function SiteAnalysisModal({
                             fontSize: '10.5px',
                             fontWeight: 600,
                             padding: '3px 8px',
-                            backgroundColor: '#FFFFFF',
-                            border: '1px solid #E2E8F0',
+                            backgroundColor: 'var(--bg-card)',
+                            border: '1px solid var(--border)',
                             borderRadius: '4px',
-                            color: '#0F172A',
+                            color: 'var(--text-primary)',
                           }}
                         >
                           {sys}
@@ -471,18 +471,18 @@ export default function SiteAnalysisModal({
                   </div>
 
                   <div>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
                       Recommended Considerations
                     </div>
-                    <ul style={{ margin: '4px 0 0 16px', padding: 0, fontSize: '11.5px', color: '#475569', lineHeight: 1.5 }}>
+                    <ul style={{ margin: '4px 0 0 16px', padding: 0, fontSize: '11.5px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                       {currentScenario.recommendations.map((rec, idx) => (
                         <li key={idx} style={{ marginTop: '2px' }}>{rec}</li>
                       ))}
                     </ul>
                   </div>
 
-                  <div style={{ fontSize: '10.5px', color: '#64748B', borderTop: '1px solid #E2E8F0', paddingTop: '8px' }}>
-                    <strong>Evidence Basis:</strong> {currentScenario.evidence}
+                  <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', borderTop: '1px solid var(--border)', paddingTop: '8px' }}>
+                    <strong style={{ color: 'var(--text-secondary)' }}>Evidence Basis:</strong> {currentScenario.evidence}
                   </div>
                 </div>
               </div>
@@ -491,20 +491,20 @@ export default function SiteAnalysisModal({
             {/* Tab 3: Site Suitability Assessment */}
             {activeTab === 'SUITABILITY' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#EFF6FF', padding: '14px 18px', borderRadius: '10px', border: '1px solid #BFDBFE' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--badge-info-bg)', padding: '14px 18px', borderRadius: '10px', border: '1px solid var(--badge-info-border)' }}>
                   <div>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#2563EB', textTransform: 'uppercase' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--badge-info-text)', textTransform: 'uppercase' }}>
                       Explainable Site Suitability Score
                     </div>
-                    <div style={{ fontSize: '12px', color: '#334155', marginTop: '2px' }}>
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
                       Composite index based on 5 weighted environmental, topographical, and infrastructure dimensions.
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '26px', fontWeight: 900, color: '#1D4ED8' }}>
-                      {overallSuitability} <span style={{ fontSize: '14px', fontWeight: 500, color: '#64748B' }}>/ 100</span>
+                    <div style={{ fontSize: '26px', fontWeight: 900, color: 'var(--badge-info-text)' }}>
+                      {overallSuitability} <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-muted)' }}>/ 100</span>
                     </div>
-                    <span style={{ fontSize: '10px', fontWeight: 700, color: '#16A34A', backgroundColor: '#DCFCE7', padding: '1px 6px', borderRadius: '4px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--status-good-text)', backgroundColor: 'var(--status-good-bg)', border: '1px solid var(--status-good-border)', padding: '1px 6px', borderRadius: '4px' }}>
                       FAVORABLE DEVELOPMENT SITE
                     </span>
                   </div>
@@ -512,7 +512,7 @@ export default function SiteAnalysisModal({
 
                 {/* Factor Breakdown */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>
                     Contributing Dimensions & Explainability Breakdown
                   </div>
 
@@ -520,37 +520,37 @@ export default function SiteAnalysisModal({
                     <div
                       key={idx}
                       style={{
-                        backgroundColor: '#F8FAFC',
+                        backgroundColor: 'var(--bg-subtle)',
                         padding: '12px 14px',
                         borderRadius: '8px',
-                        border: '1px solid #E2E8F0',
+                        border: '1px solid var(--border)',
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '6px',
                       }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>
-                          {fac.name} <span style={{ fontSize: '10px', color: '#64748B', fontWeight: 500 }}>({fac.weight} weight)</span>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                          {fac.name} <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 500 }}>({fac.weight} weight)</span>
                         </div>
-                        <span style={{ fontSize: '12px', fontWeight: 800, color: fac.score >= 80 ? '#16A34A' : '#2563EB' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 800, color: fac.score >= 80 ? 'var(--status-good-text)' : 'var(--accent-primary)' }}>
                           {fac.score}/100
                         </span>
                       </div>
 
                       {/* Progress Bar */}
-                      <div style={{ width: '100%', height: '6px', backgroundColor: '#E2E8F0', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--border)', borderRadius: '3px', overflow: 'hidden' }}>
                         <div
                           style={{
                             width: `${fac.score}%`,
                             height: '100%',
-                            backgroundColor: fac.score >= 80 ? '#16A34A' : '#2563EB',
+                            backgroundColor: fac.score >= 80 ? 'var(--status-good-text)' : 'var(--accent-primary)',
                             borderRadius: '3px',
                           }}
                         />
                       </div>
 
-                      <div style={{ fontSize: '11px', color: '#475569' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
                         {fac.detail}
                       </div>
                     </div>
@@ -564,8 +564,8 @@ export default function SiteAnalysisModal({
           <div
             style={{
               padding: '14px 24px',
-              borderTop: '1px solid #E2E8F0',
-              backgroundColor: '#F8FAFC',
+              borderTop: '1px solid var(--border)',
+              backgroundColor: 'var(--bg-header)',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
@@ -582,9 +582,9 @@ export default function SiteAnalysisModal({
                 gap: '6px',
                 padding: '7px 14px',
                 borderRadius: '6px',
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #CBD5E1',
-                color: '#0F172A',
+                backgroundColor: 'var(--bg-card)',
+                border: '1px solid var(--border-strong)',
+                color: 'var(--text-primary)',
                 fontSize: '11.5px',
                 fontWeight: 700,
                 cursor: 'pointer',
@@ -598,8 +598,8 @@ export default function SiteAnalysisModal({
               style={{
                 padding: '7px 16px',
                 borderRadius: '6px',
-                backgroundColor: '#2563EB',
-                color: '#FFFFFF',
+                backgroundColor: 'var(--button)',
+                color: 'var(--button-foreground)',
                 fontSize: '12px',
                 fontWeight: 700,
                 border: 'none',

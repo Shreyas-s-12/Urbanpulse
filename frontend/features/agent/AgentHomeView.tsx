@@ -412,8 +412,8 @@ export default function AgentHomeView() {
             flexShrink: 0,
             display: isMapExpanded ? 'none' : 'flex',
             flexDirection: 'column',
-            backgroundColor: 'var(--bg-panel, #FFFFFF)',
-            borderRight: '1px solid var(--border, #E2E7EF)',
+            backgroundColor: 'var(--bg-panel)',
+            borderRight: '1px solid var(--border)',
             zIndex: 20,
             overflow: 'hidden',
             position: 'relative',
@@ -443,7 +443,7 @@ export default function AgentHomeView() {
               bottom: 0,
               left: 0,
               width: '36px',
-              background: 'linear-gradient(to right, rgba(13, 20, 29, 0.98) 50%, rgba(13, 20, 29, 0))',
+              background: 'linear-gradient(to right, var(--scroller-gradient-start) 50%, var(--scroller-gradient-end))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-start',
@@ -464,27 +464,27 @@ export default function AgentHomeView() {
                   width: '24px',
                   height: '24px',
                   borderRadius: '50%',
-                  backgroundColor: 'var(--bg-elevated, #141B26)',
-                  border: '1px solid var(--border, #263241)',
+                  backgroundColor: 'var(--bg-elevated)',
+                  border: '1px solid var(--border)',
                   boxShadow: 'var(--shadow-xs)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: 'var(--text-primary, #F3F6FA)',
+                  color: 'var(--text-primary)',
                   cursor: 'pointer',
                   padding: 0,
                   transition: 'border-color 0.15s ease, background-color 0.15s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--accent-primary, #3B82F6)';
-                  e.currentTarget.style.backgroundColor = 'var(--bg-card-hover, #17202C)';
+                  e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                  e.currentTarget.style.backgroundColor = 'var(--bg-card-hover)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border, #263241)';
-                  e.currentTarget.style.backgroundColor = 'var(--bg-elevated, #141B26)';
+                  e.currentTarget.style.borderColor = 'var(--border)';
+                  e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
                 }}
               >
-                <ChevronLeftIcon size={14} color="var(--text-primary, #F3F6FA)" />
+                <ChevronLeftIcon size={14} color="var(--text-primary)" />
               </button>
             )}
           </div>
@@ -497,7 +497,7 @@ export default function AgentHomeView() {
               bottom: 0,
               right: 0,
               width: '36px',
-              background: 'linear-gradient(to left, rgba(13, 20, 29, 0.98) 50%, rgba(13, 20, 29, 0))',
+              background: 'linear-gradient(to left, var(--scroller-gradient-start) 50%, var(--scroller-gradient-end))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-end',
@@ -518,27 +518,27 @@ export default function AgentHomeView() {
                   width: '24px',
                   height: '24px',
                   borderRadius: '50%',
-                  backgroundColor: 'var(--bg-elevated, #141B26)',
-                  border: '1px solid var(--border, #263241)',
+                  backgroundColor: 'var(--bg-elevated)',
+                  border: '1px solid var(--border)',
                   boxShadow: 'var(--shadow-xs)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: 'var(--text-primary, #F3F6FA)',
+                  color: 'var(--text-primary)',
                   cursor: 'pointer',
                   padding: 0,
                   transition: 'border-color 0.15s ease, background-color 0.15s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--accent-primary, #3B82F6)';
-                  e.currentTarget.style.backgroundColor = 'var(--bg-card-hover, #17202C)';
+                  e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                  e.currentTarget.style.backgroundColor = 'var(--bg-card-hover)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border, #263241)';
-                  e.currentTarget.style.backgroundColor = 'var(--bg-elevated, #141B26)';
+                  e.currentTarget.style.borderColor = 'var(--border)';
+                  e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
                 }}
               >
-                <ChevronRightIcon size={14} color="var(--text-primary, #F3F6FA)" />
+                <ChevronRightIcon size={14} color="var(--text-primary)" />
               </button>
             )}
           </div>
@@ -635,7 +635,7 @@ export default function AgentHomeView() {
                 transition: 'border-color 0.15s ease',
               }}
             >
-              <AlertTriangleIcon size={13} color="#F59E0B" />
+              <AlertTriangleIcon size={13} color="var(--status-warning-text)" />
               <span>{quickActionLoading === 'anomalies' ? 'Scanning...' : 'Anomalies'}</span>
             </button>
             <button
@@ -766,8 +766,8 @@ export default function AgentHomeView() {
         <div
           style={{
             padding: '8px 12px',
-            backgroundColor: 'var(--bg-subtle, #F9FAFC)',
-            borderBottom: '1px solid var(--border, #E2E7EF)',
+            backgroundColor: 'var(--bg-subtle)',
+            borderBottom: '1px solid var(--border)',
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
@@ -776,7 +776,7 @@ export default function AgentHomeView() {
             flexShrink: 0,
           }}
         >
-          <span style={{ fontSize: '10.5px', fontWeight: 750, color: 'var(--text-muted, #7B8798)', textTransform: 'uppercase', letterSpacing: '0.04em', flexShrink: 0 }}>
+          <span style={{ fontSize: '10.5px', fontWeight: 750, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', flexShrink: 0 }}>
             FILTER:
           </span>
           {(['ALL', 'CRIME', 'WEATHER', 'TRAFFIC', 'HAZARD', 'MUNICIPAL', 'LIVE', 'RECENT', 'FORECAST', 'ALERTS'] as const).map((filterOpt) => {
@@ -797,9 +797,9 @@ export default function AgentHomeView() {
                   borderRadius: '13px',
                   fontSize: '11px',
                   fontWeight: 600,
-                  border: isSelected ? '1px solid var(--accent-primary, #2563EB)' : '1px solid var(--border, #E2E7EF)',
-                  backgroundColor: isSelected ? 'var(--accent-primary, #2563EB)' : 'var(--bg-card, #FFFFFF)',
-                  color: isSelected ? '#FFFFFF' : 'var(--text-secondary, #566174)',
+                  border: isSelected ? '1px solid var(--button)' : '1px solid var(--border)',
+                  backgroundColor: isSelected ? 'var(--button)' : 'var(--bg-card)',
+                  color: isSelected ? 'var(--button-foreground)' : 'var(--text-secondary)',
                   cursor: 'pointer',
                   flexShrink: 0,
                   whiteSpace: 'nowrap',
@@ -817,7 +817,7 @@ export default function AgentHomeView() {
           style={{
             flex: 1,
             overflowY: 'auto',
-            backgroundColor: 'var(--conversation-bg, #F8FAFC)',
+            backgroundColor: 'var(--conversation-bg)',
             padding: '16px',
             display: 'flex',
             flexDirection: 'column',
@@ -852,16 +852,16 @@ export default function AgentHomeView() {
                 <NexusHoloOrb size={76} />
                 <UrbanPulseLogo size={32} />
               </div>
-              <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-primary, #172033)', margin: '0 0 2px 0' }}>
+              <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 2px 0' }}>
                 Ask anything about your city or location.
               </h3>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary, #566174)', lineHeight: 1.5, margin: 0, maxWidth: '290px' }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0, maxWidth: '290px' }}>
                 UrbanPulse Nexus analyzes live geospatial signals, traffic bottlenecks, weather, and environmental safety in real time.
               </p>
 
               {/* Initial Suggested Prompts */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', maxWidth: '330px', marginTop: '6px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted, #7B8798)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'left' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'left' }}>
                   TRY ASKING:
                 </span>
                 {SUGGESTED_PROMPTS.slice(0, 4).map((prompt, i) => (
@@ -875,9 +875,9 @@ export default function AgentHomeView() {
                       fontSize: '12.5px',
                       fontWeight: 500,
                       borderRadius: '8px',
-                      backgroundColor: 'var(--assistant-card-bg, #FFFFFF)',
-                      border: '1px solid var(--assistant-card-border, #E2E7EF)',
-                      color: 'var(--text-primary, #172033)',
+                      backgroundColor: 'var(--assistant-card-bg)',
+                      border: '1px solid var(--assistant-card-border)',
+                      color: 'var(--text-primary)',
                       textAlign: 'left',
                       cursor: 'pointer',
                       transition: 'all 0.15s ease',
@@ -887,17 +887,17 @@ export default function AgentHomeView() {
                       boxSizing: 'border-box',
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--accent-primary, #2563EB)';
-                      e.currentTarget.style.backgroundColor = 'var(--accent-primary-light, #EFF6FF)';
-                      e.currentTarget.style.color = 'var(--accent-primary, #2563EB)';
+                      e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                      e.currentTarget.style.backgroundColor = 'var(--accent-primary-light)';
+                      e.currentTarget.style.color = 'var(--accent-primary)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--assistant-card-border, #E2E7EF)';
-                      e.currentTarget.style.backgroundColor = 'var(--assistant-card-bg, #FFFFFF)';
-                      e.currentTarget.style.color = 'var(--text-primary, #172033)';
+                      e.currentTarget.style.borderColor = 'var(--assistant-card-border)';
+                      e.currentTarget.style.backgroundColor = 'var(--assistant-card-bg)';
+                      e.currentTarget.style.color = 'var(--text-primary)';
                     }}
                   >
-                    <MessageSquareIcon size={14} color="var(--accent-primary, #2563EB)" style={{ flexShrink: 0 }} />
+                    <MessageSquareIcon size={14} color="var(--accent-primary)" style={{ flexShrink: 0 }} />
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prompt}</span>
                   </button>
                 ))}
@@ -954,11 +954,11 @@ export default function AgentHomeView() {
                 height: '36px',
                 padding: '0 14px',
                 borderRadius: 'var(--radius-md)',
-                backgroundColor: 'rgba(13, 20, 29, 0.94)',
+                backgroundColor: 'var(--overlay-bg)',
                 backdropFilter: 'blur(12px)',
-                color: 'var(--text-primary, #F3F6FA)',
-                border: '1px solid var(--border, #263241)',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border)',
+                boxShadow: 'var(--shadow-panel)',
                 fontSize: '12px',
                 fontWeight: 600,
                 display: 'inline-flex',
@@ -967,7 +967,7 @@ export default function AgentHomeView() {
                 cursor: 'pointer',
               }}
             >
-              <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#3B82F6', boxShadow: '0 0 8px rgba(59, 130, 246, 0.8)' }} />
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'var(--accent-primary)', boxShadow: '0 0 8px var(--accent-primary)' }} />
               <span>Open Agent Console</span>
             </button>
           )}
@@ -1019,7 +1019,7 @@ export default function AgentHomeView() {
               top: '16px',
               right: '16px',
               height: '38px',
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              backgroundColor: 'var(--overlay-bg)',
               backdropFilter: 'blur(8px)',
               borderRadius: 'var(--radius-md)',
               padding: '0 var(--space-3)',
@@ -1042,7 +1042,7 @@ export default function AgentHomeView() {
               />
               <span style={{ fontWeight: 500 }}>Traffic</span>
               {activeLayers.traffic && (
-                <span style={{ fontSize: '9px', fontWeight: 700, color: '#10B981', backgroundColor: 'rgba(16,185,129,0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--status-good-text)', backgroundColor: 'var(--status-good-bg)', border: '1px solid var(--status-good-border)', padding: '1px 5px', borderRadius: '4px' }}>
                   LIVE
                 </span>
               )}
@@ -1082,8 +1082,8 @@ export default function AgentHomeView() {
                 height: '26px',
                 padding: '0 8px',
                 borderRadius: 'var(--radius-sm)',
-                backgroundColor: isMapExpanded ? 'var(--accent-primary)' : 'var(--bg-app)',
-                color: isMapExpanded ? '#FFFFFF' : 'var(--text-secondary)',
+                backgroundColor: isMapExpanded ? 'var(--button)' : 'var(--bg-app)',
+                color: isMapExpanded ? 'var(--button-foreground)' : 'var(--text-secondary)',
                 border: '1px solid var(--border-subtle)',
                 fontSize: '11px',
                 fontWeight: 600,
@@ -1112,7 +1112,7 @@ export default function AgentHomeView() {
               position: 'absolute',
               bottom: '24px',
               right: '24px',
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              backgroundColor: 'var(--overlay-bg)',
               backdropFilter: 'blur(8px)',
               borderRadius: '8px',
               padding: '12px 16px',
@@ -1131,7 +1131,7 @@ export default function AgentHomeView() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 800 }}>
               <span>Value: {aqiOverlayData.value}</span>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: '#10B981' }}>({aqiOverlayData.category})</span>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--status-good-text)' }}>({aqiOverlayData.category})</span>
             </div>
             <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
               Source: {aqiOverlayData.source}

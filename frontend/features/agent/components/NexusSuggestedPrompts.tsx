@@ -29,8 +29,8 @@ export default function NexusSuggestedPrompts({
         overflowX: 'auto',
         overflowY: 'hidden',
         whiteSpace: 'nowrap',
-        borderTop: '1px solid var(--border, #E2E7EF)',
-        backgroundColor: 'var(--bg-header, #FFFFFF)',
+        borderTop: '1px solid var(--border)',
+        backgroundColor: 'var(--bg-header)',
         scrollbarWidth: 'none',
         flexShrink: 0,
         boxSizing: 'border-box',
@@ -46,9 +46,9 @@ export default function NexusSuggestedPrompts({
             height: '34px',
             padding: '0 14px',
             borderRadius: '18px',
-            backgroundColor: 'var(--assistant-card-bg, #FFFFFF)',
-            border: '1px solid var(--assistant-card-border, #E2E7EF)',
-            color: 'var(--text-secondary, #566174)',
+            backgroundColor: 'var(--assistant-card-bg)',
+            border: '1px solid var(--assistant-card-border)',
+            color: 'var(--text-secondary)',
             fontSize: '11.5px',
             fontWeight: 500,
             cursor: disabled ? 'not-allowed' : 'pointer',
@@ -62,16 +62,16 @@ export default function NexusSuggestedPrompts({
           }}
           onMouseEnter={(e) => {
             if (!disabled) {
-              e.currentTarget.style.borderColor = 'var(--accent-primary, #2563EB)';
-              e.currentTarget.style.backgroundColor = 'var(--accent-primary-light, #EFF6FF)';
-              e.currentTarget.style.color = 'var(--accent-primary, #2563EB)';
+              e.currentTarget.style.borderColor = 'var(--accent-primary)';
+              e.currentTarget.style.backgroundColor = 'var(--accent-primary-light)';
+              e.currentTarget.style.color = 'var(--accent-primary)';
             }
           }}
           onMouseLeave={(e) => {
             if (!disabled) {
-              e.currentTarget.style.borderColor = 'var(--assistant-card-border, #E2E7EF)';
-              e.currentTarget.style.backgroundColor = 'var(--assistant-card-bg, #FFFFFF)';
-              e.currentTarget.style.color = 'var(--text-secondary, #566174)';
+              e.currentTarget.style.borderColor = 'var(--assistant-card-border)';
+              e.currentTarget.style.backgroundColor = 'var(--assistant-card-bg)';
+              e.currentTarget.style.color = 'var(--text-secondary)';
             }
           }}
         >

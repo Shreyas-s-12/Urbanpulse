@@ -11,9 +11,9 @@ export default function NexusThinkingIndicator() {
         gap: '8px',
         padding: '8px 14px',
         borderRadius: '12px',
-        backgroundColor: 'var(--assistant-card-bg, #FFFFFF)',
-        border: '1px solid var(--assistant-card-border, #E2E7EF)',
-        boxShadow: 'var(--card-shadow, 0 2px 6px rgba(15, 23, 42, 0.04))',
+        backgroundColor: 'var(--assistant-card-bg)',
+        border: '1px solid var(--assistant-card-border)',
+        boxShadow: 'var(--card-shadow)',
         width: 'fit-content',
         alignSelf: 'flex-start',
         boxSizing: 'border-box',
@@ -26,7 +26,7 @@ export default function NexusThinkingIndicator() {
             width: '5px',
             height: '5px',
             borderRadius: '50%',
-            backgroundColor: 'var(--accent-primary, #2563EB)',
+            backgroundColor: 'var(--accent-primary)',
             animation: 'nexusDotPulse 1.2s infinite ease-in-out',
             animationDelay: '0s',
           }}
@@ -36,7 +36,7 @@ export default function NexusThinkingIndicator() {
             width: '5px',
             height: '5px',
             borderRadius: '50%',
-            backgroundColor: 'var(--accent-primary, #2563EB)',
+            backgroundColor: 'var(--accent-primary)',
             animation: 'nexusDotPulse 1.2s infinite ease-in-out',
             animationDelay: '0.2s',
           }}
@@ -46,7 +46,7 @@ export default function NexusThinkingIndicator() {
             width: '5px',
             height: '5px',
             borderRadius: '50%',
-            backgroundColor: 'var(--accent-primary, #2563EB)',
+            backgroundColor: 'var(--accent-primary)',
             animation: 'nexusDotPulse 1.2s infinite ease-in-out',
             animationDelay: '0.4s',
           }}
@@ -56,7 +56,7 @@ export default function NexusThinkingIndicator() {
       <span
         style={{
           fontSize: '11.5px',
-          color: 'var(--text-muted, #7B8798)',
+          color: 'var(--text-muted)',
           fontWeight: 500,
         }}
       >

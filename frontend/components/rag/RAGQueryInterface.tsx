@@ -68,11 +68,11 @@ export default function RAGQueryInterface({
   return (
     <div
       style={{
-        backgroundColor: '#FFFFFF',
+        backgroundColor: 'var(--bg-panel)',
         borderRadius: '12px',
-        border: '1px solid #E2E8F0',
+        border: '1px solid var(--border-subtle)',
         padding: '20px',
-        boxShadow: '0 1px 4px rgba(0, 0, 0, 0.04)',
+        boxShadow: 'var(--card-shadow)',
         display: 'flex',
         flexDirection: 'column',
         gap: '16px',
@@ -80,10 +80,10 @@ export default function RAGQueryInterface({
     >
       {/* Header */}
       <div>
-        <div style={{ fontSize: '11px', fontWeight: 700, color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+        <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
           Grounded Inquiry Engine
         </div>
-        <div style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A', marginTop: '2px' }}>
+        <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
           Ask Domain Intelligence
         </div>
       </div>
@@ -99,26 +99,26 @@ export default function RAGQueryInterface({
               handleSearch(q);
             }}
             style={{
-              backgroundColor: '#F8FAFC',
-              border: '1px solid #E2E8F0',
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border-subtle)',
               borderRadius: '6px',
               padding: '6px 11px',
               fontSize: '11.5px',
               fontWeight: 500,
-              color: '#334155',
+              color: 'var(--text-secondary)',
               cursor: 'pointer',
               transition: 'all 0.15s ease',
               textAlign: 'left',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#EFF6FF';
-              e.currentTarget.style.borderColor = '#BFDBFE';
-              e.currentTarget.style.color = '#1D4ED8';
+              e.currentTarget.style.backgroundColor = 'var(--accent-primary-light)';
+              e.currentTarget.style.borderColor = 'var(--accent-primary)';
+              e.currentTarget.style.color = 'var(--accent-primary)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#F8FAFC';
-              e.currentTarget.style.borderColor = '#E2E8F0';
-              e.currentTarget.style.color = '#334155';
+              e.currentTarget.style.backgroundColor = 'var(--bg-card)';
+              e.currentTarget.style.borderColor = 'var(--border-subtle)';
+              e.currentTarget.style.color = 'var(--text-secondary)';
             }}
           >
             {q}
@@ -143,9 +143,10 @@ export default function RAGQueryInterface({
             flex: 1,
             padding: '9px 14px',
             borderRadius: '6px',
-            border: '1px solid #CBD5E1',
+            backgroundColor: 'var(--bg-input)',
+            border: '1px solid var(--input-border)',
             fontSize: '13px',
-            color: '#0F172A',
+            color: 'var(--text-primary)',
             outline: 'none',
           }}
         />
@@ -153,8 +154,8 @@ export default function RAGQueryInterface({
           type="submit"
           disabled={loading}
           style={{
-            backgroundColor: '#2563EB',
-            color: '#FFFFFF',
+            backgroundColor: 'var(--button)',
+            color: 'var(--button-foreground)',
             border: 'none',
             borderRadius: '6px',
             padding: '9px 18px',
@@ -172,11 +173,11 @@ export default function RAGQueryInterface({
       {error && (
         <div
           style={{
-            backgroundColor: '#FEF2F2',
-            border: '1px solid #FECACA',
+            backgroundColor: 'var(--badge-danger-bg)',
+            border: '1px solid var(--badge-danger-border)',
             borderRadius: '6px',
             padding: '10px 14px',
-            color: '#DC2626',
+            color: 'var(--badge-danger-text)',
             fontSize: '12px',
           }}
         >
@@ -188,9 +189,9 @@ export default function RAGQueryInterface({
       {response && (
         <div
           style={{
-            backgroundColor: '#F8FAFC',
+            backgroundColor: 'var(--bg-card)',
             borderRadius: '8px',
-            border: '1px solid #E2E8F0',
+            border: '1px solid var(--border-subtle)',
             padding: '16px',
             display: 'flex',
             flexDirection: 'column',
@@ -199,7 +200,7 @@ export default function RAGQueryInterface({
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>
               Synthesized Domain Analysis
             </span>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -210,27 +211,28 @@ export default function RAGQueryInterface({
                     fontWeight: 700,
                     padding: '2px 7px',
                     borderRadius: '4px',
-                    backgroundColor: '#E2E8F0',
-                    color: '#334155',
+                    backgroundColor: 'var(--badge-neutral-bg)',
+                    color: 'var(--badge-neutral-text)',
+                    border: '1px solid var(--badge-neutral-border)',
                   }}
                 >
                   {response.temporalClassification.replace(/_/g, ' ')}
                 </span>
               )}
-              <span style={{ fontSize: '11px', fontWeight: 600, color: '#2563EB' }}>
+              <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>
                 Confidence {Math.round(response.confidence * 100)}%
               </span>
             </div>
           </div>
 
-          <p style={{ margin: 0, fontSize: '13px', color: '#1E293B', lineHeight: 1.55 }}>
+          <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.55 }}>
             {response.answer}
           </p>
 
           {/* Citations Grid */}
           {response.evidence && response.evidence.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>
-              <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>
+              <div style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
                 Attributed Grounded Citations
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '8px' }}>
@@ -242,7 +244,7 @@ export default function RAGQueryInterface({
           )}
 
           {response.limitations && (
-            <div style={{ fontSize: '10.5px', color: '#64748B', fontStyle: 'normal' }}>
+            <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontStyle: 'normal' }}>
               Limitation: {response.limitations}
             </div>
           )}

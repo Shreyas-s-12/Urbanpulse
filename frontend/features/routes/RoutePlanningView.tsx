@@ -240,7 +240,7 @@ export default function RoutePlanningView() {
                 fontWeight: 700,
                 padding: '2px 6px',
                 borderRadius: 'var(--radius-xs)',
-                backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                backgroundColor: 'var(--badge-info-bg)',
                 color: 'var(--accent-primary)',
               }}
             >
@@ -486,8 +486,8 @@ export default function RoutePlanningView() {
                   borderRadius: 'var(--radius-sm)',
                   fontSize: '12px',
                   fontWeight: 600,
-                  backgroundColor: travelMode === item.mode ? 'var(--accent-primary)' : 'var(--bg-app)',
-                  color: travelMode === item.mode ? '#FFFFFF' : 'var(--text-secondary)',
+                  backgroundColor: travelMode === item.mode ? 'var(--button)' : 'var(--bg-app)',
+                  color: travelMode === item.mode ? 'var(--button-foreground)' : 'var(--text-secondary)',
                   border: '1px solid var(--border-subtle)',
                   transition: 'all 0.15s ease',
                   cursor: 'pointer',
@@ -521,8 +521,8 @@ export default function RoutePlanningView() {
                   borderRadius: 'var(--radius-sm)',
                   fontSize: '11px',
                   fontWeight: 600,
-                  backgroundColor: routingPreference === 'TRAFFIC_AWARE' ? 'var(--accent-primary)' : 'var(--bg-app)',
-                  color: routingPreference === 'TRAFFIC_AWARE' ? '#FFFFFF' : 'var(--text-secondary)',
+                  backgroundColor: routingPreference === 'TRAFFIC_AWARE' ? 'var(--button)' : 'var(--bg-app)',
+                  color: routingPreference === 'TRAFFIC_AWARE' ? 'var(--button-foreground)' : 'var(--text-secondary)',
                   border: '1px solid var(--border-subtle)',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
@@ -540,8 +540,8 @@ export default function RoutePlanningView() {
                   borderRadius: 'var(--radius-sm)',
                   fontSize: '11px',
                   fontWeight: 600,
-                  backgroundColor: routingPreference === 'TRAFFIC_AWARE_OPTIMAL' ? 'var(--accent-primary)' : 'var(--bg-app)',
-                  color: routingPreference === 'TRAFFIC_AWARE_OPTIMAL' ? '#FFFFFF' : 'var(--text-secondary)',
+                  backgroundColor: routingPreference === 'TRAFFIC_AWARE_OPTIMAL' ? 'var(--button)' : 'var(--bg-app)',
+                  color: routingPreference === 'TRAFFIC_AWARE_OPTIMAL' ? 'var(--button-foreground)' : 'var(--text-secondary)',
                   border: '1px solid var(--border-subtle)',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
@@ -556,8 +556,8 @@ export default function RoutePlanningView() {
         {/* Copilot Advisory Banner */}
         <div
           style={{
-            backgroundColor: 'rgba(54, 127, 242, 0.08)',
-            border: '1px solid rgba(54, 127, 242, 0.25)',
+            backgroundColor: 'var(--badge-info-bg)',
+            border: '1px solid var(--badge-info-border)',
             borderRadius: 'var(--radius-md)',
             padding: '14px',
           }}
@@ -572,7 +572,7 @@ export default function RoutePlanningView() {
             {loading ? (
               `Calculating live traffic-aware route (${routingPreference === 'TRAFFIC_AWARE_OPTIMAL' ? 'Optimal' : 'Standard'})...`
             ) : routeError ? (
-              <span style={{ color: '#EF4444' }}>
+              <span style={{ color: 'var(--status-critical-text)' }}>
                 {routeError.replace(/Google Routes API/gi, 'Route Service').replace(/\bAPI\b/gi, 'service')}
               </span>
             ) : (
@@ -587,9 +587,9 @@ export default function RoutePlanningView() {
             style={{
               padding: '14px',
               borderRadius: 'var(--radius-md)',
-              backgroundColor: 'rgba(239, 68, 68, 0.08)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              color: '#EF4444',
+              backgroundColor: 'var(--badge-hazard-bg)',
+              border: '1px solid var(--badge-hazard-border)',
+              color: 'var(--status-critical-text)',
               fontSize: '12px',
               lineHeight: 1.4,
             }}
@@ -665,7 +665,7 @@ export default function RoutePlanningView() {
                             fontSize: '9px',
                             padding: '2px 6px',
                             borderRadius: 'var(--radius-xs)',
-                            backgroundColor: 'rgba(54, 127, 242, 0.1)',
+                            backgroundColor: 'var(--badge-info-bg)',
                             color: 'var(--accent-blue)',
                             fontWeight: 700,
                           }}
@@ -679,8 +679,8 @@ export default function RoutePlanningView() {
                             fontSize: '9px',
                             padding: '2px 6px',
                             borderRadius: 'var(--radius-xs)',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            color: '#10B981',
+                            backgroundColor: 'var(--status-good-bg)',
+                            color: 'var(--status-good-text)',
                             fontWeight: 700,
                           }}
                           title="Traffic-aware polyline speed intervals based on live traffic telemetry"
@@ -702,7 +702,7 @@ export default function RoutePlanningView() {
                     <span
                       style={{
                         fontWeight: 600,
-                        color: hasDelay ? '#F59E0B' : 'var(--accent-primary)',
+                        color: hasDelay ? 'var(--status-warning-text)' : 'var(--accent-primary)',
                       }}
                       title="Calculated strictly from duration - staticDuration"
                     >
@@ -724,7 +724,7 @@ export default function RoutePlanningView() {
                     }}
                   >
                     <span>
-                      UrbanPulse Risk: <strong style={{ color: route.overallRiskScore > 50 ? '#EF4444' : 'var(--text-primary)' }}>{route.overallRiskScore}/100</strong>
+                      UrbanPulse Risk: <strong style={{ color: route.overallRiskScore > 50 ? 'var(--status-critical-text)' : 'var(--text-primary)' }}>{route.overallRiskScore}/100</strong>
                     </span>
                     <span>
                       {route.intersectingEvents.length} incident{route.intersectingEvents.length === 1 ? '' : 's'}

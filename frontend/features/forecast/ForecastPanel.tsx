@@ -43,20 +43,20 @@ export default function ForecastPanel() {
 
   const getScoreBadge = (score: number) => {
     if (score >= 80) {
-      return { bg: 'rgba(16, 185, 129, 0.12)', color: '#059669' };
+      return { bg: 'var(--status-good-bg)', color: 'var(--status-good-text)' };
     }
     if (score >= 60) {
-      return { bg: 'rgba(245, 158, 11, 0.12)', color: '#D97706' };
+      return { bg: 'var(--status-warning-bg)', color: 'var(--status-warning-text)' };
     }
-    return { bg: 'rgba(239, 68, 68, 0.12)', color: '#DC2626' };
+    return { bg: 'var(--badge-hazard-bg)', color: 'var(--status-critical-text)' };
   };
 
   const getAqiBadgeColor = (category: string) => {
     const c = (category || '').toLowerCase();
-    if (c.includes('good') || c.includes('satisfactory')) return '#059669';
-    if (c.includes('moderate')) return '#D97706';
-    if (c.includes('poor')) return '#EA580C';
-    return '#DC2626';
+    if (c.includes('good') || c.includes('satisfactory')) return 'var(--status-good-text)';
+    if (c.includes('moderate')) return 'var(--status-warning-text)';
+    if (c.includes('poor')) return 'var(--badge-approx-text)';
+    return 'var(--status-critical-text)';
   };
 
   return (
@@ -68,31 +68,31 @@ export default function ForecastPanel() {
           right: '20px',
           width: '420px',
           maxHeight: 'calc(100% - 40px)',
-          backgroundColor: 'var(--bg-surface, #FFFFFF)',
+          backgroundColor: 'var(--bg-surface)',
           borderRadius: 'var(--radius-lg, 16px)',
-          border: '1px solid var(--border-subtle, #E2E8F0)',
-          boxShadow: 'var(--shadow-panel, 0 20px 25px -5px rgba(0, 0, 0, 0.08))',
+          border: '1px solid var(--border-subtle)',
+          boxShadow: 'var(--shadow-panel)',
           display: 'flex',
           flexDirection: 'column',
           zIndex: 50,
           overflow: 'hidden',
-          color: 'var(--text-primary, #11161B)',
+          color: 'var(--text-primary)',
         }}
       >
         {/* Header */}
         <div
           style={{
             padding: '16px 20px',
-            borderBottom: '1px solid var(--border-subtle, #E2E8F0)',
+            borderBottom: '1px solid var(--border-subtle)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: 'var(--bg-surface, #FFFFFF)',
+            backgroundColor: 'var(--bg-surface)',
           }}
         >
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <SparklesIcon size={18} color="var(--accent-primary, #2563EB)" />
+              <SparklesIcon size={18} color="var(--accent-primary)" />
               <span style={{ fontWeight: 700, fontSize: '0.95rem', letterSpacing: '-0.01em', color: 'var(--text-primary)' }}>
                 {is30Day ? '30-Day Outlook' : '7-Day Multi-Pillar Forecast'}
               </span>
@@ -102,14 +102,14 @@ export default function ForecastPanel() {
                   fontWeight: 700,
                   padding: '2px 6px',
                   borderRadius: 'var(--radius-xs, 4px)',
-                  backgroundColor: status === 'AVAILABLE' ? 'rgba(34, 197, 94, 0.12)' : 'rgba(37, 99, 235, 0.08)',
-                  color: status === 'AVAILABLE' ? '#16A34A' : 'var(--accent-primary, #2563EB)',
+                  backgroundColor: status === 'AVAILABLE' ? 'var(--status-good-bg)' : 'var(--badge-info-bg)',
+                  color: status === 'AVAILABLE' ? 'var(--status-good-text)' : 'var(--accent-primary)',
                 }}
               >
                 {loading ? 'SYNCING...' : status === 'AVAILABLE' ? 'VERIFIED' : 'FORECAST'}
               </span>
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-secondary, #65717D)', marginTop: '3px' }}>
+            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '3px' }}>
               {cityName} • Grounded Numerical Telemetry
             </div>
           </div>
@@ -118,7 +118,7 @@ export default function ForecastPanel() {
             style={{
               background: 'transparent',
               border: 'none',
-              color: 'var(--text-muted, #8E9BA8)',
+              color: 'var(--text-muted)',
               cursor: 'pointer',
               padding: '6px',
               borderRadius: '6px',
@@ -141,8 +141,8 @@ export default function ForecastPanel() {
             display: 'flex',
             padding: '0 16px',
             gap: '12px',
-            borderBottom: '1px solid var(--border-subtle, #E2E8F0)',
-            backgroundColor: 'var(--bg-surface, #FFFFFF)',
+            borderBottom: '1px solid var(--border-subtle)',
+            backgroundColor: 'var(--bg-surface)',
           }}
         >
           <button
@@ -155,8 +155,8 @@ export default function ForecastPanel() {
               border: 'none',
               background: 'transparent',
               cursor: 'pointer',
-              color: !is30Day ? 'var(--accent-primary, #2563EB)' : 'var(--text-secondary, #65717D)',
-              borderBottom: !is30Day ? '2px solid var(--accent-primary, #2563EB)' : '2px solid transparent',
+              color: !is30Day ? 'var(--accent-primary)' : 'var(--text-secondary)',
+              borderBottom: !is30Day ? '2px solid var(--accent-primary)' : '2px solid transparent',
               transition: 'all 0.15s ease',
             }}
           >
@@ -172,8 +172,8 @@ export default function ForecastPanel() {
               border: 'none',
               background: 'transparent',
               cursor: 'pointer',
-              color: is30Day ? 'var(--accent-primary, #2563EB)' : 'var(--text-secondary, #65717D)',
-              borderBottom: is30Day ? '2px solid var(--accent-primary, #2563EB)' : '2px solid transparent',
+              color: is30Day ? 'var(--accent-primary)' : 'var(--text-secondary)',
+              borderBottom: is30Day ? '2px solid var(--accent-primary)' : '2px solid transparent',
               transition: 'all 0.15s ease',
             }}
           >
@@ -220,8 +220,8 @@ export default function ForecastPanel() {
                 gap: '10px',
               }}
             >
-              <AlertTriangleIcon size={24} color="#EF4444" />
-              <div style={{ fontSize: '14px', fontWeight: 700, color: '#DC2626' }}>
+              <AlertTriangleIcon size={24} color="var(--status-critical-text)" />
+              <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--status-critical-text)' }}>
                 Forecast Telemetry Unavailable
               </div>
               <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>{error}</p>
@@ -232,8 +232,8 @@ export default function ForecastPanel() {
                   height: '30px',
                   padding: '0 14px',
                   borderRadius: 'var(--radius-sm)',
-                  backgroundColor: 'var(--accent-primary)',
-                  color: '#FFFFFF',
+                  backgroundColor: 'var(--button)',
+                  color: 'var(--button-foreground)',
                   fontSize: '11px',
                   fontWeight: 600,
                   border: 'none',
@@ -251,26 +251,26 @@ export default function ForecastPanel() {
                   style={{
                     fontSize: '11px',
                     textTransform: 'uppercase',
-                    color: 'var(--text-muted, #8E9BA8)',
+                    color: 'var(--text-muted)',
                     fontWeight: 700,
                     letterSpacing: '0.04em',
                   }}
                 >
                   EXPECTED URBAN CONDITION
                 </div>
-                <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary, #11161B)', marginTop: '4px', letterSpacing: '-0.02em' }}>
+                <div style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px', letterSpacing: '-0.02em' }}>
                   {monthlyOutlook.expectedRange?.[0]}–{monthlyOutlook.expectedRange?.[1]}{' '}
-                  <span style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text-muted, #8E9BA8)' }}>/ 100</span>
+                  <span style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text-muted)' }}>/ 100</span>
                 </div>
-                <div style={{ fontSize: '13px', color: 'var(--text-secondary, #65717D)', marginTop: '6px' }}>
+                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '6px' }}>
                   Trend:{' '}
-                  <strong style={{ color: 'var(--text-primary, #11161B)', fontWeight: 600 }}>
+                  <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
                     {monthlyOutlook.trend}
                   </strong>
                 </div>
               </div>
 
-              <div style={{ height: '1px', backgroundColor: 'var(--border-subtle, #E2E8F0)' }} />
+              <div style={{ height: '1px', backgroundColor: 'var(--border-subtle)' }} />
 
               {/* Section 2: Seasonal Dynamics & Risks */}
               <div>
@@ -278,7 +278,7 @@ export default function ForecastPanel() {
                   style={{
                     fontSize: '12px',
                     fontWeight: 700,
-                    color: 'var(--text-primary, #11161B)',
+                    color: 'var(--text-primary)',
                     marginBottom: '10px',
                   }}
                 >
@@ -292,7 +292,7 @@ export default function ForecastPanel() {
                     flexDirection: 'column',
                     gap: '6px',
                     fontSize: '12px',
-                    color: 'var(--text-secondary, #65717D)',
+                    color: 'var(--text-secondary)',
                     lineHeight: 1.5,
                   }}
                 >
@@ -302,7 +302,7 @@ export default function ForecastPanel() {
                 </ul>
               </div>
 
-              <div style={{ height: '1px', backgroundColor: 'var(--border-subtle, #E2E8F0)' }} />
+              <div style={{ height: '1px', backgroundColor: 'var(--border-subtle)' }} />
 
               {/* Section 3: Climatological Context */}
               <div>
@@ -310,19 +310,19 @@ export default function ForecastPanel() {
                   style={{
                     fontSize: '12px',
                     fontWeight: 700,
-                    color: 'var(--text-primary, #11161B)',
+                    color: 'var(--text-primary)',
                     marginBottom: '6px',
                   }}
                 >
                   Climatological Context
                 </div>
-                <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary, #65717D)', lineHeight: 1.5 }}>
+                <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                   {monthlyOutlook.climatologicalContext}
                 </p>
                 <div
                   style={{
                     fontSize: '11px',
-                    color: 'var(--text-muted, #8E9BA8)',
+                    color: 'var(--text-muted)',
                     marginTop: '8px',
                     display: 'flex',
                     alignItems: 'center',
@@ -334,7 +334,7 @@ export default function ForecastPanel() {
                 <div
                   style={{
                     fontSize: '11px',
-                    color: 'var(--text-muted, #8E9BA8)',
+                    color: 'var(--text-muted)',
                     marginTop: '4px',
                   }}
                 >
@@ -344,7 +344,7 @@ export default function ForecastPanel() {
                 <div
                   style={{
                     fontSize: '11px',
-                    color: 'var(--text-muted, #8E9BA8)',
+                    color: 'var(--text-muted)',
                     lineHeight: 1.5,
                     marginTop: '10px',
                     display: 'flex',
@@ -366,7 +366,7 @@ export default function ForecastPanel() {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   fontSize: '11px',
-                  color: 'var(--text-muted, #8E9BA8)',
+                  color: 'var(--text-muted)',
                   fontWeight: 600,
                   textTransform: 'uppercase',
                   letterSpacing: '0.04em',
@@ -374,7 +374,7 @@ export default function ForecastPanel() {
                 }}
               >
                 <span>7-DAY TELEMETRY</span>
-                <span style={{ color: 'var(--accent-primary, #2563EB)' }}>
+                <span style={{ color: 'var(--accent-primary)' }}>
                   Confidence: {Math.round((currentForecast?.confidence || 0.85) * 100)}%
                 </span>
               </div>
@@ -390,9 +390,9 @@ export default function ForecastPanel() {
                     style={{
                       padding: '12px 14px',
                       borderRadius: 'var(--radius-sm, 8px)',
-                      backgroundColor: 'var(--bg-surface, #FFFFFF)',
-                      border: '1px solid var(--border-subtle, #E2E8F0)',
-                      boxShadow: 'var(--shadow-xs, 0 1px 2px 0 rgba(0, 0, 0, 0.03))',
+                      backgroundColor: 'var(--bg-surface)',
+                      border: '1px solid var(--border-subtle)',
+                      boxShadow: 'var(--shadow-xs)',
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '8px',
@@ -426,7 +426,7 @@ export default function ForecastPanel() {
                         fontSize: '11px',
                         color: 'var(--text-secondary)',
                         paddingTop: '6px',
-                        borderTop: '1px solid var(--border-subtle, #E2E8F0)',
+                        borderTop: '1px solid var(--border-subtle)',
                         alignItems: 'center',
                       }}
                     >

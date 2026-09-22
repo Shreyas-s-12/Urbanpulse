@@ -50,15 +50,15 @@ export default function TopHotspotsCard({
     <div
       className={className}
       style={{
-        backgroundColor: 'rgba(255, 255, 255, 0.96)',
+        backgroundColor: 'var(--overlay-bg)',
         backdropFilter: 'blur(12px)',
         borderRadius: '8px',
-        border: '1px solid var(--border-subtle, #E2E8F0)',
-        boxShadow: 'var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.08))',
+        border: '1px solid var(--border-subtle)',
+        boxShadow: 'var(--shadow-sm)',
         padding: '8px 12px',
         width: '240px',
         fontSize: '11px',
-        color: 'var(--text-primary, #1E293B)',
+        color: 'var(--text-primary)',
         pointerEvents: 'auto',
         ...style,
       }}
@@ -73,7 +73,7 @@ export default function TopHotspotsCard({
           userSelect: 'none',
         }}
       >
-        <span style={{ fontSize: '10px', fontWeight: 800, color: '#64748B', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+        <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
           {metric === 'POPULATION' ? 'DENSEST AREAS' : `TOP HOTSPOTS: ${metric}`}
         </span>
         <ChevronDownIcon
@@ -81,7 +81,7 @@ export default function TopHotspotsCard({
           style={{
             transform: collapsed ? 'rotate(180deg)' : 'rotate(0deg)',
             transition: 'transform 0.15s ease',
-            color: '#64748B',
+            color: 'var(--text-secondary)',
           }}
         />
       </div>
@@ -89,7 +89,7 @@ export default function TopHotspotsCard({
       {!collapsed && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginTop: '6px' }}>
           {sortedHotspots.length === 0 ? (
-            <div style={{ color: '#94A3B8', fontSize: '10.5px', padding: '4px 0', fontStyle: 'italic' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '10.5px', padding: '4px 0', fontStyle: 'italic' }}>
               Insufficient spatial data.
             </div>
           ) : (
@@ -108,26 +108,26 @@ export default function TopHotspotsCard({
                     padding: '4px 6px',
                     borderRadius: '4px',
                     border: '1px solid transparent',
-                    backgroundColor: '#F8FAFC',
+                    backgroundColor: 'var(--bg-surface-secondary)',
                     cursor: 'pointer',
                     transition: 'all 0.1s ease',
                     textAlign: 'left',
                     width: '100%',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = '#CBD5E1';
-                    e.currentTarget.style.backgroundColor = '#EFF6FF';
+                    e.currentTarget.style.borderColor = 'var(--border)';
+                    e.currentTarget.style.backgroundColor = 'var(--accent-primary-light)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.borderColor = 'transparent';
-                    e.currentTarget.style.backgroundColor = '#F8FAFC';
+                    e.currentTarget.style.backgroundColor = 'var(--bg-surface-secondary)';
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
-                    <span style={{ fontSize: '10px', fontWeight: 700, color: '#94A3B8', width: '12px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', width: '12px' }}>
                       {idx + 1}.
                     </span>
-                    <span style={{ fontSize: '10.5px', fontWeight: 600, color: '#1E293B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {areaName}
                     </span>
                   </div>

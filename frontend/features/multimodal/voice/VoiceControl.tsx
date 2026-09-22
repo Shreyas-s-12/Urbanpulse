@@ -97,10 +97,10 @@ export default function VoiceControl({ onTranscript, onSendQuery, disabled }: Vo
           backgroundColor: isListening
             ? '#EF4444'
             : isProcessing
-            ? '#2563EB'
-            : 'var(--nested-metric-bg, #F8FAFC)',
-          color: isListening || isProcessing ? '#FFFFFF' : 'var(--text-secondary, #566174)',
-          border: isListening ? '1px solid #DC2626' : '1px solid var(--assistant-card-border, #E2E7EF)',
+            ? 'var(--button)'
+            : 'var(--bg-card)',
+          color: isListening || isProcessing ? 'var(--button-foreground)' : 'var(--text-secondary)',
+          border: isListening ? '1px solid #DC2626' : '1px solid var(--border-subtle)',
           cursor: disabled ? 'not-allowed' : 'pointer',
           display: 'flex',
           alignItems: 'center',
@@ -112,16 +112,16 @@ export default function VoiceControl({ onTranscript, onSendQuery, disabled }: Vo
         }}
         onMouseEnter={(e) => {
           if (!isListening && !isProcessing && !disabled) {
-            e.currentTarget.style.backgroundColor = 'var(--accent-primary-light, #EFF6FF)';
-            e.currentTarget.style.borderColor = 'var(--accent-primary, #2563EB)';
-            e.currentTarget.style.color = 'var(--accent-primary, #2563EB)';
+            e.currentTarget.style.backgroundColor = 'var(--accent-primary-light)';
+            e.currentTarget.style.borderColor = 'var(--accent-primary)';
+            e.currentTarget.style.color = 'var(--accent-primary)';
           }
         }}
         onMouseLeave={(e) => {
           if (!isListening && !isProcessing && !disabled) {
-            e.currentTarget.style.backgroundColor = 'var(--nested-metric-bg, #F8FAFC)';
-            e.currentTarget.style.borderColor = 'var(--assistant-card-border, #E2E7EF)';
-            e.currentTarget.style.color = 'var(--text-secondary, #566174)';
+            e.currentTarget.style.backgroundColor = 'var(--bg-card)';
+            e.currentTarget.style.borderColor = 'var(--border-subtle)';
+            e.currentTarget.style.color = 'var(--text-secondary)';
           }
         }}
       >
@@ -152,9 +152,10 @@ export default function VoiceControl({ onTranscript, onSendQuery, disabled }: Vo
             borderRadius: '6px',
             fontSize: '11.5px',
             fontWeight: 600,
-            backgroundColor: errorMessage ? '#991B1B' : '#1E293B',
-            color: '#FFFFFF',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            backgroundColor: errorMessage ? 'var(--badge-danger-bg)' : 'var(--overlay-bg)',
+            color: errorMessage ? 'var(--badge-danger-text)' : 'var(--text-primary)',
+            border: errorMessage ? '1px solid var(--badge-danger-border)' : '1px solid var(--border-subtle)',
+            boxShadow: 'var(--shadow-md)',
             zIndex: 50,
             display: 'flex',
             alignItems: 'center',

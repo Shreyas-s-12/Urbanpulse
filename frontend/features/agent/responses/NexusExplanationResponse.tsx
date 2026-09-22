@@ -14,7 +14,21 @@ export const NexusExplanationResponse: React.FC<NexusExplanationResponseProps> =
   const sourceName = (response.sources && response.sources[0]?.name) || meta.source || 'UrbanPulse Explainability Engine';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', fontSize: '12.5px' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        width: '100%',
+        fontSize: '12.5px',
+        backgroundColor: 'var(--assistant-card-bg)',
+        border: '1px solid var(--assistant-card-border)',
+        borderRadius: '12px',
+        padding: '12px 14px',
+        boxShadow: 'var(--card-shadow)',
+        boxSizing: 'border-box',
+      }}
+    >
       {/* Title */}
       <div style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: '4px' }}>
         <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--accent-primary)' }}>
@@ -34,7 +48,7 @@ export const NexusExplanationResponse: React.FC<NexusExplanationResponseProps> =
 
       {/* Structured Sections */}
       {sections.map((sec, idx) => (
-        <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '6px 8px', borderRadius: '6px', backgroundColor: 'var(--bg-surface-secondary, #F8FAFC)', border: '1px solid var(--border-subtle)' }}>
+        <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '6px 8px', borderRadius: '6px', backgroundColor: 'var(--bg-surface-secondary)', border: '1px solid var(--border-subtle)' }}>
           {sec.title && (
             <span style={{ fontSize: '10.5px', fontWeight: 750, color: 'var(--accent-primary)', textTransform: 'uppercase' }}>
               {sec.title}

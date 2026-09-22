@@ -186,11 +186,11 @@ export default function UserProfileMenu() {
                 gap: '8px',
                 padding: '8px 10px',
                 borderRadius: '6px',
-                color: '#60A5FA',
+                color: 'var(--badge-info-text)',
                 fontSize: '12.5px',
                 fontWeight: 600,
                 textDecoration: 'none',
-                backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                backgroundColor: 'var(--badge-info-bg)',
               }}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -215,15 +215,13 @@ export default function UserProfileMenu() {
                 padding: '8px 10px',
                 borderRadius: '6px',
                 border: 'none',
-                backgroundColor: 'rgba(239, 68, 68, 0.12)',
-                color: '#F87171',
+                backgroundColor: 'var(--status-critical-bg)',
+                color: 'var(--status-critical-text)',
                 fontSize: '12.5px',
                 fontWeight: 600,
                 cursor: 'pointer',
                 transition: 'background-color 0.15s ease',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.22)')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.12)')}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />

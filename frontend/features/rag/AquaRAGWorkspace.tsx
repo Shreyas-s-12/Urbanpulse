@@ -15,12 +15,13 @@ const AquaFlow3D = dynamic(() => import('@/components/rag/3d/AquaFlow3D'), {
     <div
       style={{
         height: '180px',
-        backgroundColor: '#0F172A',
+        backgroundColor: 'var(--bg-card)',
+        border: '1px solid var(--border-subtle)',
         borderRadius: '8px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: '#94A3B8',
+        color: 'var(--text-muted)',
         fontSize: '11px',
       }}
     >
@@ -111,10 +112,10 @@ export default function AquaRAGWorkspace({
             {/* Map Canvas */}
             <div
               style={{
-                backgroundColor: 'var(--bg-panel, #101620)',
+                backgroundColor: 'var(--bg-panel)',
                 borderRadius: '12px',
-                border: '1px solid var(--border-subtle, #1B2531)',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                border: '1px solid var(--border-subtle)',
+                boxShadow: 'var(--shadow-sm)',
                 overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
@@ -123,7 +124,7 @@ export default function AquaRAGWorkspace({
               <div
                 style={{
                   padding: '12px 16px',
-                  borderBottom: '1px solid #E2E8F0',
+                  borderBottom: '1px solid var(--border-subtle)',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
@@ -134,14 +135,14 @@ export default function AquaRAGWorkspace({
                     style={{
                       fontSize: '11px',
                       fontWeight: 700,
-                      color: '#0284C7',
+                      color: 'var(--accent-primary)',
                       textTransform: 'uppercase',
                       letterSpacing: '0.4px',
                     }}
                   >
                     Hydrological Basin Map
                   </div>
-                  <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#0F172A' }}>
+                  <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
                     Catchment Perimeter & In-Situ Sonde Station
                   </div>
                 </div>
@@ -151,9 +152,9 @@ export default function AquaRAGWorkspace({
                     fontWeight: 700,
                     padding: '2px 7px',
                     borderRadius: '4px',
-                    backgroundColor: '#E0F2FE',
-                    color: '#0284C7',
-                    border: '1px solid #BAE6FD',
+                    backgroundColor: 'var(--badge-info-bg)',
+                    color: 'var(--badge-info-text)',
+                    border: '1px solid var(--badge-info-border)',
                   }}
                 >
                   Multiparameter Probe
@@ -176,10 +177,10 @@ export default function AquaRAGWorkspace({
               <div
                 style={{
                   padding: '10px 14px',
-                  backgroundColor: 'var(--bg-card, #111821)',
-                  borderTop: '1px solid #E2E8F0',
+                  backgroundColor: 'var(--bg-card)',
+                  borderTop: '1px solid var(--border-subtle)',
                   fontSize: '11px',
-                  color: '#475569',
+                  color: 'var(--text-secondary)',
                   display: 'flex',
                   justifyContent: 'space-between',
                   flexWrap: 'wrap',
@@ -204,11 +205,11 @@ export default function AquaRAGWorkspace({
             {/* Water Quality Classification & Physical Telemetry Grid */}
             <div
               style={{
-                backgroundColor: 'var(--bg-panel, #101620)',
+                backgroundColor: 'var(--bg-panel)',
                 borderRadius: '12px',
-                border: '1px solid var(--border-subtle, #1B2531)',
+                border: '1px solid var(--border-subtle)',
                 padding: '16px',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                boxShadow: 'var(--shadow-sm)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px',
@@ -219,7 +220,7 @@ export default function AquaRAGWorkspace({
                   style={{
                     fontSize: '11px',
                     fontWeight: 700,
-                    color: '#0284C7',
+                    color: 'var(--accent-primary)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.4px',
                   }}
@@ -232,9 +233,9 @@ export default function AquaRAGWorkspace({
                     fontWeight: 700,
                     padding: '2px 8px',
                     borderRadius: '4px',
-                    backgroundColor: '#EFF6FF',
-                    color: '#1D4ED8',
-                    border: '1px solid #DBEAFE',
+                    backgroundColor: 'var(--badge-info-bg)',
+                    color: 'var(--badge-info-text)',
+                    border: '1px solid var(--badge-info-border)',
                   }}
                 >
                   {context?.waterQualityRating ?? 'CLASS B RATING'}
@@ -243,58 +244,58 @@ export default function AquaRAGWorkspace({
 
               {/* Sensor Metrics Grid */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
-                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle, #1B2531)' }}>
-                  <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>Turbidity</div>
-                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#0284C7', marginTop: '2px' }}>
+                <div style={{ backgroundColor: 'var(--bg-card)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600 }}>Turbidity</div>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: 'var(--accent-primary)', marginTop: '2px' }}>
                     {context?.sensorStatus?.turbidityNtu ?? '14.5'} NTU
                   </div>
-                  <div style={{ fontSize: '9.5px', color: '#64748B', marginTop: '2px' }}>
+                  <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', marginTop: '2px' }}>
                     {context?.sensorStatus?.turbidityStatus ?? 'OPTIMAL'}
                   </div>
                 </div>
 
-                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle, #1B2531)' }}>
-                  <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>Dissolved Oxygen</div>
-                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>
+                <div style={{ backgroundColor: 'var(--bg-card)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600 }}>Dissolved Oxygen</div>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: 'var(--badge-success-text)', marginTop: '2px' }}>
                     {context?.sensorStatus?.dissolvedOxygenMgL ?? '6.2'} mg/L
                   </div>
-                  <div style={{ fontSize: '9.5px', color: '#64748B', marginTop: '2px' }}>
+                  <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', marginTop: '2px' }}>
                     {context?.sensorStatus?.doStatus ?? 'HEALTHY'}
                   </div>
                 </div>
 
-                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle, #1B2531)' }}>
-                  <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>pH Level</div>
-                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#334155', marginTop: '2px' }}>
+                <div style={{ backgroundColor: 'var(--bg-card)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600 }}>pH Level</div>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
                     {context?.sensorStatus?.ph ?? '7.40'}
                   </div>
-                  <div style={{ fontSize: '9.5px', color: '#64748B', marginTop: '2px' }}>
+                  <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', marginTop: '2px' }}>
                     {context?.sensorStatus?.phStatus ?? 'NEUTRAL_BALANCED'}
                   </div>
                 </div>
 
-                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle, #1B2531)' }}>
-                  <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>Water Temp</div>
-                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#D97706', marginTop: '2px' }}>
+                <div style={{ backgroundColor: 'var(--bg-card)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600 }}>Water Temp</div>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: 'var(--badge-warning-text)', marginTop: '2px' }}>
                     {context?.sensorStatus?.temperatureC ?? '24.8'}°C
                   </div>
-                  <div style={{ fontSize: '9.5px', color: '#64748B', marginTop: '2px' }}>Thermal In-situ</div>
+                  <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', marginTop: '2px' }}>Thermal In-situ</div>
                 </div>
 
-                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle, #1B2531)' }}>
-                  <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>Biochemical Demand</div>
-                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#334155', marginTop: '2px' }}>
+                <div style={{ backgroundColor: 'var(--bg-card)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600 }}>Biochemical Demand</div>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
                     {context?.sensorStatus?.biochemicalOxygenDemandMgL ?? '3.2'} mg/L
                   </div>
-                  <div style={{ fontSize: '9.5px', color: '#64748B', marginTop: '2px' }}>BOD-5 Clean</div>
+                  <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', marginTop: '2px' }}>BOD-5 Clean</div>
                 </div>
 
-                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle, #1B2531)' }}>
-                  <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>Flow Velocity</div>
-                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#0284C7', marginTop: '2px' }}>
+                <div style={{ backgroundColor: 'var(--bg-card)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600 }}>Flow Velocity</div>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: 'var(--accent-primary)', marginTop: '2px' }}>
                     {context?.sensorStatus?.flowVelocityMs ?? '0.42'} m/s
                   </div>
-                  <div style={{ fontSize: '9.5px', color: '#64748B', marginTop: '2px' }}>Acoustic Doppler</div>
+                  <div style={{ fontSize: '9.5px', color: 'var(--text-muted)', marginTop: '2px' }}>Acoustic Doppler</div>
                 </div>
               </div>
 
@@ -302,12 +303,12 @@ export default function AquaRAGWorkspace({
               {context?.aiWaterIntelligence && (
                 <div
                   style={{
-                    backgroundColor: 'var(--bg-card, #111821)',
-                    borderLeft: '3px solid #0284C7',
+                    backgroundColor: 'var(--bg-card)',
+                    borderLeft: '3px solid var(--accent-primary)',
                     borderRadius: '0 6px 6px 0',
                     padding: '9px 12px',
                     fontSize: '11.5px',
-                    color: '#334155',
+                    color: 'var(--text-secondary)',
                     lineHeight: 1.45,
                   }}
                 >
@@ -319,27 +320,27 @@ export default function AquaRAGWorkspace({
             {/* 5-Month Historical Trend Table */}
             <div
               style={{
-                backgroundColor: 'var(--bg-panel, #101620)',
+                backgroundColor: 'var(--bg-panel)',
                 borderRadius: '12px',
-                border: '1px solid var(--border-subtle, #1B2531)',
+                border: '1px solid var(--border-subtle)',
                 padding: '16px',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                boxShadow: 'var(--shadow-sm)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '10px',
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>
                   Structured Time-Series Historical Record (5 Months)
                 </span>
-                <span style={{ fontSize: '10.5px', color: '#64748B' }}>Sensor & Rainfall Inflow</span>
+                <span style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>Sensor & Rainfall Inflow</span>
               </div>
 
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', textAlign: 'left' }}>
                   <thead>
-                    <tr style={{ backgroundColor: 'var(--bg-card, #111821)', borderBottom: '1px solid #E2E8F0', color: '#64748B' }}>
+                    <tr style={{ backgroundColor: 'var(--bg-card)', borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}>
                       <th style={{ padding: '8px 10px', fontWeight: 700 }}>Month</th>
                       <th style={{ padding: '8px 10px', fontWeight: 700 }}>Turbidity (NTU)</th>
                       <th style={{ padding: '8px 10px', fontWeight: 700 }}>DO (mg/L)</th>
@@ -348,11 +349,11 @@ export default function AquaRAGWorkspace({
                   </thead>
                   <tbody>
                     {context?.historicalTrends?.map((trend: any, idx: number) => (
-                      <tr key={idx} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                        <td style={{ padding: '8px 10px', fontWeight: 700, color: '#0F172A' }}>{trend.month}</td>
-                        <td style={{ padding: '8px 10px', color: '#0284C7', fontWeight: 600 }}>{trend.turbidity}</td>
-                        <td style={{ padding: '8px 10px', color: '#16A34A', fontWeight: 600 }}>{trend.dissolvedOxygen}</td>
-                        <td style={{ padding: '8px 10px', color: '#475569' }}>{trend.rainfallMm} mm</td>
+                      <tr key={idx} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                        <td style={{ padding: '8px 10px', fontWeight: 700, color: 'var(--text-primary)' }}>{trend.month}</td>
+                        <td style={{ padding: '8px 10px', color: 'var(--accent-primary)', fontWeight: 600 }}>{trend.turbidity}</td>
+                        <td style={{ padding: '8px 10px', color: 'var(--badge-success-text)', fontWeight: 600 }}>{trend.dissolvedOxygen}</td>
+                        <td style={{ padding: '8px 10px', color: 'var(--text-secondary)' }}>{trend.rainfallMm} mm</td>
                       </tr>
                     ))}
                   </tbody>
@@ -360,14 +361,14 @@ export default function AquaRAGWorkspace({
               </div>
             </div>
 
-            {/* Hybrid Retrieved Citations */}
+            {/* Citations Card */}
             <div
               style={{
-                backgroundColor: 'var(--bg-panel, #101620)',
+                backgroundColor: 'var(--bg-card)',
                 borderRadius: '12px',
-                border: '1px solid var(--border-subtle, #1B2531)',
+                border: '1px solid var(--border-subtle)',
                 padding: '16px',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                boxShadow: 'var(--shadow-sm)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '10px',
@@ -375,10 +376,10 @@ export default function AquaRAGWorkspace({
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>
                   Hybrid Evidence Layer (Sensors + CPCB / CGWB Protocols)
                 </span>
-                <span style={{ fontSize: '10.5px', color: '#64748B' }}>
+                <span style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>
                   {context?.evidence?.length ?? 4} Verified Citations
                 </span>
               </div>

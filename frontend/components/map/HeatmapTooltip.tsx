@@ -50,25 +50,25 @@ export default function HeatmapTooltip({ cell, position, onClose }: HeatmapToolt
     <div
       style={{
         ...style,
-        backgroundColor: 'rgba(255, 255, 255, 0.98)',
+        backgroundColor: 'var(--overlay-bg)',
         backdropFilter: 'blur(12px)',
         borderRadius: '10px',
-        border: '1px solid var(--border-subtle, #E2E8F0)',
-        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15)',
+        border: '1px solid var(--border-subtle)',
+        boxShadow: 'var(--shadow-panel)',
         padding: '12px 14px',
         width: isTraffic ? '280px' : '260px',
         fontSize: '11px',
         pointerEvents: 'auto',
-        color: '#0F172A',
+        color: 'var(--text-primary)',
         animation: 'fadeIn 0.15s ease-out',
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
         <div>
-          <span style={{ fontSize: '9px', fontWeight: 800, color: '#64748B', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+          <span style={{ fontSize: '9px', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
             {activeCell.metric} {activeCell.subMetric ? `• ${activeCell.subMetric.replace('_', ' ')}` : ''}
           </span>
-          <h4 style={{ fontSize: '13px', fontWeight: 700, margin: '2px 0 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '210px' }}>
+          <h4 style={{ fontSize: '13px', fontWeight: 700, margin: '2px 0 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '210px', color: 'var(--text-primary)' }}>
             {isTraffic ? roadName : areaName}
           </h4>
         </div>
@@ -79,7 +79,7 @@ export default function HeatmapTooltip({ cell, position, onClose }: HeatmapToolt
               background: 'transparent',
               border: 'none',
               cursor: 'pointer',
-              color: '#94A3B8',
+              color: 'var(--text-muted)',
               fontSize: '14px',
               padding: 0,
             }}
@@ -92,9 +92,9 @@ export default function HeatmapTooltip({ cell, position, onClose }: HeatmapToolt
         )}
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '6px 0', padding: '6px 8px', backgroundColor: '#F8FAFC', borderRadius: '6px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '6px 0', padding: '6px 8px', backgroundColor: 'var(--bg-surface-secondary)', borderRadius: '6px' }}>
         <div>
-          <span style={{ fontSize: '9.5px', color: '#64748B' }}>
+          <span style={{ fontSize: '9.5px', color: 'var(--text-secondary)' }}>
             {isTraffic ? 'Current Speed' : (activeCell.metric === 'POPULATION' ? 'Population Density' : 'Observed Intensity')}
           </span>
           <div style={{ fontSize: '15px', fontWeight: 800, color: categoryColor }}>
@@ -104,7 +104,7 @@ export default function HeatmapTooltip({ cell, position, onClose }: HeatmapToolt
                 ? Math.round(activeCell.populationDensity ?? activeCell.rawValue ?? activeCell.value).toLocaleString()
                 : (activeCell.rawValue !== undefined ? activeCell.rawValue : activeCell.value))}{' '}
             {!isTraffic && (
-              <span style={{ fontSize: '10px', fontWeight: 500, color: '#64748B' }}>
+              <span style={{ fontSize: '10px', fontWeight: 500, color: 'var(--text-secondary)' }}>
                 {activeCell.metric === 'AQI'
                   ? 'AQI'
                   : activeCell.metric === 'WEATHER'
@@ -131,23 +131,23 @@ export default function HeatmapTooltip({ cell, position, onClose }: HeatmapToolt
         </span>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', color: '#64748B', fontSize: '10px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', color: 'var(--text-secondary)', fontSize: '10px' }}>
         {isTraffic && activeCell.metadata?.freeFlowSpeedKmh !== undefined && (
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span>Free-flow Speed:</span>
-            <span style={{ fontWeight: 600, color: '#334155' }}>{activeCell.metadata.freeFlowSpeedKmh} km/h</span>
+            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{activeCell.metadata.freeFlowSpeedKmh} km/h</span>
           </div>
         )}
         {isTraffic && activeCell.metadata?.delayPercent !== undefined && (
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span>Delay:</span>
-            <span style={{ fontWeight: 600, color: '#334155' }}>+{activeCell.metadata.delayPercent}%</span>
+            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>+{activeCell.metadata.delayPercent}%</span>
           </div>
         )}
         {isTraffic && activeCell.metadata?.relativeSpeed !== undefined && (
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span>Flow Ratio:</span>
-            <span style={{ fontWeight: 600, color: '#334155' }}>{Math.round(activeCell.metadata.relativeSpeed * 100)}%</span>
+            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{Math.round(activeCell.metadata.relativeSpeed * 100)}%</span>
           </div>
         )}
         {activeCell.metric === 'POPULATION' && (
@@ -155,21 +155,21 @@ export default function HeatmapTooltip({ cell, position, onClose }: HeatmapToolt
             {activeCell.populationCount !== undefined && (
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>Est. Area Population:</span>
-                <span style={{ fontWeight: 600, color: '#334155' }}>
+                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
                   {Math.round(activeCell.populationCount).toLocaleString()} people
                 </span>
               </div>
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span>Dataset Year:</span>
-              <span style={{ fontWeight: 600, color: '#334155' }}>
+              <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
                 {activeCell.datasetYear ?? 2020} (Historical)
               </span>
             </div>
             {activeCell.metadata?.coverage && (
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>Coverage:</span>
-                <span style={{ fontWeight: 600, color: '#334155' }}>
+                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
                   {formatDisplayValue(activeCell.metadata.coverage)}
                 </span>
               </div>
@@ -179,21 +179,21 @@ export default function HeatmapTooltip({ cell, position, onClose }: HeatmapToolt
         {activeCell.resolution && (
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span>Resolution:</span>
-            <span style={{ fontWeight: 600, color: '#334155' }}>{formatDisplayValue(activeCell.resolution)}</span>
+            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{formatDisplayValue(activeCell.resolution)}</span>
           </div>
         )}
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <span>Source:</span>
-          <span style={{ fontWeight: 600, color: '#334155' }}>{formatDisplayValue(activeCell.source)}</span>
+          <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{formatDisplayValue(activeCell.source)}</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <span>Quality/Confidence:</span>
-          <span style={{ fontWeight: 600, color: '#334155' }}>{Math.round((activeCell.confidence ?? 0.95) * 100)}%</span>
+          <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{Math.round((activeCell.confidence ?? 0.95) * 100)}%</span>
         </div>
         {activeCell.timestamp && (
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span>Timestamp:</span>
-            <span style={{ fontWeight: 600, color: '#334155' }}>
+            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
               {new Date(activeCell.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </span>
           </div>

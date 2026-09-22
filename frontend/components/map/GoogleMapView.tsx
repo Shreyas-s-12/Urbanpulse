@@ -61,11 +61,105 @@ import { GoogleMapErrorBoundary, SubsystemErrorBoundary } from '@/components/com
 import { formatDisplayValue } from '@/components/common/displayUtils';
 import { useLocationStore } from '@/stores/useLocationStore';
 import { useAgentStore } from '@/stores/useAgentStore';
+import { useSettingsStore, resolveEffectiveTheme } from '@/stores/useSettingsStore';
 import ModernLocationStatusBadge from './ModernLocationStatusBadge';
 import ResearchModePanel from '@/components/research/ResearchModePanel';
 import MapLocationPicker from './MapLocationPicker';
 import { locationService } from '@/services/locationService';
 
+const LIGHT_MAP_STYLES = [
+  {
+    featureType: 'transit.station',
+    elementType: 'labels.icon',
+    stylers: [{ visibility: 'off' }],
+  },
+];
+
+const DARK_MAP_STYLES = [
+  { elementType: 'geometry', stylers: [{ color: '#0B1424' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#050B14' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#94A3B8' }] },
+  {
+    featureType: 'administrative.locality',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#CBD5E1' }],
+  },
+  {
+    featureType: 'poi',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#94A3B8' }],
+  },
+  {
+    featureType: 'poi.park',
+    elementType: 'geometry',
+    stylers: [{ color: '#0A1829' }],
+  },
+  {
+    featureType: 'poi.park',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#64748B' }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'geometry',
+    stylers: [{ color: '#101D31' }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'geometry.stroke',
+    stylers: [{ color: '#1E3A5F' }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#94A3B8' }],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'geometry',
+    stylers: [{ color: '#1E3A5F' }],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'geometry.stroke',
+    stylers: [{ color: '#101D31' }],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#CBD5E1' }],
+  },
+  {
+    featureType: 'transit',
+    elementType: 'geometry',
+    stylers: [{ color: '#101D31' }],
+  },
+  {
+    featureType: 'transit.station',
+    elementType: 'labels.icon',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'transit.station',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#94A3B8' }],
+  },
+  {
+    featureType: 'water',
+    elementType: 'geometry',
+    stylers: [{ color: '#050B14' }],
+  },
+  {
+    featureType: 'water',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#64748B' }],
+  },
+  {
+    featureType: 'water',
+    elementType: 'labels.text.stroke',
+    stylers: [{ color: '#050B14' }],
+  },
+];
 
 function GoogleMapViewInner({
   center,
@@ -99,6 +193,9 @@ function GoogleMapViewInner({
   const apiKey =
     process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
     (typeof window !== 'undefined' && (window as any).__UP_GMAPS_KEY ? (window as any).__UP_GMAPS_KEY : '');
+
+  const theme = useSettingsStore((s) => s.theme);
+  const effectiveTheme = resolveEffectiveTheme(theme);
 
   // Canonical Map Mode & 3D Vector Tilt/Heading State
   const initialMode = (mapMode?.toUpperCase() as MapMode) || 'ROADMAP';
@@ -365,6 +462,7 @@ function GoogleMapViewInner({
             '2D': 'roadmap',
           };
           const initialTypeId = typeMapping[currentMode] || 'roadmap';
+          const isStyledMode = initialTypeId === 'roadmap' || initialTypeId === 'terrain';
 
           console.log('[UrbanPulse Map] MAP CONSTRUCTOR: START');
           const map = new MapClass(containerNode, {
@@ -382,15 +480,9 @@ function GoogleMapViewInner({
             mapTypeControl: false,
             fullscreenControl: false,
             styles:
-              initialTypeId === 'roadmap'
-                ? [
-                    {
-                      featureType: 'transit.station',
-                      elementType: 'labels.icon',
-                      stylers: [{ visibility: 'off' }],
-                    },
-                  ]
-                : undefined,
+              effectiveTheme === 'dark' && isStyledMode
+                ? DARK_MAP_STYLES
+                : LIGHT_MAP_STYLES,
           });
           console.log('[UrbanPulse Map] MAP CONSTRUCTOR: SUCCESS');
 
@@ -660,6 +752,17 @@ function GoogleMapViewInner({
       }
     } catch (e) {}
   }, [mapCenter, zoom, currentMode, mapReady, heading]);
+
+  // Dynamically update map styles when effectiveTheme or currentMode changes
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !mapReady) return;
+    const modeLower = String(currentMode).toLowerCase();
+    const isStyledMode = modeLower === 'roadmap' || modeLower === 'terrain' || modeLower === '2d';
+    map.setOptions({
+      styles: effectiveTheme === 'dark' && isStyledMode ? DARK_MAP_STYLES : LIGHT_MAP_STYLES,
+    });
+  }, [effectiveTheme, currentMode, mapReady]);
 
   // Mode Change Handler
   const handleModeChange = useCallback(
@@ -1351,12 +1454,12 @@ function GoogleMapViewInner({
         style={{
           width: '100%',
           height: '100%',
-          backgroundColor: '#EEF2F6',
+          backgroundColor: 'var(--bg-app)',
           display: 'block',
         }}
       />
 
-      {/* Loading overlay: Clean light-mode high-tech radar pulse */}
+      {/* Loading overlay: Clean theme-aware high-tech radar pulse */}
       {mapStatus === 'loading' && (
         <div
           style={{
@@ -1367,8 +1470,8 @@ function GoogleMapViewInner({
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#F8FAFC',
-            color: 'var(--text-secondary, #64748B)',
+            backgroundColor: 'var(--bg-app)',
+            color: 'var(--text-secondary)',
             fontSize: '13px',
             fontWeight: 600,
             gap: '12px',
@@ -1406,7 +1509,7 @@ function GoogleMapViewInner({
             />
           </div>
           <span>Loading map canvas...</span>
-          <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 500 }}>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>
             Workspace and location intelligence remain fully accessible
           </span>
           {loadSlow && (
@@ -1417,9 +1520,9 @@ function GoogleMapViewInner({
                 marginTop: '4px',
                 padding: '4px 10px',
                 background: 'transparent',
-                border: '1px solid var(--border-subtle, #CBD5E1)',
+                border: '1px solid var(--border-subtle)',
                 borderRadius: '4px',
-                color: 'var(--text-secondary, #64748B)',
+                color: 'var(--text-secondary)',
                 fontSize: '11px',
                 fontWeight: 600,
                 cursor: retryCooldown ? 'not-allowed' : 'pointer',
@@ -1442,7 +1545,7 @@ function GoogleMapViewInner({
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#F8FAFC',
+            backgroundColor: 'var(--bg-app)',
             padding: '24px',
             textAlign: 'center',
             gap: '12px',
@@ -1455,8 +1558,8 @@ function GoogleMapViewInner({
               gap: '6px',
               padding: '3px 10px',
               borderRadius: '9999px',
-              backgroundColor: mapStatus === 'timeout' ? '#FEF3C7' : '#FEE2E2',
-              color: mapStatus === 'timeout' ? '#B45309' : '#DC2626',
+              backgroundColor: mapStatus === 'timeout' ? 'var(--badge-warning-bg)' : 'var(--badge-danger-bg)',
+              color: mapStatus === 'timeout' ? 'var(--badge-warning-text)' : 'var(--badge-danger-text)',
               fontSize: '11px',
               fontWeight: 700,
               textTransform: 'uppercase',
@@ -1474,11 +1577,11 @@ function GoogleMapViewInner({
             {mapStatus === 'timeout' ? 'Connection Timeout (12s)' : 'Map Temporarily Unavailable'}
           </div>
 
-          <div style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A' }}>
+          <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)' }}>
             Map Temporarily Unavailable
           </div>
 
-          <div style={{ fontSize: '12px', color: '#64748B', maxWidth: '460px', lineHeight: 1.5 }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', maxWidth: '460px', lineHeight: 1.5 }}>
             {mapErrorMessage || 'The map canvas could not be loaded. Location search, site analysis, weather, traffic layers, coordinates, and RAG modules remain fully operational.'}
           </div>
 
@@ -1486,9 +1589,9 @@ function GoogleMapViewInner({
             <div
               style={{
                 fontSize: '11px',
-                color: '#475569',
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #E2E8F0',
+                color: 'var(--text-secondary)',
+                backgroundColor: 'var(--bg-card)',
+                border: '1px solid var(--border-subtle)',
                 borderRadius: '6px',
                 padding: '6px 12px',
                 display: 'flex',
@@ -1497,7 +1600,7 @@ function GoogleMapViewInner({
               }}
             >
               <span style={{ fontWeight: 600 }}>Active Target: {selectedLocation.displayName || selectedLocation.city || 'Selected Site'}</span>
-              <span style={{ color: '#94A3B8' }}>
+              <span style={{ color: 'var(--text-muted)' }}>
                 {selectedLocation.latitude.toFixed(4)}, {selectedLocation.longitude.toFixed(4)}
               </span>
             </div>
@@ -1510,8 +1613,8 @@ function GoogleMapViewInner({
               style={{
                 padding: '8px 24px',
                 borderRadius: 'var(--radius-sm, 6px)',
-                backgroundColor: retryCooldown ? '#94A3B8' : 'var(--accent-primary, #2563EB)',
-                color: '#FFFFFF',
+                backgroundColor: retryCooldown ? 'var(--text-muted)' : 'var(--button)',
+                color: 'var(--button-foreground)',
                 fontSize: '12px',
                 fontWeight: 700,
                 border: 'none',
@@ -1529,11 +1632,11 @@ function GoogleMapViewInner({
                 marginTop: '10px',
                 fontSize: '10px',
                 fontFamily: 'monospace',
-                color: '#64748B',
-                background: '#F1F5F9',
+                color: 'var(--text-secondary)',
+                background: 'var(--bg-card)',
                 padding: '6px 12px',
                 borderRadius: '4px',
-                border: '1px solid #E2E8F0',
+                border: '1px solid var(--border-subtle)',
                 maxWidth: '90%',
                 wordBreak: 'break-all',
               }}
@@ -1630,11 +1733,11 @@ function GoogleMapViewInner({
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 50,
-            backgroundColor: 'rgba(15, 23, 42, 0.92)',
-            color: '#F8FAFC',
+            backgroundColor: 'var(--overlay-bg)',
+            color: 'var(--text-primary)',
             backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(148, 163, 184, 0.25)',
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
+            border: '1px solid var(--border-subtle)',
+            boxShadow: 'var(--shadow-panel)',
             borderRadius: '24px',
             padding: '8px 18px',
             fontSize: '12.5px',

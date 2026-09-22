@@ -546,48 +546,48 @@ export default function UpdatesView() {
     switch (cat) {
       case 'TRAFFIC':
         return {
-          bg: 'rgba(245, 158, 11, 0.12)',
-          color: '#FBBF24',
-          border: 'rgba(245, 158, 11, 0.25)',
-          dotColor: '#F59E0B',
+          bg: 'var(--badge-warning-bg)',
+          color: 'var(--badge-warning-text)',
+          border: 'var(--badge-warning-border)',
+          dotColor: 'var(--badge-warning-text)',
           label: 'Traffic',
-          icon: <CarIcon size={13} color="#FBBF24" />,
+          icon: <CarIcon size={13} color="var(--badge-warning-text)" />,
         };
       case 'WEATHER':
         return {
-          bg: 'rgba(14, 165, 233, 0.12)',
-          color: '#38BDF8',
-          border: 'rgba(14, 165, 233, 0.25)',
-          dotColor: '#0EA5E9',
+          bg: 'var(--badge-info-bg)',
+          color: 'var(--badge-info-text)',
+          border: 'var(--badge-info-border)',
+          dotColor: 'var(--badge-info-text)',
           label: 'Weather',
-          icon: <CloudRainIcon size={13} color="#38BDF8" />,
+          icon: <CloudRainIcon size={13} color="var(--badge-info-text)" />,
         };
       case 'CRIME':
         return {
-          bg: 'rgba(239, 68, 68, 0.12)',
-          color: '#F87171',
-          border: 'rgba(239, 68, 68, 0.25)',
-          dotColor: '#EF4444',
+          bg: 'var(--badge-hazard-bg)',
+          color: 'var(--badge-hazard-text)',
+          border: 'var(--badge-hazard-border)',
+          dotColor: 'var(--badge-hazard-text)',
           label: 'Crime',
-          icon: <ShieldIcon size={13} color="#F87171" />,
+          icon: <ShieldIcon size={13} color="var(--badge-hazard-text)" />,
         };
       case 'HAZARD':
         return {
-          bg: 'rgba(249, 115, 22, 0.12)',
-          color: '#FB923C',
-          border: 'rgba(249, 115, 22, 0.25)',
-          dotColor: '#F97316',
+          bg: 'var(--badge-approx-bg)',
+          color: 'var(--badge-approx-text)',
+          border: 'var(--badge-approx-border)',
+          dotColor: 'var(--badge-approx-text)',
           label: 'Hazard',
-          icon: <AlertTriangleIcon size={13} color="#FB923C" />,
+          icon: <AlertTriangleIcon size={13} color="var(--badge-approx-text)" />,
         };
       case 'MUNICIPAL':
         return {
-          bg: 'rgba(168, 85, 247, 0.12)',
-          color: '#C084FC',
-          border: 'rgba(168, 85, 247, 0.25)',
-          dotColor: '#A855F7',
+          bg: 'var(--badge-info-bg)',
+          color: 'var(--badge-info-text)',
+          border: 'var(--badge-info-border)',
+          dotColor: 'var(--badge-info-text)',
           label: 'Municipal',
-          icon: <BuildingIcon size={13} color="#C084FC" />,
+          icon: <BuildingIcon size={13} color="var(--badge-info-text)" />,
         };
     }
   };
@@ -595,11 +595,11 @@ export default function UpdatesView() {
   const getSeverityBadge = (sev: CityUpdateItem['severity']) => {
     switch (sev) {
       case 'HIGH':
-        return { bg: 'rgba(239, 68, 68, 0.15)', color: '#F87171', border: 'rgba(239, 68, 68, 0.3)', text: 'HIGH' };
+        return { bg: 'var(--badge-hazard-bg)', color: 'var(--badge-hazard-text)', border: 'var(--badge-hazard-border)', text: 'HIGH' };
       case 'MODERATE':
-        return { bg: 'rgba(245, 158, 11, 0.15)', color: '#FBBF24', border: 'rgba(245, 158, 11, 0.3)', text: 'MODERATE' };
+        return { bg: 'var(--badge-warning-bg)', color: 'var(--badge-warning-text)', border: 'var(--badge-warning-border)', text: 'MODERATE' };
       case 'INFO':
-        return { bg: 'rgba(59, 130, 246, 0.15)', color: '#60A5FA', border: 'rgba(59, 130, 246, 0.3)', text: 'INFO' };
+        return { bg: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', border: 'var(--badge-info-border)', text: 'INFO' };
     }
   };
 
@@ -660,7 +660,7 @@ export default function UpdatesView() {
         height: '100%',
         width: '100%',
         overflow: 'hidden',
-        backgroundColor: 'var(--bg-app, #080B10)',
+        backgroundColor: 'var(--bg-app)',
       }}
     >
       {/* ========================================================= */}
@@ -671,10 +671,10 @@ export default function UpdatesView() {
           flex: '0 0 45%',
           minWidth: '380px',
           maxWidth: '560px',
-          borderRight: '1px solid var(--border-subtle, #1B2531)',
+          borderRight: '1px solid var(--border-subtle)',
           display: 'flex',
           flexDirection: 'column',
-          backgroundColor: 'var(--bg-panel, #101620)',
+          backgroundColor: 'var(--bg-panel)',
           height: '100%',
           overflow: 'hidden',
         }}
@@ -683,14 +683,14 @@ export default function UpdatesView() {
         <div
           style={{
             padding: '16px 20px 12px 20px',
-            borderBottom: '1px solid var(--border-subtle, #1B2531)',
-            backgroundColor: 'var(--bg-header, #0C1119)',
+            borderBottom: '1px solid var(--border-subtle)',
+            backgroundColor: 'var(--bg-header)',
             flexShrink: 0,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h1 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary, #F3F6FA)', margin: 0, letterSpacing: '-0.3px' }}>
+              <h1 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.3px' }}>
                 {cityName} Updates
               </h1>
               <span
@@ -700,9 +700,9 @@ export default function UpdatesView() {
                   gap: '5px',
                   padding: '2px 8px',
                   borderRadius: '12px',
-                  backgroundColor: 'rgba(34, 197, 94, 0.12)',
-                  border: '1px solid rgba(34, 197, 94, 0.3)',
-                  color: '#4ADE80',
+                  backgroundColor: 'var(--status-good-bg)',
+                  border: '1px solid var(--status-good-border)',
+                  color: 'var(--status-good-text)',
                   fontSize: '11px',
                   fontWeight: 700,
                 }}
@@ -712,8 +712,7 @@ export default function UpdatesView() {
                     width: '6px',
                     height: '6px',
                     borderRadius: '50%',
-                    backgroundColor: '#16A34A',
-                    boxShadow: '0 0 0 2px rgba(22, 163, 74, 0.25)',
+                    backgroundColor: 'var(--status-good-text)',
                   }}
                 />
                 Live
@@ -724,8 +723,9 @@ export default function UpdatesView() {
               style={{
                 fontSize: '12px',
                 fontWeight: 600,
-                color: '#64748B',
-                backgroundColor: '#F1F5F9',
+                color: 'var(--text-muted)',
+                backgroundColor: 'var(--bg-elevated)',
+                border: '1px solid var(--border)',
                 padding: '3px 8px',
                 borderRadius: '6px',
               }}
@@ -734,7 +734,7 @@ export default function UpdatesView() {
             </span>
           </div>
 
-          <p style={{ fontSize: '12px', color: '#64748B', margin: '0 0 12px 0' }}>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
             Live city updates & alerts across infrastructure, traffic, weather, and civic safety
           </p>
 
@@ -773,16 +773,16 @@ export default function UpdatesView() {
                     borderRadius: '20px',
                     fontSize: '11.5px',
                     fontWeight: 700,
-                    border: isSelected ? '1px solid #2563EB' : '1px solid #E2E8F0',
-                    backgroundColor: isSelected ? '#2563EB' : '#F8FAFC',
-                    color: isSelected ? '#FFFFFF' : '#475569',
+                    border: isSelected ? '1px solid var(--accent-primary)' : '1px solid var(--border)',
+                    backgroundColor: isSelected ? 'var(--button)' : 'var(--bg-subtle)',
+                    color: isSelected ? 'var(--button-foreground)' : 'var(--text-secondary)',
                     cursor: 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '5px',
                     whiteSpace: 'nowrap',
                     transition: 'all 0.15s ease',
-                    boxShadow: isSelected ? '0 1px 3px rgba(37, 99, 235, 0.2)' : 'none',
+                    boxShadow: isSelected ? 'var(--shadow-xs)' : 'none',
                   }}
                 >
                   <span>{label}</span>
@@ -790,7 +790,8 @@ export default function UpdatesView() {
                     style={{
                       fontSize: '10px',
                       opacity: isSelected ? 0.9 : 0.7,
-                      backgroundColor: isSelected ? 'rgba(255, 255, 255, 0.25)' : '#E2E8F0',
+                      backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : 'var(--bg-surface-tertiary)',
+                      color: isSelected ? 'var(--button-foreground)' : 'var(--text-secondary)',
                       padding: '1px 5px',
                       borderRadius: '10px',
                     }}
@@ -809,15 +810,15 @@ export default function UpdatesView() {
                 flex: 1,
                 display: 'flex',
                 alignItems: 'center',
-                backgroundColor: '#F8FAFC',
-                border: '1px solid #E2E8F0',
+                backgroundColor: 'var(--bg-input)',
+                border: '1px solid var(--border)',
                 borderRadius: '8px',
                 padding: '0 10px',
                 height: '34px',
                 gap: '8px',
               }}
             >
-              <SearchIcon size={14} color="#94A3B8" />
+              <SearchIcon size={14} color="var(--text-muted)" />
               <input
                 type="text"
                 value={searchQuery}
@@ -829,7 +830,7 @@ export default function UpdatesView() {
                   outline: 'none',
                   width: '100%',
                   fontSize: '12px',
-                  color: '#0F172A',
+                  color: 'var(--text-primary)',
                 }}
               />
               {searchQuery && (
@@ -839,7 +840,7 @@ export default function UpdatesView() {
                     background: 'transparent',
                     border: 'none',
                     cursor: 'pointer',
-                    color: '#94A3B8',
+                    color: 'var(--text-muted)',
                     padding: 0,
                     display: 'flex',
                   }}
@@ -857,11 +858,11 @@ export default function UpdatesView() {
                   height: '34px',
                   padding: '0 24px 0 10px',
                   borderRadius: '8px',
-                  border: '1px solid #E2E8F0',
-                  backgroundColor: '#F8FAFC',
+                  border: '1px solid var(--border)',
+                  backgroundColor: 'var(--bg-input)',
                   fontSize: '11.5px',
                   fontWeight: 600,
-                  color: '#475569',
+                  color: 'var(--text-secondary)',
                   cursor: 'pointer',
                   outline: 'none',
                   appearance: 'none',
@@ -873,7 +874,7 @@ export default function UpdatesView() {
               </select>
               <ChevronDownIcon
                 size={12}
-                color="#64748B"
+                color="var(--text-muted)"
                 style={{ position: 'absolute', right: '8px', top: '11px', pointerEvents: 'none' }}
               />
             </div>
@@ -889,7 +890,7 @@ export default function UpdatesView() {
             display: 'flex',
             flexDirection: 'column',
             gap: '12px',
-            backgroundColor: 'var(--bg-app, #080B10)',
+            backgroundColor: 'var(--bg-app)',
           }}
         >
           {filteredUpdates.length === 0 ? (
@@ -897,13 +898,13 @@ export default function UpdatesView() {
               style={{
                 padding: '36px 20px',
                 textAlign: 'center',
-                backgroundColor: 'var(--bg-card, #111821)',
+                backgroundColor: 'var(--bg-card)',
                 borderRadius: '12px',
-                border: '1px solid var(--border, #263241)',
-                color: 'var(--text-muted, #748091)',
+                border: '1px solid var(--border)',
+                color: 'var(--text-muted)',
               }}
             >
-              <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary, #F3F6FA)', marginBottom: '4px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
                 No updates match your filter
               </div>
               <div style={{ fontSize: '12px' }}>Try selecting another category or clearing your search term.</div>
@@ -916,9 +917,9 @@ export default function UpdatesView() {
                   marginTop: '12px',
                   padding: '6px 14px',
                   borderRadius: '6px',
-                  backgroundColor: 'rgba(59, 130, 246, 0.12)',
-                  color: '#60A5FA',
-                  border: '1px solid #3B82F6',
+                  backgroundColor: 'var(--badge-info-bg)',
+                  color: 'var(--badge-info-text)',
+                  border: '1px solid var(--badge-info-border)',
                   fontSize: '11.5px',
                   fontWeight: 700,
                   cursor: 'pointer',
@@ -941,13 +942,13 @@ export default function UpdatesView() {
                     setSelectedUpdate(item);
                   }}
                   style={{
-                    backgroundColor: isSelected ? 'var(--bg-card-hover, #17202C)' : 'var(--bg-card, #111821)',
-                    border: isSelected ? '1.5px solid #3B82F6' : '1px solid var(--border, #263241)',
+                    backgroundColor: isSelected ? 'var(--bg-card-hover)' : 'var(--bg-card)',
+                    border: isSelected ? '1.5px solid var(--accent-primary)' : '1px solid var(--border)',
                     borderRadius: '12px',
                     padding: '14px 16px',
                     boxShadow: isSelected
-                      ? '0 4px 14px rgba(0, 0, 0, 0.4)'
-                      : '0 1px 3px rgba(0, 0, 0, 0.2)',
+                      ? 'var(--card-shadow-hover)'
+                      : 'var(--card-shadow)',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
                     display: 'flex',
@@ -958,14 +959,14 @@ export default function UpdatesView() {
                   }}
                   onMouseEnter={(e) => {
                     if (!isSelected) {
-                      e.currentTarget.style.borderColor = 'var(--border-hover, #344154)';
-                      e.currentTarget.style.backgroundColor = 'var(--bg-card-hover, #17202C)';
+                      e.currentTarget.style.borderColor = 'var(--border-hover)';
+                      e.currentTarget.style.backgroundColor = 'var(--bg-card-hover)';
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isSelected) {
-                      e.currentTarget.style.borderColor = 'var(--border, #263241)';
-                      e.currentTarget.style.backgroundColor = 'var(--bg-card, #111821)';
+                      e.currentTarget.style.borderColor = 'var(--border)';
+                      e.currentTarget.style.backgroundColor = 'var(--bg-card)';
                     }
                   }}
                 >
@@ -1008,7 +1009,7 @@ export default function UpdatesView() {
                       </span>
                     </div>
 
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted, #748091)', fontWeight: 500 }}>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>
                       {item.timeAgo}
                     </span>
                   </div>
@@ -1018,7 +1019,7 @@ export default function UpdatesView() {
                     style={{
                       fontSize: '13.5px',
                       fontWeight: 700,
-                      color: 'var(--text-primary, #F3F6FA)',
+                      color: 'var(--text-primary)',
                       margin: 0,
                       lineHeight: 1.35,
                       letterSpacing: '-0.1px',
@@ -1031,7 +1032,7 @@ export default function UpdatesView() {
                   <p
                     style={{
                       fontSize: '12px',
-                      color: 'var(--text-secondary, #AAB4C2)',
+                      color: 'var(--text-secondary)',
                       margin: 0,
                       lineHeight: 1.45,
                       overflow: 'hidden',
@@ -1051,15 +1052,15 @@ export default function UpdatesView() {
                       justifyContent: 'space-between',
                       marginTop: '4px',
                       paddingTop: '6px',
-                      borderTop: '1px solid #F1F5F9',
+                      borderTop: '1px solid var(--border-subtle)',
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0 }}>
-                      <PinIcon size={12} color="#64748B" />
+                      <PinIcon size={12} color="var(--text-muted)" />
                       <span
                         style={{
                           fontSize: '11px',
-                          color: '#64748B',
+                          color: 'var(--text-muted)',
                           fontWeight: 600,
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
@@ -1077,12 +1078,12 @@ export default function UpdatesView() {
                         gap: '2px',
                         fontSize: '11px',
                         fontWeight: 700,
-                        color: '#2563EB',
+                        color: 'var(--accent-primary)',
                         flexShrink: 0,
                       }}
                     >
                       <span>Details</span>
-                      <ChevronRightIcon size={12} color="#2563EB" />
+                      <ChevronRightIcon size={12} color="var(--accent-primary)" />
                     </span>
                   </div>
                 </article>
@@ -1102,7 +1103,7 @@ export default function UpdatesView() {
           flexDirection: 'column',
           height: '100%',
           overflowY: 'auto',
-          backgroundColor: '#F8FAFC',
+          backgroundColor: 'var(--bg-app)',
           padding: '16px 20px',
           gap: '14px',
         }}
@@ -1114,26 +1115,26 @@ export default function UpdatesView() {
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '12px 18px',
-            backgroundColor: 'var(--bg-header, #0C1119)',
+            backgroundColor: 'var(--bg-header)',
             borderRadius: '12px',
-            border: '1px solid var(--border, #263241)',
-            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
+            border: '1px solid var(--border)',
+            boxShadow: 'var(--card-shadow)',
             flexShrink: 0,
           }}
         >
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <SparklesIcon size={18} color="#60A5FA" />
-              <h2 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary, #F3F6FA)', margin: 0 }}>
+              <SparklesIcon size={18} color="var(--accent-primary)" />
+              <h2 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
                 UrbanPulse Agent
               </h2>
               <span
                 style={{
                   fontSize: '10px',
                   fontWeight: 700,
-                  backgroundColor: 'rgba(59, 130, 246, 0.12)',
-                  color: '#60A5FA',
-                  border: '1px solid rgba(59, 130, 246, 0.25)',
+                  backgroundColor: 'var(--badge-info-bg)',
+                  color: 'var(--badge-info-text)',
+                  border: '1px solid var(--badge-info-border)',
                   padding: '2px 6px',
                   borderRadius: '4px',
                   textTransform: 'uppercase',
@@ -1142,7 +1143,7 @@ export default function UpdatesView() {
                 AI DECISION ENGINE
               </span>
             </div>
-            <div style={{ fontSize: '11.5px', color: 'var(--text-muted, #748091)', marginTop: '2px' }}>
+            <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginTop: '2px' }}>
               Conversational Location Intelligence & Real-Time Situational Awareness
             </div>
           </div>
@@ -1152,17 +1153,17 @@ export default function UpdatesView() {
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              backgroundColor: 'var(--bg-elevated, #141B26)',
+              backgroundColor: 'var(--bg-elevated)',
               padding: '6px 12px',
               borderRadius: '8px',
-              border: '1px solid var(--border, #263241)',
+              border: '1px solid var(--border)',
             }}
           >
-            <PinIcon size={13} color="#60A5FA" />
-            <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary, #F3F6FA)' }}>
+            <PinIcon size={13} color="var(--accent-primary)" />
+            <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>
               {cityName}, Karnataka
             </span>
-            <span style={{ fontSize: '11px', color: 'var(--text-muted, #748091)' }}>
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
               (12.2958° N, 76.6394° E)
             </span>
           </div>
@@ -1171,11 +1172,11 @@ export default function UpdatesView() {
         {/* 2. Compact "Mysuru at a glance" Summary Card */}
         <div
           style={{
-            backgroundColor: 'var(--bg-card, #111821)',
+            backgroundColor: 'var(--bg-card)',
             borderRadius: '12px',
-            border: '1px solid var(--border, #263241)',
+            border: '1px solid var(--border)',
             padding: '14px 16px',
-            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
+            boxShadow: 'var(--card-shadow)',
             flexShrink: 0,
           }}
         >
@@ -1185,15 +1186,15 @@ export default function UpdatesView() {
               alignItems: 'center',
               justifyContent: 'space-between',
               marginBottom: '10px',
-              borderBottom: '1px solid var(--border-subtle, #1B2531)',
+              borderBottom: '1px solid var(--border-subtle)',
               paddingBottom: '8px',
             }}
           >
-            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted, #748091)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
               {cityName} at a Glance
             </span>
-            <span style={{ fontSize: '11px', color: '#4ADE80', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <CheckCircleIcon size={12} color="#4ADE80" />
+            <span style={{ fontSize: '11px', color: 'var(--status-good-text)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              <CheckCircleIcon size={12} color="var(--status-good-text)" />
               Verified Telemetry (Active)
             </span>
           </div>
@@ -1206,58 +1207,58 @@ export default function UpdatesView() {
             }}
           >
             {/* Status */}
-            <div style={{ backgroundColor: 'var(--bg-elevated, #141B26)', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border, #263241)' }}>
-              <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted, #748091)', textTransform: 'uppercase' }}>City Status</div>
-              <div style={{ fontSize: '13px', fontWeight: 800, color: '#4ADE80', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#4ADE80' }} />
+            <div style={{ backgroundColor: 'var(--bg-elevated)', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>City Status</div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--status-good-text)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--status-good-text)' }} />
                 Operational
               </div>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted, #748091)', marginTop: '1px' }}>Nominal civil state</div>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '1px' }}>Nominal civil state</div>
             </div>
 
             {/* Traffic */}
-            <div style={{ backgroundColor: 'var(--bg-elevated, #141B26)', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border, #263241)' }}>
-              <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted, #748091)', textTransform: 'uppercase' }}>Traffic Flow</div>
-              <div style={{ fontSize: '13px', fontWeight: 800, color: '#FBBF24', marginTop: '2px' }}>
+            <div style={{ backgroundColor: 'var(--bg-elevated)', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Traffic Flow</div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--status-warning-text)', marginTop: '2px' }}>
                 Moderate Flow
               </div>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted, #748091)', marginTop: '1px' }}>28 km/h corridor avg</div>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '1px' }}>28 km/h corridor avg</div>
             </div>
 
             {/* Weather */}
-            <div style={{ backgroundColor: 'var(--bg-elevated, #141B26)', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border, #263241)' }}>
-              <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted, #748091)', textTransform: 'uppercase' }}>Weather</div>
-              <div style={{ fontSize: '13px', fontWeight: 800, color: '#38BDF8', marginTop: '2px' }}>
+            <div style={{ backgroundColor: 'var(--bg-elevated)', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Weather</div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--badge-info-text)', marginTop: '2px' }}>
                 26°C · Light Rain
               </div>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted, #748091)', marginTop: '1px' }}>Evening rain forecasted</div>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '1px' }}>Evening rain forecasted</div>
             </div>
 
             {/* Active Incidents */}
-            <div style={{ backgroundColor: 'var(--bg-elevated, #141B26)', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border, #263241)' }}>
-              <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted, #748091)', textTransform: 'uppercase' }}>Incidents</div>
-              <div style={{ fontSize: '13px', fontWeight: 800, color: '#F87171', marginTop: '2px' }}>
+            <div style={{ backgroundColor: 'var(--bg-elevated)', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Incidents</div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--status-critical-text)', marginTop: '2px' }}>
                 6 Active Reports
               </div>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted, #748091)', marginTop: '1px' }}>2 high, 4 moderate</div>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '1px' }}>2 high, 4 moderate</div>
             </div>
 
             {/* Score */}
-            <div style={{ backgroundColor: 'var(--bg-elevated, #141B26)', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border, #263241)' }}>
-              <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted, #748091)', textTransform: 'uppercase' }}>Urban Score</div>
-              <div style={{ fontSize: '13px', fontWeight: 800, color: '#4ADE80', marginTop: '2px' }}>
+            <div style={{ backgroundColor: 'var(--bg-elevated)', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Urban Score</div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--status-good-text)', marginTop: '2px' }}>
                 82/100 · Favorable
               </div>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted, #748091)', marginTop: '1px' }}>Healthy civic index</div>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '1px' }}>Healthy civic index</div>
             </div>
 
             {/* Air Quality */}
-            <div style={{ backgroundColor: 'var(--bg-elevated, #141B26)', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border, #263241)' }}>
-              <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted, #748091)', textTransform: 'uppercase' }}>Air Quality</div>
-              <div style={{ fontSize: '13px', fontWeight: 800, color: '#60A5FA', marginTop: '2px' }}>
+            <div style={{ backgroundColor: 'var(--bg-elevated)', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Air Quality</div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--accent-primary)', marginTop: '2px' }}>
                 AQI 42 · Good
               </div>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted, #748091)', marginTop: '1px' }}>PM2.5: 11 µg/m³</div>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '1px' }}>PM2.5: 11 µg/m³</div>
             </div>
           </div>
         </div>
@@ -1265,12 +1266,12 @@ export default function UpdatesView() {
         {/* 3. QUICK ACTION buttons */}
         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none', flexShrink: 0 }}>
           {[
-            { cat: 'TRAFFIC', label: 'Traffic', icon: <CarIcon size={13} color="#FBBF24" />, color: '#FBBF24', bg: 'rgba(245, 158, 11, 0.12)' },
-            { cat: 'WEATHER', label: 'Weather', icon: <CloudRainIcon size={13} color="#38BDF8" />, color: '#38BDF8', bg: 'rgba(14, 165, 233, 0.12)' },
-            { cat: 'CRIME', label: 'Crime', icon: <ShieldIcon size={13} color="#F87171" />, color: '#F87171', bg: 'rgba(239, 68, 68, 0.12)' },
-            { cat: 'HAZARD', label: 'Hazard', icon: <AlertTriangleIcon size={13} color="#FB923C" />, color: '#FB923C', bg: 'rgba(249, 115, 22, 0.12)' },
-            { cat: 'MUNICIPAL', label: 'Municipal', icon: <BuildingIcon size={13} color="#C084FC" />, color: '#C084FC', bg: 'rgba(168, 85, 247, 0.12)' },
-            { cat: 'ALL', label: 'Simulate', icon: <FlaskIcon size={13} color="#60A5FA" />, color: '#60A5FA', bg: 'rgba(59, 130, 246, 0.12)' },
+            { cat: 'TRAFFIC', label: 'Traffic', icon: <CarIcon size={13} color="var(--status-warning-text)" />, color: 'var(--status-warning-text)', bg: 'var(--badge-warning-bg)' },
+            { cat: 'WEATHER', label: 'Weather', icon: <CloudRainIcon size={13} color="var(--badge-info-text)" />, color: 'var(--badge-info-text)', bg: 'var(--badge-info-bg)' },
+            { cat: 'CRIME', label: 'Crime', icon: <ShieldIcon size={13} color="var(--status-critical-text)" />, color: 'var(--status-critical-text)', bg: 'var(--badge-hazard-bg)' },
+            { cat: 'HAZARD', label: 'Hazard', icon: <AlertTriangleIcon size={13} color="var(--badge-approx-text)" />, color: 'var(--badge-approx-text)', bg: 'var(--badge-approx-bg)' },
+            { cat: 'MUNICIPAL', label: 'Municipal', icon: <BuildingIcon size={13} color="var(--badge-info-text)" />, color: 'var(--badge-info-text)', bg: 'var(--badge-info-bg)' },
+            { cat: 'ALL', label: 'Simulate', icon: <FlaskIcon size={13} color="var(--accent-primary)" />, color: 'var(--accent-primary)', bg: 'var(--badge-info-bg)' },
           ].map((btn) => (
             <button
               key={btn.label}
@@ -1288,23 +1289,23 @@ export default function UpdatesView() {
                 gap: '6px',
                 padding: '7px 14px',
                 borderRadius: '8px',
-                backgroundColor: 'var(--bg-card, #111821)',
-                border: '1px solid var(--border, #263241)',
-                color: 'var(--text-primary, #F3F6FA)',
+                backgroundColor: 'var(--bg-card)',
+                border: '1px solid var(--border)',
+                color: 'var(--text-primary)',
                 fontSize: '12px',
                 fontWeight: 700,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
                 transition: 'all 0.15s ease',
-                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
+                boxShadow: 'var(--shadow-xs)',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = btn.color;
                 e.currentTarget.style.backgroundColor = btn.bg;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'var(--border, #263241)';
-                e.currentTarget.style.backgroundColor = 'var(--bg-card, #111821)';
+                e.currentTarget.style.borderColor = 'var(--border)';
+                e.currentTarget.style.backgroundColor = 'var(--bg-card)';
               }}
             >
               {btn.icon}
@@ -1318,11 +1319,11 @@ export default function UpdatesView() {
           style={{
             position: 'relative',
             height: '240px',
-            backgroundColor: '#E2E8F0',
+            backgroundColor: 'var(--bg-surface-secondary)',
             borderRadius: '12px',
-            border: '1px solid #CBD5E1',
+            border: '1px solid var(--border)',
             overflow: 'hidden',
-            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
+            boxShadow: 'var(--shadow-xs)',
             flexShrink: 0,
           }}
         >
@@ -1332,61 +1333,61 @@ export default function UpdatesView() {
             height="100%"
             viewBox="0 0 800 320"
             preserveAspectRatio="xMidYMid slice"
-            style={{ width: '100%', height: '100%', display: 'block', backgroundColor: '#E2E8F0' }}
+            style={{ width: '100%', height: '100%', display: 'block', backgroundColor: 'var(--bg-surface-secondary)' }}
           >
             {/* Background Base Terrain */}
-            <rect width="800" height="320" fill="#E8EDF2" />
+            <rect width="100%" height="100%" fill="var(--bg-surface-secondary)" />
 
             {/* Chamundi Hill Green Mass */}
             <path
               d="M 520,240 Q 600,200 680,260 Q 720,300 580,320 Z"
-              fill="#D1E7DD"
-              stroke="#A3CFBB"
+              fill="var(--status-good-bg)"
+              stroke="var(--status-good-border)"
               strokeWidth="1.5"
             />
-            <text x="610" y="270" fontSize="11" fontWeight="700" fill="#2D6A4F">Chamundi Hill</text>
+            <text x="610" y="270" fontSize="11" fontWeight="700" fill="var(--status-good-text)">Chamundi Hill</text>
 
             {/* Lakes */}
             {/* Kukkarahalli Lake */}
-            <ellipse cx="260" cy="180" rx="35" ry="20" fill="#C5E2F6" stroke="#90CAF9" strokeWidth="1" />
-            <text x="235" y="183" fontSize="9" fontWeight="600" fill="#1565C0">Kukkarahalli</text>
+            <ellipse cx="260" cy="180" rx="35" ry="20" fill="var(--badge-info-bg)" stroke="var(--badge-info-border)" strokeWidth="1" />
+            <text x="235" y="183" fontSize="9" fontWeight="600" fill="var(--badge-info-text)">Kukkarahalli</text>
 
             {/* Karanji Lake */}
-            <ellipse cx="510" cy="160" rx="40" ry="22" fill="#C5E2F6" stroke="#90CAF9" strokeWidth="1" />
-            <text x="490" y="163" fontSize="9" fontWeight="600" fill="#1565C0">Karanji</text>
+            <ellipse cx="510" cy="160" rx="40" ry="22" fill="var(--badge-info-bg)" stroke="var(--badge-info-border)" strokeWidth="1" />
+            <text x="490" y="163" fontSize="9" fontWeight="600" fill="var(--badge-info-text)">Karanji</text>
 
             {/* Major Arterial Roads / Ring Road */}
             {/* Outer Ring Road (large loop) */}
             <path
               d="M 120,60 C 250,20 580,20 700,90 C 780,180 750,280 620,300 C 420,330 180,310 100,220 C 60,150 70,80 120,60 Z"
               fill="none"
-              stroke="#CBD5E1"
+              stroke="var(--border-hover)"
               strokeWidth="4"
             />
 
             {/* Sayyaji Rao Road / Highway 275 */}
-            <line x1="400" y1="20" x2="400" y2="300" stroke="#CBD5E1" strokeWidth="3" />
+            <line x1="400" y1="20" x2="400" y2="300" stroke="var(--border-hover)" strokeWidth="3" />
 
             {/* Devaraja Urs Road */}
-            <line x1="220" y1="140" x2="480" y2="140" stroke="#CBD5E1" strokeWidth="3" />
+            <line x1="220" y1="140" x2="480" y2="140" stroke="var(--border-hover)" strokeWidth="3" />
 
             {/* Hunsur Road */}
-            <line x1="100" y1="110" x2="380" y2="140" stroke="#CBD5E1" strokeWidth="2.5" />
+            <line x1="100" y1="110" x2="380" y2="140" stroke="var(--border-hover)" strokeWidth="2.5" />
 
             {/* Nanjangud Road */}
-            <line x1="420" y1="160" x2="560" y2="300" stroke="#CBD5E1" strokeWidth="2.5" />
+            <line x1="420" y1="160" x2="560" y2="300" stroke="var(--border-hover)" strokeWidth="2.5" />
 
             {/* Mysore Palace Landmark */}
-            <rect x="385" y="145" width="30" height="24" rx="4" fill="#F8FAFC" stroke="#94A3B8" strokeWidth="1.5" />
-            <text x="350" y="182" fontSize="10" fontWeight="700" fill="#334155">Mysore Palace</text>
+            <rect x="385" y="145" width="30" height="24" rx="4" fill="var(--bg-card)" stroke="var(--border-strong)" strokeWidth="1.5" />
+            <text x="350" y="182" fontSize="10" fontWeight="700" fill="var(--text-primary)">Mysore Palace</text>
 
             {/* District Labels */}
-            <text x="160" y="70" fontSize="10" fontWeight="600" fill="#64748B">Hebbal</text>
-            <text x="210" y="100" fontSize="10" fontWeight="600" fill="#64748B">Gokulam</text>
-            <text x="180" y="240" fontSize="10" fontWeight="600" fill="#64748B">Kuvempunagar</text>
-            <text x="290" y="210" fontSize="10" fontWeight="600" fill="#64748B">Saraswathipuram</text>
-            <text x="440" y="90" fontSize="10" fontWeight="600" fill="#64748B">Columbia Asia Jct</text>
-            <text x="480" y="270" fontSize="10" fontWeight="600" fill="#64748B">JP Nagar</text>
+            <text x="160" y="70" fontSize="10" fontWeight="600" fill="var(--text-muted)">Hebbal</text>
+            <text x="210" y="100" fontSize="10" fontWeight="600" fill="var(--text-muted)">Gokulam</text>
+            <text x="180" y="240" fontSize="10" fontWeight="600" fill="var(--text-muted)">Kuvempunagar</text>
+            <text x="290" y="210" fontSize="10" fontWeight="600" fill="var(--text-muted)">Saraswathipuram</text>
+            <text x="440" y="90" fontSize="10" fontWeight="600" fill="var(--text-muted)">Columbia Asia Jct</text>
+            <text x="480" y="270" fontSize="10" fontWeight="600" fill="var(--text-muted)">JP Nagar</text>
           </svg>
 
           {/* Interactive Event Pins rendered on top of the map */}
@@ -1428,14 +1429,14 @@ export default function UpdatesView() {
                     height: isItemFocused ? '24px' : '18px',
                     borderRadius: '50%',
                     backgroundColor: theme.color,
-                    border: '2px solid #FFFFFF',
+                    border: '2px solid var(--bg-card)',
                     boxShadow: isItemFocused
                       ? '0 0 0 3px rgba(37, 99, 235, 0.4), 0 3px 8px rgba(0,0,0,0.2)'
                       : '0 2px 4px rgba(0,0,0,0.18)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: '#FFFFFF',
+                    color: 'var(--button-foreground)',
                     fontSize: '9px',
                     fontWeight: 800,
                   }}
@@ -1452,30 +1453,30 @@ export default function UpdatesView() {
               position: 'absolute',
               top: '10px',
               right: '10px',
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              backgroundColor: 'var(--overlay-bg)',
               backdropFilter: 'blur(6px)',
               padding: '4px 8px',
               borderRadius: '6px',
-              border: '1px solid #CBD5E1',
+              border: '1px solid var(--border)',
               fontSize: '10px',
               fontWeight: 700,
-              color: '#0F172A',
+              color: 'var(--text-primary)',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
             }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-              <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#D97706' }} /> Traffic
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'var(--status-warning-text)' }} /> Traffic
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-              <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#EA580C' }} /> Hazard
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'var(--badge-approx-text)' }} /> Hazard
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-              <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#DC2626' }} /> Crime
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'var(--status-critical-text)' }} /> Crime
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-              <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#7E22CE' }} /> Municipal
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'var(--badge-info-text)' }} /> Municipal
             </span>
           </div>
 
@@ -1485,14 +1486,14 @@ export default function UpdatesView() {
               position: 'absolute',
               bottom: '10px',
               left: '10px',
-              backgroundColor: 'rgba(255, 255, 255, 0.92)',
+              backgroundColor: 'var(--overlay-bg)',
               backdropFilter: 'blur(4px)',
               padding: '3px 8px',
               borderRadius: '4px',
-              border: '1px solid #CBD5E1',
+              border: '1px solid var(--border)',
               fontSize: '10.5px',
               fontWeight: 600,
-              color: '#334155',
+              color: 'var(--text-secondary)',
             }}
           >
             Mysuru Urban Coverage • 25 Markers Active
@@ -1511,29 +1512,29 @@ export default function UpdatesView() {
           {/* Card 1: Recent Highlights */}
           <div
             style={{
-              backgroundColor: 'var(--bg-card, #111821)',
+              backgroundColor: 'var(--bg-card)',
               borderRadius: '12px',
-              border: '1px solid var(--border, #263241)',
+              border: '1px solid var(--border)',
               padding: '14px 16px',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
+              boxShadow: 'var(--card-shadow)',
               display: 'flex',
               flexDirection: 'column',
               gap: '8px',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', borderBottom: '1px solid var(--border-subtle, #1B2531)', paddingBottom: '6px' }}>
-              <RadioIcon size={14} color="#60A5FA" />
-              <h3 style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--text-primary, #F3F6FA)', margin: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '6px' }}>
+              <RadioIcon size={14} color="var(--accent-primary)" />
+              <h3 style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
                 Recent Highlights
               </h3>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {[
-                { id: 'up-1', title: 'Heavy traffic near Hebbal', tag: 'Traffic', time: '12m ago', color: '#FBBF24', bg: 'rgba(245, 158, 11, 0.12)' },
-                { id: 'up-2', title: 'Light rainfall expected this evening', tag: 'Weather', time: '18m ago', color: '#38BDF8', bg: 'rgba(14, 165, 233, 0.12)' },
-                { id: 'up-3', title: 'Fallen tree near Chamundi Hill Road', tag: 'Hazard', time: '8m ago', color: '#FB923C', bg: 'rgba(249, 115, 22, 0.12)' },
-                { id: 'up-4', title: 'Road repair work on Devaraja Urs Road', tag: 'Municipal', time: '25m ago', color: '#C084FC', bg: 'rgba(168, 85, 247, 0.12)' },
+                { id: 'up-1', title: 'Heavy traffic near Hebbal', tag: 'Traffic', time: '12m ago', color: 'var(--status-warning-text)', bg: 'var(--badge-warning-bg)' },
+                { id: 'up-2', title: 'Light rainfall expected this evening', tag: 'Weather', time: '18m ago', color: 'var(--badge-info-text)', bg: 'var(--badge-info-bg)' },
+                { id: 'up-3', title: 'Fallen tree near Chamundi Hill Road', tag: 'Hazard', time: '8m ago', color: 'var(--badge-approx-text)', bg: 'var(--badge-approx-bg)' },
+                { id: 'up-4', title: 'Road repair work on Devaraja Urs Road', tag: 'Municipal', time: '25m ago', color: 'var(--badge-info-text)', bg: 'var(--badge-info-bg)' },
               ].map((hl) => (
                 <div
                   key={hl.id}
@@ -1548,18 +1549,18 @@ export default function UpdatesView() {
                     justifyContent: 'space-between',
                     padding: '6px 8px',
                     borderRadius: '6px',
-                    backgroundColor: 'var(--bg-elevated, #141B26)',
-                    border: '1px solid var(--border-subtle, #1B2531)',
+                    backgroundColor: 'var(--bg-elevated)',
+                    border: '1px solid var(--border-subtle)',
                     cursor: 'pointer',
                     transition: 'all 0.1s ease',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--bg-card-hover, #17202C)';
-                    e.currentTarget.style.borderColor = 'var(--border-hover, #344154)';
+                    e.currentTarget.style.backgroundColor = 'var(--bg-card-hover)';
+                    e.currentTarget.style.borderColor = 'var(--border-hover)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--bg-elevated, #141B26)';
-                    e.currentTarget.style.borderColor = 'var(--border-subtle, #1B2531)';
+                    e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
+                    e.currentTarget.style.borderColor = 'var(--border-subtle)';
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
@@ -1576,11 +1577,11 @@ export default function UpdatesView() {
                     >
                       {hl.tag}
                     </span>
-                    <span style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-primary, #F3F6FA)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {hl.title}
                     </span>
                   </div>
-                  <span style={{ fontSize: '10px', color: 'var(--text-muted, #748091)', flexShrink: 0, marginLeft: '6px' }}>{hl.time}</span>
+                  <span style={{ fontSize: '10px', color: 'var(--text-muted)', flexShrink: 0, marginLeft: '6px' }}>{hl.time}</span>
                 </div>
               ))}
             </div>
@@ -1589,19 +1590,19 @@ export default function UpdatesView() {
           {/* Card 2: Ask UrbanPulse */}
           <div
             style={{
-              backgroundColor: 'var(--bg-card, #111821)',
+              backgroundColor: 'var(--bg-card)',
               borderRadius: '12px',
-              border: '1px solid var(--border, #263241)',
+              border: '1px solid var(--border)',
               padding: '14px 16px',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
+              boxShadow: 'var(--card-shadow)',
               display: 'flex',
               flexDirection: 'column',
               gap: '8px',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', borderBottom: '1px solid var(--border-subtle, #1B2531)', paddingBottom: '6px' }}>
-              <SparklesIcon size={14} color="#60A5FA" />
-              <h3 style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--text-primary, #F3F6FA)', margin: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '6px' }}>
+              <SparklesIcon size={14} color="var(--accent-primary)" />
+              <h3 style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
                 Ask UrbanPulse
               </h3>
             </div>
@@ -1620,10 +1621,10 @@ export default function UpdatesView() {
                     textAlign: 'left',
                     padding: '6px 8px',
                     borderRadius: '6px',
-                    backgroundColor: 'var(--bg-elevated, #141B26)',
-                    border: '1px solid var(--border, #263241)',
+                    backgroundColor: 'var(--bg-elevated)',
+                    border: '1px solid var(--border)',
                     fontSize: '11.5px',
-                    color: 'var(--text-secondary, #AAB4C2)',
+                    color: 'var(--text-secondary)',
                     fontWeight: 600,
                     cursor: 'pointer',
                     transition: 'all 0.12s ease',
@@ -1632,18 +1633,18 @@ export default function UpdatesView() {
                     justifyContent: 'space-between',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--bg-card-hover, #17202C)';
-                    e.currentTarget.style.borderColor = '#3B82F6';
-                    e.currentTarget.style.color = '#60A5FA';
+                    e.currentTarget.style.backgroundColor = 'var(--bg-card-hover)';
+                    e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                    e.currentTarget.style.color = 'var(--accent-primary)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--bg-elevated, #141B26)';
-                    e.currentTarget.style.borderColor = 'var(--border, #263241)';
-                    e.currentTarget.style.color = 'var(--text-secondary, #AAB4C2)';
+                    e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
+                    e.currentTarget.style.borderColor = 'var(--border)';
+                    e.currentTarget.style.color = 'var(--text-secondary)';
                   }}
                 >
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q}</span>
-                  <ChevronRightIcon size={12} color="var(--text-muted, #748091)" />
+                  <ChevronRightIcon size={12} color="var(--text-muted)" />
                 </button>
               ))}
             </div>
@@ -1655,9 +1656,9 @@ export default function UpdatesView() {
           style={{
             flex: 1,
             minHeight: '130px',
-            backgroundColor: 'var(--bg-card, #111821)',
+            backgroundColor: 'var(--bg-card)',
             borderRadius: '12px',
-            border: '1px solid var(--border, #263241)',
+            border: '1px solid var(--border)',
             padding: '12px 16px',
             display: 'flex',
             flexDirection: 'column',
@@ -1665,7 +1666,7 @@ export default function UpdatesView() {
             overflowY: 'auto',
           }}
         >
-          <div style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-muted, #748091)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+          <div style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
             Agent Intelligence Dialogue
           </div>
 
@@ -1676,14 +1677,14 @@ export default function UpdatesView() {
                 style={{
                   alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
                   maxWidth: '85%',
-                  backgroundColor: msg.role === 'user' ? '#2563EB' : 'var(--bg-elevated, #141B26)',
-                  color: msg.role === 'user' ? '#FFFFFF' : 'var(--text-primary, #F3F6FA)',
+                  backgroundColor: msg.role === 'user' ? 'var(--button)' : 'var(--bg-elevated)',
+                  color: msg.role === 'user' ? 'var(--button-foreground)' : 'var(--text-primary)',
                   padding: '8px 12px',
                   borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
                   fontSize: '12px',
                   lineHeight: 1.5,
                   whiteSpace: 'pre-line',
-                  border: msg.role === 'user' ? 'none' : '1px solid var(--border, #263241)',
+                  border: msg.role === 'user' ? 'none' : '1px solid var(--border)',
                 }}
               >
                 {msg.text}
@@ -1693,15 +1694,15 @@ export default function UpdatesView() {
               <div
                 style={{
                   alignSelf: 'flex-start',
-                  backgroundColor: 'var(--bg-elevated, #141B26)',
+                  backgroundColor: 'var(--bg-elevated)',
                   padding: '6px 12px',
                   borderRadius: '10px',
                   fontSize: '11.5px',
-                  color: 'var(--text-muted, #748091)',
+                  color: 'var(--text-muted)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  border: '1px solid var(--border, #263241)',
+                  border: '1px solid var(--border)',
                 }}
               >
                 <span
@@ -1709,7 +1710,7 @@ export default function UpdatesView() {
                     width: '6px',
                     height: '6px',
                     borderRadius: '50%',
-                    backgroundColor: '#3B82F6',
+                    backgroundColor: 'var(--accent-primary)',
                     animation: 'pulse 1s infinite',
                   }}
                 />
@@ -1725,12 +1726,12 @@ export default function UpdatesView() {
           style={{
             display: 'flex',
             alignItems: 'center',
-            backgroundColor: 'var(--bg-header, #0C1119)',
+            backgroundColor: 'var(--bg-header)',
             borderRadius: '10px',
-            border: '1px solid var(--border, #263241)',
+            border: '1px solid var(--border)',
             padding: '4px 6px 4px 12px',
             gap: '8px',
-            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
+            boxShadow: 'var(--shadow-sm)',
             flexShrink: 0,
           }}
         >
@@ -1750,7 +1751,7 @@ export default function UpdatesView() {
               border: 'none',
               outline: 'none',
               fontSize: '13px',
-              color: 'var(--text-primary, #F3F6FA)',
+              color: 'var(--text-primary)',
               backgroundColor: 'transparent',
             }}
           />
@@ -1761,9 +1762,9 @@ export default function UpdatesView() {
               width: '34px',
               height: '34px',
               borderRadius: '8px',
-              backgroundColor: chatQuery.trim() ? '#2563EB' : 'var(--bg-elevated, #141B26)',
+              backgroundColor: chatQuery.trim() ? 'var(--button)' : 'var(--bg-elevated)',
               border: 'none',
-              color: '#FFFFFF',
+              color: 'var(--button-foreground)',
               cursor: chatQuery.trim() ? 'pointer' : 'default',
               display: 'flex',
               alignItems: 'center',
@@ -1772,7 +1773,7 @@ export default function UpdatesView() {
             }}
             title="Send Query to UrbanPulse Agent"
           >
-            <SendIcon size={15} color={chatQuery.trim() ? '#FFFFFF' : 'var(--text-muted, #748091)'} />
+            <SendIcon size={15} color={chatQuery.trim() ? 'var(--button-foreground)' : 'var(--text-muted)'} />
           </button>
         </div>
       </main>
@@ -1800,10 +1801,10 @@ export default function UpdatesView() {
             style={{
               width: '100%',
               maxWidth: '520px',
-              backgroundColor: 'var(--bg-panel, #101620)',
+              backgroundColor: 'var(--bg-panel)',
               borderRadius: '16px',
-              boxShadow: '0 20px 30px rgba(0, 0, 0, 0.6)',
-              border: '1px solid var(--border, #263241)',
+              boxShadow: 'var(--shadow-panel)',
+              border: '1px solid var(--border)',
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
@@ -1814,11 +1815,11 @@ export default function UpdatesView() {
             <div
               style={{
                 padding: '16px 20px',
-                borderBottom: '1px solid var(--border-subtle, #1B2531)',
+                borderBottom: '1px solid var(--border-subtle)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                backgroundColor: 'var(--bg-header, #0C1119)',
+                backgroundColor: 'var(--bg-header)',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1856,7 +1857,7 @@ export default function UpdatesView() {
                   background: 'transparent',
                   border: 'none',
                   cursor: 'pointer',
-                  color: 'var(--text-muted, #748091)',
+                  color: 'var(--text-muted)',
                   padding: '4px',
                 }}
               >
@@ -1866,20 +1867,20 @@ export default function UpdatesView() {
 
             {/* Modal Body */}
             <div style={{ padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary, #F3F6FA)', margin: 0, lineHeight: 1.35 }}>
+              <h2 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1.35 }}>
                 {selectedUpdate.headline}
               </h2>
 
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary, #AAB4C2)', margin: 0, lineHeight: 1.55 }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.55 }}>
                 {selectedUpdate.description}
               </p>
 
               {/* Specific metadata table */}
               <div
                 style={{
-                  backgroundColor: 'var(--bg-elevated, #141B26)',
+                  backgroundColor: 'var(--bg-elevated)',
                   borderRadius: '8px',
-                  border: '1px solid var(--border, #263241)',
+                  border: '1px solid var(--border)',
                   padding: '12px 14px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -1888,44 +1889,44 @@ export default function UpdatesView() {
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: 'var(--text-muted, #748091)', fontWeight: 600 }}>Location:</span>
-                  <span style={{ color: 'var(--text-primary, #F3F6FA)', fontWeight: 700 }}>{selectedUpdate.location}</span>
+                  <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Location:</span>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{selectedUpdate.location}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: 'var(--text-muted, #748091)', fontWeight: 600 }}>Coordinates:</span>
-                  <span style={{ color: '#60A5FA', fontWeight: 600 }}>
+                  <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Coordinates:</span>
+                  <span style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>
                     {selectedUpdate.latitude.toFixed(4)}° N, {selectedUpdate.longitude.toFixed(4)}° E
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: 'var(--text-muted, #748091)', fontWeight: 600 }}>Reported At:</span>
-                  <span style={{ color: 'var(--text-primary, #F3F6FA)', fontWeight: 600 }}>
+                  <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Reported At:</span>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
                     {selectedUpdate.timestamp} ({selectedUpdate.timeAgo})
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: 'var(--text-muted, #748091)', fontWeight: 600 }}>Reporting Authority:</span>
-                  <span style={{ color: 'var(--text-primary, #F3F6FA)', fontWeight: 600 }}>{selectedUpdate.agency}</span>
+                  <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Reporting Authority:</span>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{selectedUpdate.agency}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: 'var(--text-muted, #748091)', fontWeight: 600 }}>Operation Status:</span>
-                  <span style={{ color: '#4ADE80', fontWeight: 700 }}>{selectedUpdate.status}</span>
+                  <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Operation Status:</span>
+                  <span style={{ color: 'var(--status-good-text)', fontWeight: 700 }}>{selectedUpdate.status}</span>
                 </div>
               </div>
 
               {/* Impact / Action Advice */}
               <div
                 style={{
-                  backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                  backgroundColor: 'var(--badge-info-bg)',
                   borderRadius: '8px',
-                  border: '1px solid rgba(59, 130, 246, 0.25)',
+                  border: '1px solid var(--badge-info-border)',
                   padding: '12px 14px',
                 }}
               >
-                <div style={{ fontSize: '11px', fontWeight: 700, color: '#60A5FA', textTransform: 'uppercase', marginBottom: '2px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--badge-info-text)', textTransform: 'uppercase', marginBottom: '2px' }}>
                   Civic Impact & Advisory
                 </div>
-                <div style={{ fontSize: '12.5px', color: '#93C5FD', lineHeight: 1.45 }}>
+                <div style={{ fontSize: '12.5px', color: 'var(--text-primary)', lineHeight: 1.45 }}>
                   {selectedUpdate.impact}
                 </div>
               </div>
@@ -1935,11 +1936,11 @@ export default function UpdatesView() {
             <div
               style={{
                 padding: '12px 20px',
-                borderTop: '1px solid var(--border-subtle, #1B2531)',
+                borderTop: '1px solid var(--border-subtle)',
                 display: 'flex',
                 justifyContent: 'flex-end',
                 gap: '8px',
-                backgroundColor: 'var(--bg-header, #0C1119)',
+                backgroundColor: 'var(--bg-header)',
               }}
             >
               <button
@@ -1950,8 +1951,8 @@ export default function UpdatesView() {
                 style={{
                   padding: '7px 14px',
                   borderRadius: '6px',
-                  backgroundColor: '#2563EB',
-                  color: '#FFFFFF',
+                  backgroundColor: 'var(--button)',
+                  color: 'var(--button-foreground)',
                   fontSize: '12px',
                   fontWeight: 700,
                   border: 'none',
@@ -1965,11 +1966,11 @@ export default function UpdatesView() {
                 style={{
                   padding: '7px 14px',
                   borderRadius: '6px',
-                  backgroundColor: 'var(--bg-elevated, #141B26)',
-                  color: 'var(--text-secondary, #AAB4C2)',
+                  backgroundColor: 'var(--bg-elevated)',
+                  color: 'var(--text-secondary)',
                   fontSize: '12px',
                   fontWeight: 600,
-                  border: '1px solid var(--border, #263241)',
+                  border: '1px solid var(--border)',
                   cursor: 'pointer',
                 }}
               >

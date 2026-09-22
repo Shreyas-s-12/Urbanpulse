@@ -15,12 +15,13 @@ const CrisisRadar3D = dynamic(() => import('@/components/rag/3d/CrisisRadar3D'),
     <div
       style={{
         height: '180px',
-        backgroundColor: '#0F172A',
+        backgroundColor: 'var(--bg-card)',
+        border: '1px solid var(--border-subtle)',
         borderRadius: '8px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: '#94A3B8',
+        color: 'var(--text-muted)',
         fontSize: '11px',
       }}
     >
@@ -112,10 +113,10 @@ export default function CrisisRAGWorkspace({
             {/* Situation Map */}
             <div
               style={{
-                backgroundColor: 'var(--bg-panel, #101620)',
+                backgroundColor: 'var(--bg-panel)',
                 borderRadius: '12px',
-                border: '1px solid var(--border-subtle, #1B2531)',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                border: '1px solid var(--border-subtle)',
+                boxShadow: 'var(--shadow-sm)',
                 overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
@@ -124,7 +125,7 @@ export default function CrisisRAGWorkspace({
               <div
                 style={{
                   padding: '12px 16px',
-                  borderBottom: '1px solid #E2E8F0',
+                  borderBottom: '1px solid var(--border-subtle)',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
@@ -135,14 +136,14 @@ export default function CrisisRAGWorkspace({
                     style={{
                       fontSize: '11px',
                       fontWeight: 700,
-                      color: '#DC2626',
+                      color: 'var(--badge-danger-text)',
                       textTransform: 'uppercase',
                       letterSpacing: '0.4px',
                     }}
                   >
                     Tactical Situation Map
                   </div>
-                  <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#0F172A' }}>
+                  <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
                     Emergency Evacuation & Route Corridors
                   </div>
                 </div>
@@ -152,12 +153,12 @@ export default function CrisisRAGWorkspace({
                     fontWeight: 700,
                     padding: '2px 7px',
                     borderRadius: '4px',
-                    backgroundColor: '#FEF2F2',
-                    color: '#DC2626',
-                    border: '1px solid #FECACA',
+                    backgroundColor: 'var(--badge-danger-bg)',
+                    color: 'var(--badge-danger-text)',
+                    border: '1px solid var(--badge-danger-border)',
                   }}
                 >
-                  Live Readiness
+                  Active Incident Zone
                 </span>
               </div>
 
@@ -177,10 +178,10 @@ export default function CrisisRAGWorkspace({
               <div
                 style={{
                   padding: '10px 14px',
-                  backgroundColor: 'var(--bg-card, #111821)',
-                  borderTop: '1px solid #E2E8F0',
+                  backgroundColor: 'var(--bg-card)',
+                  borderTop: '1px solid var(--border-subtle)',
                   fontSize: '11px',
-                  color: '#475569',
+                  color: 'var(--text-secondary)',
                   display: 'flex',
                   justifyContent: 'space-between',
                   flexWrap: 'wrap',
@@ -205,11 +206,11 @@ export default function CrisisRAGWorkspace({
             {/* Designated Shelters & Transit Closures */}
             <div
               style={{
-                backgroundColor: 'var(--bg-panel, #101620)',
+                backgroundColor: 'var(--bg-panel)',
                 borderRadius: '12px',
-                border: '1px solid var(--border-subtle, #1B2531)',
+                border: '1px solid var(--border-subtle)',
                 padding: '16px',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                boxShadow: 'var(--shadow-sm)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px',
@@ -219,7 +220,7 @@ export default function CrisisRAGWorkspace({
                 style={{
                   fontSize: '11px',
                   fontWeight: 700,
-                  color: '#0F172A',
+                  color: 'var(--text-primary)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.4px',
                 }}
@@ -229,7 +230,7 @@ export default function CrisisRAGWorkspace({
 
               {/* Transit Corridors */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748B' }}>
+                <div style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-muted)' }}>
                   Transit Corridors Status:
                 </div>
                 {context?.roadShelterInfo?.openCorridors?.map((corr: string, idx: number) => (
@@ -237,58 +238,39 @@ export default function CrisisRAGWorkspace({
                     key={`open-${idx}`}
                     style={{
                       fontSize: '11px',
-                      color: '#16A34A',
+                      color: 'var(--badge-success-text)',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '6px',
+                      gap: '5px',
                     }}
                   >
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#16A34A' }} />
-                    {corr}
-                  </div>
-                ))}
-                {context?.roadShelterInfo?.closures?.map((closure: string, idx: number) => (
-                  <div
-                    key={`closed-${idx}`}
-                    style={{
-                      fontSize: '11px',
-                      color: '#DC2626',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      backgroundColor: '#FEF2F2',
-                      padding: '6px 8px',
-                      borderRadius: '4px',
-                      border: '1px solid #FECACA',
-                    }}
-                  >
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#DC2626' }} />
-                    {closure}
+                    <span>✓</span>
+                    <span>{corr}</span>
                   </div>
                 ))}
               </div>
 
-              {/* Shelter Points */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '6px' }}>
-                <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748B' }}>
-                  Designated Civil Shelters:
+              {/* Shelters List */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-muted)' }}>
+                  Operational Shelters:
                 </div>
-                {context?.roadShelterInfo?.designatedShelters?.map((shelter: any, idx: number) => (
+                {context?.roadShelterInfo?.shelters?.map((shelter: any, idx: number) => (
                   <div
-                    key={`shelter-${idx}`}
+                    key={idx}
                     style={{
-                      backgroundColor: 'var(--bg-card, #111821)',
+                      backgroundColor: 'var(--bg-card)',
                       padding: '8px 10px',
                       borderRadius: '6px',
-                      border: '1px solid var(--border-subtle, #1B2531)',
+                      border: '1px solid var(--border-subtle)',
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
                     }}
                   >
                     <div>
-                      <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#0F172A' }}>{shelter.name}</div>
-                      <div style={{ fontSize: '10.5px', color: '#64748B' }}>
+                      <div style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-primary)' }}>{shelter.name}</div>
+                      <div style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>
                         Capacity: {shelter.capacity} persons · Distance: {shelter.distanceKm} km
                       </div>
                     </div>
@@ -298,8 +280,8 @@ export default function CrisisRAGWorkspace({
                         fontWeight: 700,
                         padding: '2px 6px',
                         borderRadius: '4px',
-                        backgroundColor: shelter.status === 'READY' ? '#DCFCE7' : '#EFF6FF',
-                        color: shelter.status === 'READY' ? '#16A34A' : '#2563EB',
+                        backgroundColor: shelter.status === 'READY' ? 'var(--badge-success-bg)' : 'var(--badge-info-bg)',
+                        color: shelter.status === 'READY' ? 'var(--badge-success-text)' : 'var(--badge-info-text)',
                       }}
                     >
                       {shelter.status}
@@ -315,11 +297,11 @@ export default function CrisisRAGWorkspace({
             {/* AI Situation Brief */}
             <div
               style={{
-                backgroundColor: 'var(--bg-panel, #101620)',
+                backgroundColor: 'var(--bg-panel)',
                 borderRadius: '12px',
-                border: '1px solid var(--border-subtle, #1B2531)',
+                border: '1px solid var(--border-subtle)',
                 padding: '16px',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                boxShadow: 'var(--shadow-sm)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '10px',
@@ -329,7 +311,7 @@ export default function CrisisRAGWorkspace({
                 style={{
                   fontSize: '11px',
                   fontWeight: 700,
-                  color: '#DC2626',
+                  color: 'var(--badge-danger-text)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.4px',
                 }}
@@ -338,12 +320,12 @@ export default function CrisisRAGWorkspace({
               </div>
               <div
                 style={{
-                  backgroundColor: '#FEF2F2',
-                  borderLeft: '3px solid #DC2626',
+                  backgroundColor: 'var(--badge-danger-bg)',
+                  borderLeft: '3px solid var(--badge-danger-text)',
                   borderRadius: '0 6px 6px 0',
                   padding: '10px 14px',
                   fontSize: '12px',
-                  color: '#334155',
+                  color: 'var(--text-primary)',
                   lineHeight: 1.5,
                 }}
               >
@@ -355,18 +337,18 @@ export default function CrisisRAGWorkspace({
             {/* Current Active Emergency Alerts */}
             <div
               style={{
-                backgroundColor: 'var(--bg-panel, #101620)',
+                backgroundColor: 'var(--bg-panel)',
                 borderRadius: '12px',
-                border: '1px solid var(--border-subtle, #1B2531)',
+                border: '1px solid var(--border-subtle)',
                 padding: '16px',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                boxShadow: 'var(--shadow-sm)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '10px',
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>
                   Active Emergency Notices ({context?.currentAlerts?.length ?? 2})
                 </span>
                 <span
@@ -375,9 +357,9 @@ export default function CrisisRAGWorkspace({
                     fontWeight: 700,
                     padding: '2px 7px',
                     borderRadius: '4px',
-                    backgroundColor: '#FEF3C7',
-                    color: '#D97706',
-                    border: '1px solid #FDE68A',
+                    backgroundColor: 'var(--badge-warning-bg)',
+                    color: 'var(--badge-warning-text)',
+                    border: '1px solid var(--badge-warning-border)',
                   }}
                 >
                   Amber Watch
@@ -389,34 +371,34 @@ export default function CrisisRAGWorkspace({
                   <div
                     key={idx}
                     style={{
-                      backgroundColor: 'var(--bg-card, #111821)',
+                      backgroundColor: 'var(--bg-card)',
                       padding: '10px 12px',
                       borderRadius: '8px',
-                      border: '1px solid var(--border-subtle, #1B2531)',
+                      border: '1px solid var(--border-subtle)',
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>{alert.title}</div>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>{alert.title}</div>
                       <span
                         style={{
                           fontSize: '9px',
                           fontWeight: 700,
                           padding: '2px 6px',
                           borderRadius: '4px',
-                          backgroundColor: alert.severity === 'MODERATE' ? '#FEF3C7' : '#EFF6FF',
-                          color: alert.severity === 'MODERATE' ? '#D97706' : '#2563EB',
+                          backgroundColor: alert.severity === 'MODERATE' ? 'var(--badge-warning-bg)' : 'var(--badge-info-bg)',
+                          color: alert.severity === 'MODERATE' ? 'var(--badge-warning-text)' : 'var(--badge-info-text)',
                         }}
                       >
                         {alert.severity}
                       </span>
                     </div>
-                    <div style={{ fontSize: '11px', color: '#475569', marginTop: '4px', lineHeight: 1.4 }}>
+                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: 1.4 }}>
                       {alert.instructions}
                     </div>
                     <div
                       style={{
                         fontSize: '9.5px',
-                        color: '#64748B',
+                        color: 'var(--text-muted)',
                         marginTop: '6px',
                         display: 'flex',
                         justifyContent: 'space-between',
@@ -433,11 +415,11 @@ export default function CrisisRAGWorkspace({
             {/* Official Disaster Advisories / Citations */}
             <div
               style={{
-                backgroundColor: 'var(--bg-panel, #101620)',
+                backgroundColor: 'var(--bg-panel)',
                 borderRadius: '12px',
-                border: '1px solid var(--border-subtle, #1B2531)',
+                border: '1px solid var(--border-subtle)',
                 padding: '16px',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                boxShadow: 'var(--shadow-sm)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '10px',
@@ -445,10 +427,10 @@ export default function CrisisRAGWorkspace({
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>
                   Official Disaster Management Directives
                 </span>
-                <span style={{ fontSize: '10.5px', color: '#64748B' }}>
+                <span style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>
                   {context?.officialAdvisories?.length ?? 3} Verified Protocols
                 </span>
               </div>
@@ -465,11 +447,11 @@ export default function CrisisRAGWorkspace({
         {/* Temporal Categorization Section */}
         <div
           style={{
-            backgroundColor: 'var(--bg-panel, #101620)',
+            backgroundColor: 'var(--bg-panel)',
             borderRadius: '12px',
-            border: '1px solid var(--border-subtle, #1B2531)',
+            border: '1px solid var(--border-subtle)',
             padding: '16px',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+            boxShadow: 'var(--shadow-sm)',
             display: 'flex',
             flexDirection: 'column',
             gap: '12px',
@@ -481,14 +463,14 @@ export default function CrisisRAGWorkspace({
                 style={{
                   fontSize: '11px',
                   fontWeight: 700,
-                  color: '#2563EB',
+                  color: 'var(--accent-primary)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.4px',
                 }}
               >
                 Strict Temporal Event Segregation
               </div>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>
                 Multi-Horizon Incident Horizon (Never Confuse Historical Incidents with Current Emergencies)
               </div>
             </div>
@@ -506,9 +488,9 @@ export default function CrisisRAGWorkspace({
                     fontWeight: 700,
                     cursor: 'pointer',
                     border: '1px solid',
-                    backgroundColor: activeEventTab === tab ? '#2563EB' : '#F8FAFC',
-                    color: activeEventTab === tab ? '#FFFFFF' : '#475569',
-                    borderColor: activeEventTab === tab ? '#2563EB' : '#E2E8F0',
+                    backgroundColor: activeEventTab === tab ? 'var(--button)' : 'var(--bg-card)',
+                    color: activeEventTab === tab ? 'var(--button-foreground)' : 'var(--text-secondary)',
+                    borderColor: activeEventTab === tab ? 'var(--button)' : 'var(--border)',
                     transition: 'all 0.15s ease',
                   }}
                 >
@@ -525,17 +507,17 @@ export default function CrisisRAGWorkspace({
                 key={idx}
                 style={{
                   padding: '10px 14px',
-                  backgroundColor: '#F8FAFC',
+                  backgroundColor: 'var(--bg-card)',
                   borderRadius: '8px',
-                  border: '1px solid #E2E8F0',
+                  border: '1px solid var(--border-subtle)',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
                 }}
               >
                 <div>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A' }}>{ev.title}</div>
-                  <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>{ev.title}</div>
+                  <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', marginTop: '2px' }}>
                     Category: {ev.category} · Timestamp: {ev.time}
                   </div>
                 </div>
@@ -548,20 +530,20 @@ export default function CrisisRAGWorkspace({
                       borderRadius: '4px',
                       backgroundColor:
                         activeEventTab === 'CURRENT'
-                          ? '#FEF2F2'
+                          ? 'var(--badge-danger-bg)'
                           : activeEventTab === 'RECENT'
-                          ? '#FEF3C7'
+                          ? 'var(--badge-warning-bg)'
                           : activeEventTab === 'HISTORICAL'
-                          ? '#EFF6FF'
-                          : '#F3E8FF',
+                          ? 'var(--badge-info-bg)'
+                          : 'var(--badge-neutral-bg)',
                       color:
                         activeEventTab === 'CURRENT'
-                          ? '#DC2626'
+                          ? 'var(--badge-danger-text)'
                           : activeEventTab === 'RECENT'
-                          ? '#D97706'
+                          ? 'var(--badge-warning-text)'
                           : activeEventTab === 'HISTORICAL'
-                          ? '#2563EB'
-                          : '#7E22CE',
+                          ? 'var(--badge-info-text)'
+                          : 'var(--badge-neutral-text)',
                     }}
                   >
                     {ev.status}
@@ -571,7 +553,7 @@ export default function CrisisRAGWorkspace({
             ))}
             {(!context?.categorizedEvents?.[activeEventTab] ||
               context?.categorizedEvents?.[activeEventTab].length === 0) && (
-              <div style={{ padding: '16px', textAlign: 'center', fontSize: '11px', color: '#64748B' }}>
+              <div style={{ padding: '16px', textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)' }}>
                 No records found in {activeEventTab} event horizon.
               </div>
             )}

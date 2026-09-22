@@ -69,11 +69,11 @@ export default function MapControlBar({
             height: '34px',
             width: '34px',
             borderRadius: 'var(--radius-md, 8px)',
-            backgroundColor: 'var(--bg-card, #FFFFFF)',
+            backgroundColor: 'var(--overlay-bg)',
             backdropFilter: 'blur(10px)',
-            border: '1px solid var(--border, #E2E7EF)',
-            boxShadow: 'var(--card-shadow, 0 2px 6px rgba(15, 23, 42, 0.08))',
-            color: 'var(--accent-primary, #2563EB)',
+            border: '1px solid var(--border)',
+            boxShadow: 'var(--card-shadow)',
+            color: 'var(--accent-primary)',
             cursor: 'pointer',
             display: 'inline-flex',
             alignItems: 'center',
@@ -82,17 +82,17 @@ export default function MapControlBar({
             transition: 'all 0.15s ease',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--bg-card-hover, #F3F6FA)';
-            e.currentTarget.style.borderColor = 'var(--accent-primary, #2563EB)';
+            e.currentTarget.style.backgroundColor = 'var(--bg-card-hover)';
+            e.currentTarget.style.borderColor = 'var(--accent-primary)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--bg-card, #FFFFFF)';
-            e.currentTarget.style.borderColor = 'var(--border, #E2E7EF)';
+            e.currentTarget.style.backgroundColor = 'var(--overlay-bg)';
+            e.currentTarget.style.borderColor = 'var(--border)';
           }}
         >
           <CompassIcon
             size={17}
-            color="var(--accent-primary, #2563EB)"
+            color="var(--accent-primary)"
             style={{
               transform: `rotate(${-heading}deg)`,
               transition: 'transform 0.2s ease',
@@ -106,11 +106,11 @@ export default function MapControlBar({
         style={{
           display: 'inline-flex',
           alignItems: 'center',
-          backgroundColor: 'var(--bg-card, #FFFFFF)',
+          backgroundColor: 'var(--overlay-bg)',
           backdropFilter: 'blur(10px)',
           borderRadius: 'var(--radius-md, 8px)',
-          border: '1px solid var(--border, #E2E7EF)',
-          boxShadow: 'var(--card-shadow, 0 2px 6px rgba(15, 23, 42, 0.08))',
+          border: '1px solid var(--border)',
+          boxShadow: 'var(--card-shadow)',
           padding: '2px',
           height: '34px',
           boxSizing: 'border-box',
@@ -129,11 +129,11 @@ export default function MapControlBar({
                 height: '28px',
                 padding: '0 10px',
                 borderRadius: '6px',
-                border: isActive ? '1px solid var(--accent-primary-soft, #BFDBFE)' : '1px solid transparent',
+                border: isActive ? '1px solid var(--accent-primary)' : '1px solid transparent',
                 fontSize: '11.5px',
                 fontWeight: isActive ? 700 : 500,
-                backgroundColor: isActive ? 'var(--accent-primary-light, #EFF6FF)' : 'transparent',
-                color: isActive ? 'var(--accent-primary, #2563EB)' : 'var(--text-secondary, #566174)',
+                backgroundColor: isActive ? 'var(--accent-primary-light)' : 'transparent',
+                color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
                 display: 'inline-flex',
@@ -143,14 +143,14 @@ export default function MapControlBar({
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  e.currentTarget.style.backgroundColor = 'var(--bg-card-hover, #F3F6FA)';
-                  e.currentTarget.style.color = 'var(--text-primary, #172033)';
+                  e.currentTarget.style.backgroundColor = 'var(--bg-card-hover)';
+                  e.currentTarget.style.color = 'var(--text-primary)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
                   e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.color = 'var(--text-secondary, #566174)';
+                  e.currentTarget.style.color = 'var(--text-secondary)';
                 }
               }}
             >

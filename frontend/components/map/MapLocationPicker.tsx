@@ -51,11 +51,11 @@ export default function MapLocationPicker({ onAdjustPrompt }: MapLocationPickerP
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 45,
-          backgroundColor: 'rgba(255, 255, 255, 0.98)',
+          backgroundColor: 'var(--overlay-bg)',
           backdropFilter: 'blur(12px)',
           borderRadius: '12px',
-          border: '1px solid #CBD5E1',
-          boxShadow: '0 8px 30px rgba(15, 23, 42, 0.16)',
+          border: '1px solid var(--border)',
+          boxShadow: 'var(--shadow-panel)',
           padding: '10px 18px',
           display: 'flex',
           alignItems: 'center',
@@ -70,8 +70,8 @@ export default function MapLocationPicker({ onAdjustPrompt }: MapLocationPickerP
               width: '28px',
               height: '28px',
               borderRadius: '50%',
-              backgroundColor: '#EFF6FF',
-              color: '#2563EB',
+              backgroundColor: 'var(--accent-primary-light)',
+              color: 'var(--accent-primary)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -83,10 +83,10 @@ export default function MapLocationPicker({ onAdjustPrompt }: MapLocationPickerP
             </svg>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
+            <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>
               Click anywhere on the map
             </span>
-            <span style={{ fontSize: '11px', color: '#64748B' }}>
+            <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
               Select any street, building, or open road
             </span>
           </div>
@@ -98,16 +98,16 @@ export default function MapLocationPicker({ onAdjustPrompt }: MapLocationPickerP
           style={{
             padding: '6px 14px',
             borderRadius: '6px',
-            backgroundColor: '#F1F5F9',
-            color: '#475569',
-            border: '1px solid #CBD5E1',
+            backgroundColor: 'var(--button-secondary)',
+            color: 'var(--button-secondary-foreground)',
+            border: '1px solid var(--button-secondary-border)',
             fontSize: '12px',
             fontWeight: 600,
             cursor: 'pointer',
             transition: 'background-color 0.15s',
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#E2E8F0')}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#F1F5F9')}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--button-secondary-hover)')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--button-secondary)')}
         >
           Cancel
         </button>
@@ -141,11 +141,11 @@ export default function MapLocationPicker({ onAdjustPrompt }: MapLocationPickerP
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 45,
-        backgroundColor: 'rgba(255, 255, 255, 0.98)',
+        backgroundColor: 'var(--overlay-bg)',
         backdropFilter: 'blur(12px)',
         borderRadius: '14px',
-        border: '1px solid #CBD5E1',
-        boxShadow: '0 10px 32px rgba(15, 23, 42, 0.18)',
+        border: '1px solid var(--border)',
+        boxShadow: 'var(--shadow-panel)',
         padding: '14px 20px',
         display: 'flex',
         flexDirection: 'column',
@@ -164,7 +164,7 @@ export default function MapLocationPicker({ onAdjustPrompt }: MapLocationPickerP
               style={{
                 fontSize: '10px',
                 fontWeight: 800,
-                color: '#2563EB',
+                color: 'var(--accent-primary)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.6px',
               }}
@@ -175,8 +175,8 @@ export default function MapLocationPicker({ onAdjustPrompt }: MapLocationPickerP
               style={{
                 fontSize: '10px',
                 fontWeight: 600,
-                color: '#64748B',
-                backgroundColor: '#F1F5F9',
+                color: 'var(--text-secondary)',
+                backgroundColor: 'var(--bg-surface-secondary)',
                 padding: '1px 6px',
                 borderRadius: '4px',
               }}
@@ -189,7 +189,7 @@ export default function MapLocationPicker({ onAdjustPrompt }: MapLocationPickerP
             style={{
               fontSize: '13.5px',
               fontWeight: 700,
-              color: '#0F172A',
+              color: 'var(--text-primary)',
               lineHeight: 1.3,
               maxWidth: '360px',
             }}
@@ -197,7 +197,7 @@ export default function MapLocationPicker({ onAdjustPrompt }: MapLocationPickerP
             {addressText}
           </div>
 
-          <div style={{ fontSize: '11px', color: '#64748B', fontFamily: 'monospace' }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
             {mapClickDraft.latitude.toFixed(5)}° N, {mapClickDraft.longitude.toFixed(5)}° E
           </div>
 
@@ -228,8 +228,8 @@ export default function MapLocationPicker({ onAdjustPrompt }: MapLocationPickerP
             flex: 1,
             padding: '8px 16px',
             borderRadius: '8px',
-            backgroundColor: '#2563EB',
-            color: '#FFFFFF',
+            backgroundColor: 'var(--button)',
+            color: 'var(--button-foreground)',
             border: 'none',
             fontSize: '12.5px',
             fontWeight: 700,
@@ -237,8 +237,8 @@ export default function MapLocationPicker({ onAdjustPrompt }: MapLocationPickerP
             boxShadow: '0 2px 6px rgba(37, 99, 235, 0.3)',
             transition: 'background-color 0.15s',
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1D4ED8')}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#2563EB')}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--button-hover)')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--button)')}
         >
           Use this location
         </button>
@@ -249,9 +249,9 @@ export default function MapLocationPicker({ onAdjustPrompt }: MapLocationPickerP
           style={{
             padding: '8px 14px',
             borderRadius: '8px',
-            backgroundColor: isAdjustMode ? '#EFF6FF' : '#F8FAFC',
-            color: isAdjustMode ? '#2563EB' : '#475569',
-            border: `1px solid ${isAdjustMode ? '#93C5FD' : '#CBD5E1'}`,
+            backgroundColor: isAdjustMode ? 'var(--accent-primary-light)' : 'var(--button-secondary)',
+            color: isAdjustMode ? 'var(--accent-primary)' : 'var(--button-secondary-foreground)',
+            border: `1px solid ${isAdjustMode ? 'var(--accent-primary)' : 'var(--button-secondary-border)'}`,
             fontSize: '12px',
             fontWeight: 600,
             cursor: 'pointer',
@@ -268,14 +268,14 @@ export default function MapLocationPicker({ onAdjustPrompt }: MapLocationPickerP
             padding: '8px 12px',
             borderRadius: '8px',
             backgroundColor: 'transparent',
-            color: '#64748B',
-            border: '1px solid #CBD5E1',
+            color: 'var(--text-secondary)',
+            border: '1px solid var(--border)',
             fontSize: '12px',
             fontWeight: 600,
             cursor: 'pointer',
             transition: 'all 0.15s',
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#F1F5F9')}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-card-hover)')}
           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
         >
           Cancel

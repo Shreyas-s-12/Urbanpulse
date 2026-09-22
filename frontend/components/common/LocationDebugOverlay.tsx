@@ -187,12 +187,12 @@ export default function LocationDebugOverlay() {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            backgroundColor: '#0F172A',
-            color: '#F8FAFC',
+            backgroundColor: 'var(--overlay-bg)',
+            color: 'var(--text-primary)',
             padding: '7px 12px',
             borderRadius: '8px',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.35)',
+            border: '1px solid var(--border)',
+            boxShadow: 'var(--control-shadow)',
             fontSize: '11px',
             cursor: 'pointer',
             transition: 'transform 0.15s ease',
@@ -221,11 +221,11 @@ export default function LocationDebugOverlay() {
         <div
           style={{
             width: '380px',
-            backgroundColor: '#0B132B',
-            color: '#F8FAFC',
+            backgroundColor: 'var(--bg-panel)',
+            color: 'var(--text-primary)',
             borderRadius: '10px',
-            border: '1px solid rgba(59, 130, 246, 0.3)',
-            boxShadow: '0 12px 32px rgba(0, 0, 0, 0.6)',
+            border: '1px solid var(--border)',
+            boxShadow: 'var(--shadow-panel)',
             padding: '14px',
             fontSize: '11px',
             display: 'flex',
@@ -267,7 +267,7 @@ export default function LocationDebugOverlay() {
               style={{
                 background: 'none',
                 border: 'none',
-                color: '#94A3B8',
+                color: 'var(--text-secondary)',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -284,96 +284,96 @@ export default function LocationDebugOverlay() {
 
           {/* Telemetry Grid (Exact Rule 35 & Section 34 specifications) */}
           <div style={{ display: 'grid', gridTemplateColumns: '145px 1fr', gap: '5px', lineHeight: '1.4' }}>
-            <span style={{ color: '#94A3B8' }}>PERMISSION:</span>
-            <span style={{ fontWeight: 600, color: '#A78BFA' }}>
+            <span style={{ color: 'var(--text-secondary)' }}>PERMISSION:</span>
+            <span style={{ fontWeight: 600, color: 'var(--accent-primary)' }}>
               {(typeof window !== 'undefined' && (window as any).__UP_LOCATION_STORE__?.getState()?.permissionStatus) || 'unknown'}
             </span>
 
-            <span style={{ color: '#94A3B8' }}>SUPPORTED:</span>
-            <span style={{ color: typeof window !== 'undefined' && 'geolocation' in navigator ? '#10B981' : '#EF4444' }}>
+            <span style={{ color: 'var(--text-secondary)' }}>SUPPORTED:</span>
+            <span style={{ color: typeof window !== 'undefined' && 'geolocation' in navigator ? 'var(--status-good-text)' : 'var(--status-critical-text)' }}>
               {typeof window !== 'undefined' && 'geolocation' in navigator ? 'YES' : 'NO'}
             </span>
 
-            <span style={{ color: '#94A3B8' }}>SECURE CONTEXT:</span>
-            <span style={{ color: typeof window !== 'undefined' && window.isSecureContext ? '#10B981' : '#EF4444' }}>
+            <span style={{ color: 'var(--text-secondary)' }}>SECURE CONTEXT:</span>
+            <span style={{ color: typeof window !== 'undefined' && window.isSecureContext ? 'var(--status-good-text)' : 'var(--status-critical-text)' }}>
               {typeof window !== 'undefined' && window.isSecureContext ? 'YES' : 'NO'}
             </span>
 
-            <span style={{ color: '#94A3B8' }}>MAP / MARKER READY:</span>
-            <span style={{ color: gmap ? '#10B981' : '#F59E0B' }}>
+            <span style={{ color: 'var(--text-secondary)' }}>MAP / MARKER READY:</span>
+            <span style={{ color: gmap ? 'var(--status-good-text)' : 'var(--status-warning-text)' }}>
               Map: {gmap ? 'YES' : 'NO'} | Marker: {userMarker ? 'YES' : 'NO'}
             </span>
 
-            <span style={{ color: '#94A3B8' }}>RAW (DEVICE) LAT/LNG:</span>
-            <span style={{ fontWeight: 600, color: '#38BDF8', wordBreak: 'break-all' }}>
+            <span style={{ color: 'var(--text-secondary)' }}>RAW (DEVICE) LAT/LNG:</span>
+            <span style={{ fontWeight: 600, color: 'var(--cyan)', wordBreak: 'break-all' }}>
               {deviceLat !== null && deviceLon !== null
                 ? `${deviceLat.toFixed(6)}, ${deviceLon.toFixed(6)}`
                 : 'NOT ACQUIRED'}
             </span>
 
-            <span style={{ color: '#94A3B8' }}>FINAL (STORE) LAT/LNG:</span>
-            <span style={{ wordBreak: 'break-all', color: '#E2E8F0' }}>
+            <span style={{ color: 'var(--text-secondary)' }}>FINAL (STORE) LAT/LNG:</span>
+            <span style={{ wordBreak: 'break-all', color: 'var(--text-primary)' }}>
               {mapLat !== null && mapLon !== null
                 ? `${mapLat.toFixed(6)}, ${mapLon.toFixed(6)}`
                 : 'NOT SET'}
             </span>
 
-            <span style={{ color: '#94A3B8' }}>MAP CENTER LAT/LNG:</span>
-            <span style={{ wordBreak: 'break-all', color: '#60A5FA' }}>
+            <span style={{ color: 'var(--text-secondary)' }}>MAP CENTER LAT/LNG:</span>
+            <span style={{ wordBreak: 'break-all', color: 'var(--badge-info-text)' }}>
               {actualMapLat !== null && actualMapLon !== null
                 ? `${actualMapLat.toFixed(6)}, ${actualMapLon.toFixed(6)}`
                 : 'NOT SET'}
             </span>
 
-            <span style={{ color: '#94A3B8' }}>MARKER LAT/LNG:</span>
-            <span style={{ wordBreak: 'break-all', color: '#34D399' }}>
+            <span style={{ color: 'var(--text-secondary)' }}>MARKER LAT/LNG:</span>
+            <span style={{ wordBreak: 'break-all', color: 'var(--status-good-text)' }}>
               {actualMarkerLat !== null && actualMarkerLon !== null
                 ? `${actualMarkerLat.toFixed(6)}, ${actualMarkerLon.toFixed(6)}`
                 : 'NO MARKER'}
             </span>
 
-            <span style={{ color: '#94A3B8' }}>RAW → FINAL DIST:</span>
-            <span style={{ fontWeight: 700, color: rawToFinalDist !== null && rawToFinalDist < 0.05 ? '#10B981' : '#F59E0B' }}>
+            <span style={{ color: 'var(--text-secondary)' }}>RAW → FINAL DIST:</span>
+            <span style={{ fontWeight: 700, color: rawToFinalDist !== null && rawToFinalDist < 0.05 ? 'var(--status-good-text)' : 'var(--status-warning-text)' }}>
               {rawToFinalDist !== null ? `${rawToFinalDist.toFixed(3)} m` : 'N/A'}
             </span>
 
-            <span style={{ color: '#94A3B8' }}>FINAL → MAP DIST:</span>
-            <span style={{ fontWeight: 700, color: finalToMapDist !== null && finalToMapDist < 0.05 ? '#10B981' : '#F59E0B' }}>
+            <span style={{ color: 'var(--text-secondary)' }}>FINAL → MAP DIST:</span>
+            <span style={{ fontWeight: 700, color: finalToMapDist !== null && finalToMapDist < 0.05 ? 'var(--status-good-text)' : 'var(--status-warning-text)' }}>
               {finalToMapDist !== null ? `${finalToMapDist.toFixed(3)} m` : 'N/A'}
             </span>
 
-            <span style={{ color: '#94A3B8' }}>FINAL → MARKER DIST:</span>
-            <span style={{ fontWeight: 700, color: finalToMarkerDist !== null && finalToMarkerDist < 0.05 ? '#10B981' : '#EF4444' }}>
+            <span style={{ color: 'var(--text-secondary)' }}>FINAL → MARKER DIST:</span>
+            <span style={{ fontWeight: 700, color: finalToMarkerDist !== null && finalToMarkerDist < 0.05 ? 'var(--status-good-text)' : 'var(--status-critical-text)' }}>
               {finalToMarkerDist !== null ? `${finalToMarkerDist.toFixed(3)} m` : 'N/A'}
             </span>
 
-            <span style={{ color: '#94A3B8' }}>REVERSE GEOCODE:</span>
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#CBD5E1' }} title={formattedAddress}>
+            <span style={{ color: 'var(--text-secondary)' }}>REVERSE GEOCODE:</span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-primary)' }} title={formattedAddress}>
               {formattedAddress}
             </span>
 
-            <span style={{ color: '#94A3B8' }}>REV GEO COORD:</span>
-            <span style={{ wordBreak: 'break-all', color: '#FBBF24' }}>
+            <span style={{ color: 'var(--text-secondary)' }}>REV GEO COORD:</span>
+            <span style={{ wordBreak: 'break-all', color: 'var(--status-warning-text)' }}>
               {revGeoCoord ? `${revGeoCoord.latitude.toFixed(6)}, ${revGeoCoord.longitude.toFixed(6)}` : 'None (No drift)'}
             </span>
 
-            <span style={{ color: '#94A3B8' }}>ACTIVE MODE:</span>
-            <span style={{ fontWeight: 700, color: '#A78BFA' }}>
+            <span style={{ color: 'var(--text-secondary)' }}>ACTIVE MODE:</span>
+            <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>
               {activeLocationMode} ({activeSource})
             </span>
 
-            <span style={{ color: '#94A3B8' }}>ACCURACY / TIER:</span>
+            <span style={{ color: 'var(--text-secondary)' }}>ACCURACY / TIER:</span>
             <span style={{ fontWeight: 700, color: tierColor }}>
               {gpsAccuracyMeters ? `±${gpsAccuracyMeters.toFixed(1)}m (${currentTier})` : 'N/A'}
             </span>
 
-            <span style={{ color: '#94A3B8' }}>FIX AGE / STATUS:</span>
-            <span style={{ color: ageSeconds > 60 ? '#F87171' : '#F8FAFC' }}>
+            <span style={{ color: 'var(--text-secondary)' }}>FIX AGE / STATUS:</span>
+            <span style={{ color: ageSeconds > 60 ? 'var(--status-critical-text)' : 'var(--text-primary)' }}>
               {ageSeconds}s ({locationAccuracyState})
             </span>
 
-            <span style={{ color: '#94A3B8' }}>SEQUENCE / BLOCKS:</span>
-            <span style={{ color: '#94A3B8' }}>
+            <span style={{ color: 'var(--text-secondary)' }}>SEQUENCE / BLOCKS:</span>
+            <span style={{ color: 'var(--text-secondary)' }}>
               Seq #{locationSequenceNumber} | Blocked: {overrideBlockCount}
             </span>
           </div>
@@ -381,7 +381,7 @@ export default function LocationDebugOverlay() {
           {/* Quick Actions & Live Tracking */}
           <div
             style={{
-              borderTop: '1px solid rgba(255,255,255,0.1)',
+              borderTop: '1px solid var(--border-subtle)',
               paddingTop: '8px',
               display: 'flex',
               flexDirection: 'column',
@@ -392,9 +392,9 @@ export default function LocationDebugOverlay() {
               <button
                 onClick={handleToggleLiveTracking}
                 style={{
-                  backgroundColor: isLiveTracking ? '#DC2626' : '#059669',
+                  backgroundColor: isLiveTracking ? 'var(--status-critical-text)' : 'var(--status-good-text)',
                   border: 'none',
-                  color: '#FFFFFF',
+                  color: 'var(--button-foreground)',
                   borderRadius: '4px',
                   padding: '6px',
                   fontSize: '10px',
@@ -408,9 +408,9 @@ export default function LocationDebugOverlay() {
               <button
                 onClick={handleLiveAcquire}
                 style={{
-                  backgroundColor: '#2563EB',
+                  backgroundColor: 'var(--button)',
                   border: 'none',
-                  color: '#FFFFFF',
+                  color: 'var(--button-foreground)',
                   borderRadius: '4px',
                   padding: '6px',
                   fontSize: '10px',
@@ -424,13 +424,13 @@ export default function LocationDebugOverlay() {
 
             {/* Simulated Accuracy Levels for Verification */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-              <span style={{ fontSize: '9px', color: '#64748B', whiteSpace: 'nowrap' }}>Test Tiers:</span>
+              <span style={{ fontSize: '9px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Test Tiers:</span>
               <button
                 onClick={() => handleSimulateAccuracyTier(12)}
                 style={{
-                  backgroundColor: '#1E293B',
-                  border: '1px solid rgba(16, 185, 129, 0.4)',
-                  color: '#34D399',
+                  backgroundColor: 'var(--bg-elevated)',
+                  border: '1px solid var(--status-good-border)',
+                  color: 'var(--status-good-text)',
                   borderRadius: '3px',
                   padding: '3px 6px',
                   fontSize: '9px',
@@ -443,9 +443,9 @@ export default function LocationDebugOverlay() {
               <button
                 onClick={() => handleSimulateAccuracyTier(50)}
                 style={{
-                  backgroundColor: '#1E293B',
-                  border: '1px solid rgba(59, 130, 246, 0.4)',
-                  color: '#60A5FA',
+                  backgroundColor: 'var(--bg-elevated)',
+                  border: '1px solid var(--badge-info-border)',
+                  color: 'var(--badge-info-text)',
                   borderRadius: '3px',
                   padding: '3px 6px',
                   fontSize: '9px',
@@ -458,9 +458,9 @@ export default function LocationDebugOverlay() {
               <button
                 onClick={() => handleSimulateAccuracyTier(200)}
                 style={{
-                  backgroundColor: '#1E293B',
-                  border: '1px solid rgba(245, 158, 11, 0.4)',
-                  color: '#FBBF24',
+                  backgroundColor: 'var(--bg-elevated)',
+                  border: '1px solid var(--status-warning-border)',
+                  color: 'var(--status-warning-text)',
                   borderRadius: '3px',
                   padding: '3px 6px',
                   fontSize: '9px',
@@ -473,9 +473,9 @@ export default function LocationDebugOverlay() {
               <button
                 onClick={() => handleSimulateAccuracyTier(600)}
                 style={{
-                  backgroundColor: '#1E293B',
-                  border: '1px solid rgba(239, 68, 68, 0.4)',
-                  color: '#F87171',
+                  backgroundColor: 'var(--bg-elevated)',
+                  border: '1px solid var(--status-critical-border)',
+                  color: 'var(--status-critical-text)',
                   borderRadius: '3px',
                   padding: '3px 6px',
                   fontSize: '9px',

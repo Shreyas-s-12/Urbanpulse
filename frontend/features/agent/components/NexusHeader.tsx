@@ -14,11 +14,11 @@ export default function NexusHeader({ locationName }: NexusHeaderProps) {
       style={{
         height: '60px',
         padding: '0 16px',
-        borderBottom: '1px solid var(--border, #E2E7EF)',
+        borderBottom: '1px solid var(--border)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: 'var(--bg-header, #FFFFFF)',
+        backgroundColor: 'var(--bg-header)',
         flexShrink: 0,
         boxSizing: 'border-box',
       }}
@@ -30,7 +30,7 @@ export default function NexusHeader({ locationName }: NexusHeaderProps) {
             style={{
               fontSize: '16px',
               fontWeight: 600,
-              color: 'var(--text-primary, #172033)',
+              color: 'var(--text-primary)',
               margin: 0,
               lineHeight: 1.25,
             }}
@@ -40,7 +40,7 @@ export default function NexusHeader({ locationName }: NexusHeaderProps) {
           <span
             style={{
               fontSize: '11.5px',
-              color: 'var(--text-muted, #7B8798)',
+              color: 'var(--text-muted)',
               display: 'block',
               lineHeight: 1.1,
             }}
@@ -57,9 +57,9 @@ export default function NexusHeader({ locationName }: NexusHeaderProps) {
             height: '30px',
             padding: '0 10px',
             borderRadius: '16px',
-            backgroundColor: 'var(--location-badge-bg, #EFF6FF)',
-            color: 'var(--location-badge-text, #2563EB)',
-            border: '1px solid var(--location-badge-border, #BFDBFE)',
+            backgroundColor: 'var(--badge-info-bg)',
+            color: 'var(--badge-info-text)',
+            border: '1px solid var(--badge-info-border)',
             fontWeight: 600,
             maxWidth: '150px',
             whiteSpace: 'nowrap',

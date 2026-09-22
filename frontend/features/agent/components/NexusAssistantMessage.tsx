@@ -92,14 +92,14 @@ export default function NexusAssistantMessage({ msg }: NexusAssistantMessageProp
         <div
           style={{
             width: '100%',
-            backgroundColor: 'var(--assistant-card-bg, #FFFFFF)',
-            border: '1px solid var(--assistant-card-border, #E2E7EF)',
+            backgroundColor: 'var(--assistant-card-bg)',
+            border: '1px solid var(--assistant-card-border)',
             borderRadius: '12px',
             padding: '12px 14px',
             fontSize: '13px',
             lineHeight: 1.45,
-            color: 'var(--text-primary, #172033)',
-            boxShadow: 'var(--card-shadow, 0 2px 8px rgba(15, 23, 42, 0.05))',
+            color: 'var(--text-primary)',
+            boxShadow: 'var(--card-shadow)',
             boxSizing: 'border-box',
             display: 'flex',
             flexDirection: 'column',
@@ -116,9 +116,9 @@ export default function NexusAssistantMessage({ msg }: NexusAssistantMessageProp
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 fontSize: '10.5px',
-                color: 'var(--text-muted, #7B8798)',
+                color: 'var(--text-muted)',
                 paddingTop: '6px',
-                borderTop: '1px solid var(--border-subtle, #EDF0F4)',
+                borderTop: '1px solid var(--border-subtle)',
                 marginTop: '4px',
                 flexWrap: 'wrap',
                 gap: '6px',
@@ -127,13 +127,13 @@ export default function NexusAssistantMessage({ msg }: NexusAssistantMessageProp
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {msg.sources && msg.sources.length > 0 && (
                   <span>
-                    Source: <strong style={{ color: 'var(--text-secondary, #566174)' }}>{msg.sources[0]?.source || 'Verified Provider'}</strong>
+                    Source: <strong style={{ color: 'var(--text-secondary)' }}>{msg.sources[0]?.source || 'Verified Provider'}</strong>
                   </span>
                 )}
                 {msg.sources && msg.sources.length > 0 && msg.confidence !== undefined && <span>•</span>}
                 {msg.confidence !== undefined && (
                   <span>
-                    Confidence: <strong style={{ color: 'var(--text-secondary, #566174)' }}>{Math.round(msg.confidence * 100)}%</strong>
+                    Confidence: <strong style={{ color: 'var(--text-secondary)' }}>{Math.round(msg.confidence * 100)}%</strong>
                   </span>
                 )}
               </div>
@@ -147,7 +147,7 @@ export default function NexusAssistantMessage({ msg }: NexusAssistantMessageProp
                   gap: '3px',
                   fontSize: '10.5px',
                   fontWeight: 600,
-                  color: 'var(--accent-primary, #2563EB)',
+                  color: 'var(--accent-primary)',
                   backgroundColor: 'transparent',
                   border: 'none',
                   padding: '2px 4px',
@@ -174,10 +174,10 @@ export default function NexusAssistantMessage({ msg }: NexusAssistantMessageProp
                 marginTop: '4px',
                 padding: '8px 10px',
                 borderRadius: '6px',
-                backgroundColor: 'var(--nested-metric-bg, #F8FAFC)',
-                border: '1px solid var(--nested-metric-border, #E8EDF3)',
+                backgroundColor: 'var(--bg-surface-secondary)',
+                border: '1px solid var(--border-subtle)',
                 fontSize: '11px',
-                color: 'var(--text-secondary, #566174)',
+                color: 'var(--text-secondary)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '6px',
@@ -186,12 +186,12 @@ export default function NexusAssistantMessage({ msg }: NexusAssistantMessageProp
             >
               {msg.sources && msg.sources.length > 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                  <span style={{ fontSize: '9.5px', fontWeight: 700, color: 'var(--text-muted, #7B8798)', textTransform: 'uppercase' }}>
+                  <span style={{ fontSize: '9.5px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
                     VERIFIED SOURCES:
                   </span>
                   {msg.sources.map((src, idx) => (
                     <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#10B981' }} />
+                      <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: 'var(--status-good-text)' }} />
                       <span>{src.type || 'Source'}: {src.detail || src.source}</span>
                     </div>
                   ))}
@@ -201,7 +201,7 @@ export default function NexusAssistantMessage({ msg }: NexusAssistantMessageProp
               {msg.location && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', overflow: 'hidden' }}>
-                    <PinIcon size={11} color="var(--accent-primary, #2563EB)" />
+                    <PinIcon size={11} color="var(--accent-primary)" />
                     <span style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {msg.location.name || msg.location.city || msg.location.displayName}
                     </span>
@@ -227,11 +227,11 @@ export default function NexusAssistantMessage({ msg }: NexusAssistantMessageProp
                     style={{
                       fontSize: '10px',
                       fontWeight: 600,
-                      color: 'var(--accent-primary, #2563EB)',
+                      color: 'var(--badge-info-text)',
                       padding: '2px 6px',
                       borderRadius: '4px',
-                      backgroundColor: 'var(--weather-summary-bg, #EFF6FF)',
-                      border: '1px solid var(--weather-summary-border, #BFDBFE)',
+                      backgroundColor: 'var(--badge-info-bg)',
+                      border: '1px solid var(--badge-info-border)',
                       cursor: 'pointer',
                     }}
                   >

@@ -39,9 +39,9 @@ export default function AquaRAGPage() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#F8FAFC',
-            color: '#64748B',
-            fontFamily: 'var(--font-inter, sans-serif)',
+            backgroundColor: 'var(--background)',
+            color: 'var(--text-muted)',
+            fontFamily: 'var(--font-sans)',
           }}
         >
           Loading AquaRAG Intelligence Workspace...

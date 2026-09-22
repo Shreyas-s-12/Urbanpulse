@@ -83,11 +83,11 @@ export default function RAGPredictionSection({
   return (
     <div
       style={{
-        backgroundColor: '#FFFFFF',
+        backgroundColor: 'var(--bg-panel)',
         borderRadius: '12px',
-        border: '1px solid #E2E8F0',
+        border: '1px solid var(--border-subtle)',
         padding: '20px',
-        boxShadow: '0 1px 4px rgba(0, 0, 0, 0.04)',
+        boxShadow: 'var(--card-shadow)',
         display: 'flex',
         flexDirection: 'column',
         gap: '16px',
@@ -96,20 +96,20 @@ export default function RAGPredictionSection({
       {/* Header & Year Input */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <div style={{ fontSize: '11px', fontWeight: 700, color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
             Predictive Domain Modeling
           </div>
-          <h2 style={{ margin: '2px 0 0', fontSize: '16px', fontWeight: 800, color: '#0F172A' }}>
+          <h2 style={{ margin: '2px 0 0', fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)' }}>
             {moduleTitle} Multi-Factor Forecast
           </h2>
-          <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '2px' }}>
+          <div style={{ fontSize: '11.5px', color: 'var(--text-secondary)', marginTop: '2px' }}>
             Dynamic kinematic projection calibrated against empirical multi-year baselines.
           </div>
         </div>
 
         {/* Dynamic Year Control */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155' }}>
+          <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
             Target Horizon:
           </label>
           <div style={{ display: 'flex', gap: '4px' }}>
@@ -124,9 +124,9 @@ export default function RAGPredictionSection({
                 style={{
                   padding: '5px 10px',
                   borderRadius: '6px',
-                  border: targetYear === yr ? '1.5px solid #2563EB' : '1px solid #E2E8F0',
-                  backgroundColor: targetYear === yr ? '#EFF6FF' : '#F8FAFC',
-                  color: targetYear === yr ? '#1D4ED8' : '#334155',
+                  border: targetYear === yr ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-subtle)',
+                  backgroundColor: targetYear === yr ? 'var(--accent-primary-light)' : 'var(--bg-card)',
+                  color: targetYear === yr ? 'var(--accent-primary)' : 'var(--text-secondary)',
                   fontSize: '11.5px',
                   fontWeight: targetYear === yr ? 700 : 500,
                   cursor: 'pointer',
@@ -154,10 +154,11 @@ export default function RAGPredictionSection({
                 width: '68px',
                 padding: '4px 8px',
                 borderRadius: '6px',
-                border: '1px solid #CBD5E1',
+                backgroundColor: 'var(--bg-input)',
+                border: '1px solid var(--input-border)',
                 fontSize: '12px',
                 fontWeight: 600,
-                color: '#0F172A',
+                color: 'var(--text-primary)',
                 textAlign: 'center',
               }}
             />
@@ -165,8 +166,8 @@ export default function RAGPredictionSection({
               type="submit"
               disabled={loading}
               style={{
-                backgroundColor: '#2563EB',
-                color: '#FFFFFF',
+                backgroundColor: 'var(--button)',
+                color: 'var(--button-foreground)',
                 border: 'none',
                 borderRadius: '6px',
                 padding: '5px 10px',
@@ -189,11 +190,11 @@ export default function RAGPredictionSection({
             alignItems: 'center',
             gap: '12px',
             fontSize: '11px',
-            color: '#475569',
-            backgroundColor: '#F8FAFC',
+            color: 'var(--text-secondary)',
+            backgroundColor: 'var(--bg-card)',
             padding: '8px 12px',
             borderRadius: '6px',
-            border: '1px solid #E2E8F0',
+            border: '1px solid var(--border-subtle)',
           }}
         >
           <span>Requested Target: <strong>{data.requestedYear}</strong></span>
@@ -206,14 +207,14 @@ export default function RAGPredictionSection({
 
       {/* Loading state */}
       {loading && (
-        <div style={{ textAlign: 'center', padding: '24px', color: '#2563EB', fontSize: '13px', fontWeight: 600 }}>
+        <div style={{ textAlign: 'center', padding: '24px', color: 'var(--accent-primary)', fontSize: '13px', fontWeight: 600 }}>
           Computing four-factor predictive kinematic equations…
         </div>
       )}
 
       {/* Error state */}
       {error && (
-        <div style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '6px', padding: '10px 14px', color: '#DC2626', fontSize: '12px' }}>
+        <div style={{ backgroundColor: 'var(--badge-danger-bg)', border: '1px solid var(--badge-danger-border)', borderRadius: '6px', padding: '10px 14px', color: 'var(--badge-danger-text)', fontSize: '12px' }}>
           {error}
         </div>
       )}
@@ -228,18 +229,18 @@ export default function RAGPredictionSection({
                 <div
                   key={idx}
                   style={{
-                    backgroundColor: isInsufficient ? '#FFFBEB' : '#FFFFFF',
+                    backgroundColor: isInsufficient ? 'var(--badge-warning-bg)' : 'var(--bg-card)',
                     borderRadius: '8px',
-                    border: isInsufficient ? '1px solid #FDE68A' : '1px solid #E2E8F0',
+                    border: isInsufficient ? '1px solid var(--badge-warning-border)' : '1px solid var(--border-subtle)',
                     padding: '14px',
-                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
+                    boxShadow: 'var(--shadow-sm)',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '8px',
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#0F172A' }}>
+                    <span style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
                       {factor.factorName}
                     </span>
                     <span
@@ -248,9 +249,9 @@ export default function RAGPredictionSection({
                         fontWeight: 700,
                         padding: '2px 6px',
                         borderRadius: '4px',
-                        backgroundColor: isInsufficient ? '#FEF3C7' : '#EFF6FF',
-                        color: isInsufficient ? '#B45309' : '#2563EB',
-                        border: isInsufficient ? '1px solid #FDE68A' : '1px solid #BFDBFE',
+                        backgroundColor: isInsufficient ? 'var(--badge-warning-bg)' : 'var(--badge-info-bg)',
+                        color: isInsufficient ? 'var(--badge-warning-text)' : 'var(--badge-info-text)',
+                        border: isInsufficient ? '1px solid var(--badge-warning-border)' : '1px solid var(--badge-info-border)',
                         textTransform: 'uppercase',
                       }}
                     >
@@ -258,19 +259,19 @@ export default function RAGPredictionSection({
                     </span>
                   </div>
 
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: isInsufficient ? '#92400E' : '#1E293B', lineHeight: 1.35 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: isInsufficient ? 'var(--badge-warning-text)' : 'var(--text-primary)', lineHeight: 1.35 }}>
                     {factor.prediction}
                   </div>
 
-                  <div style={{ fontSize: '11px', color: '#475569', lineHeight: 1.4 }}>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
                     <strong>Historical Basis:</strong> {factor.historicalBasis}
                   </div>
 
-                  <div style={{ fontSize: '11px', color: '#64748B', lineHeight: 1.4 }}>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
                     <strong>Evidence:</strong> {factor.evidence}
                   </div>
 
-                  <div style={{ fontSize: '10px', color: '#94A3B8', marginTop: 'auto', paddingTop: '6px', borderTop: '1px solid #F1F5F9' }}>
+                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: 'auto', paddingTop: '6px', borderTop: '1px solid var(--border-subtle)' }}>
                     Source: {factor.source}
                   </div>
                 </div>
@@ -281,12 +282,12 @@ export default function RAGPredictionSection({
           {/* Model Explanation */}
           <div
             style={{
-              backgroundColor: '#F8FAFC',
+              backgroundColor: 'var(--bg-card)',
               borderRadius: '6px',
-              borderLeft: '3px solid #2563EB',
+              borderLeft: '3px solid var(--accent-primary)',
               padding: '10px 14px',
               fontSize: '12px',
-              color: '#334155',
+              color: 'var(--text-secondary)',
               lineHeight: 1.5,
             }}
           >

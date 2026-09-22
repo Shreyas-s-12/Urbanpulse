@@ -33,20 +33,20 @@ export default function GestureIndicator({
           right: '24px',
           zIndex: 9990,
           backgroundColor: errorMessage
-            ? '#FEF2F2'
+            ? 'var(--badge-danger-bg)'
             : activeGesture && activeGesture !== 'NONE'
-            ? '#EFF6FF'
-            : '#0F172A',
+            ? 'var(--badge-info-bg)'
+            : 'var(--overlay-bg)',
           color: errorMessage
-            ? '#991B1B'
+            ? 'var(--badge-danger-text)'
             : activeGesture && activeGesture !== 'NONE'
-            ? '#1D4ED8'
-            : '#FFFFFF',
+            ? 'var(--badge-info-text)'
+            : 'var(--text-primary)',
           border: errorMessage
-            ? '1px solid #FCA5A5'
+            ? '1px solid var(--badge-danger-border)'
             : activeGesture && activeGesture !== 'NONE'
-            ? '1px solid #BFDBFE'
-            : '1px solid rgba(255,255,255,0.15)',
+            ? '1px solid var(--badge-info-border)'
+            : '1px solid var(--border-subtle)',
           borderRadius: '9999px',
           padding: '6px 14px',
           fontSize: '11.5px',
@@ -54,7 +54,7 @@ export default function GestureIndicator({
           display: 'inline-flex',
           alignItems: 'center',
           gap: '8px',
-          boxShadow: '0 4px 14px rgba(15, 23, 42, 0.12)',
+          boxShadow: 'var(--shadow-md)',
           transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
           pointerEvents: 'none',
           letterSpacing: '0.4px',

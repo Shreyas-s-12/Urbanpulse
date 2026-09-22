@@ -19,8 +19,8 @@ export default function NexusUserMessage({ content }: NexusUserMessageProps) {
         style={{
           maxWidth: '88%',
           width: 'fit-content',
-          backgroundColor: '#2563EB',
-          color: '#FFFFFF',
+          backgroundColor: 'var(--button)',
+          color: 'var(--button-foreground)',
           borderRadius: '14px 14px 4px 14px',
           padding: '10px 14px',
           fontSize: '13px',

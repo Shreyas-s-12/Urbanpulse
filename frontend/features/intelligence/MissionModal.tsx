@@ -77,7 +77,7 @@ export default function MissionModal() {
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(17, 24, 39, 0.45)',
+        backgroundColor: 'var(--overlay-backdrop)',
         backdropFilter: 'blur(6px)',
         zIndex: 2000,
         display: 'flex',
@@ -89,15 +89,15 @@ export default function MissionModal() {
     >
       <div
         style={{
-          backgroundColor: 'var(--bg-panel, #101620)',
-          border: '1px solid var(--border-subtle, #1B2531)',
+          backgroundColor: 'var(--bg-panel)',
+          border: '1px solid var(--border-subtle)',
           borderRadius: '16px',
           width: '100%',
           maxWidth: '780px',
           maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
+          boxShadow: 'var(--shadow-panel)',
           color: 'var(--text-primary)',
           overflow: 'hidden',
         }}
@@ -107,11 +107,11 @@ export default function MissionModal() {
         <div
           style={{
             padding: '18px 24px',
-            borderBottom: '1px solid var(--border-subtle, #1B2531)',
+            borderBottom: '1px solid var(--border-subtle)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: 'var(--bg-header, #0C1119)',
+            backgroundColor: 'var(--bg-header)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -133,8 +133,8 @@ export default function MissionModal() {
               width: '28px',
               height: '28px',
               borderRadius: '6px',
-              border: '1px solid var(--border, #263241)',
-              backgroundColor: 'var(--bg-elevated, #141B26)',
+              border: '1px solid var(--border)',
+              backgroundColor: 'var(--bg-elevated)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -147,12 +147,12 @@ export default function MissionModal() {
         </div>
 
         {/* Body */}
-        <div style={{ padding: '20px 24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: 'var(--bg-panel, #101620)' }}>
+        <div style={{ padding: '20px 24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: 'var(--bg-panel)' }}>
           {/* Query Inputs */}
           <div
             style={{
-              backgroundColor: 'var(--bg-card, #111821)',
-              border: '1px solid var(--border-subtle, #1B2531)',
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border-subtle)',
               borderRadius: '12px',
               padding: '16px',
               display: 'flex',
@@ -174,10 +174,10 @@ export default function MissionModal() {
                     width: '100%',
                     padding: '8px 12px',
                     borderRadius: '8px',
-                    border: '1px solid var(--border, #263241)',
+                    border: '1px solid var(--input-border)',
                     fontSize: '12.5px',
                     outline: 'none',
-                    backgroundColor: 'var(--bg-input, #0D141D)',
+                    backgroundColor: 'var(--bg-input)',
                     color: 'var(--text-primary)',
                   }}
                 />
@@ -196,10 +196,10 @@ export default function MissionModal() {
                     width: '100%',
                     padding: '8px 12px',
                     borderRadius: '8px',
-                    border: '1px solid var(--border, #263241)',
+                    border: '1px solid var(--input-border)',
                     fontSize: '12.5px',
                     outline: 'none',
-                    backgroundColor: 'var(--bg-input, #0D141D)',
+                    backgroundColor: 'var(--bg-input)',
                     color: 'var(--text-primary)',
                   }}
                 />
@@ -220,9 +220,9 @@ export default function MissionModal() {
                       fontSize: '11px',
                       fontWeight: 600,
                       cursor: 'pointer',
-                      border: preference === pref ? '1px solid var(--accent-primary)' : '1px solid var(--border, #263241)',
-                      backgroundColor: preference === pref ? 'rgba(59, 130, 246, 0.15)' : 'var(--bg-elevated, #141B26)',
-                      color: preference === pref ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                      border: preference === pref ? '1px solid var(--badge-info-border)' : '1px solid var(--border)',
+                      backgroundColor: preference === pref ? 'var(--badge-info-bg)' : 'var(--bg-elevated)',
+                      color: preference === pref ? 'var(--badge-info-text)' : 'var(--text-secondary)',
                     }}
                   >
                     {pref.replace('_', ' ')}
@@ -237,8 +237,8 @@ export default function MissionModal() {
                 style={{
                   padding: '8px 18px',
                   borderRadius: '8px',
-                  backgroundColor: 'var(--accent-primary)',
-                  color: '#FFFFFF',
+                  backgroundColor: 'var(--button)',
+                  color: 'var(--button-foreground)',
                   border: 'none',
                   fontSize: '12.5px',
                   fontWeight: 700,
@@ -251,8 +251,8 @@ export default function MissionModal() {
             </div>
 
             {errorMsg && (
-              <div style={{ fontSize: '11.5px', color: '#DC2626', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <AlertTriangleIcon size={14} color="#DC2626" />
+              <div style={{ fontSize: '11.5px', color: 'var(--status-critical-text)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <AlertTriangleIcon size={14} color="var(--status-critical-text)" />
                 <span>{errorMsg}</span>
               </div>
             )}
@@ -265,8 +265,8 @@ export default function MissionModal() {
               {bestWindow && (
                 <div
                   style={{
-                    backgroundColor: 'rgba(59, 130, 246, 0.07)',
-                    border: '1px solid rgba(59, 130, 246, 0.25)',
+                    backgroundColor: 'var(--badge-info-bg)',
+                    border: '1px solid var(--badge-info-border)',
                     borderRadius: '12px',
                     padding: '16px',
                     display: 'flex',
@@ -274,9 +274,9 @@ export default function MissionModal() {
                     gap: '12px',
                   }}
                 >
-                  <HistoryClockIcon size={20} color="var(--accent-primary)" />
+                  <HistoryClockIcon size={20} color="var(--badge-info-text)" />
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--badge-info-text)', textTransform: 'uppercase' }}>
                       Optimal Departure Window
                     </div>
                     <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
@@ -285,7 +285,7 @@ export default function MissionModal() {
                     <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
                       <strong>Why this window:</strong> {bestWindow.rationale}
                     </div>
-                    <div style={{ fontSize: '11px', color: '#4ADE80', fontWeight: 600, marginTop: '4px' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--status-good-text)', fontWeight: 600, marginTop: '4px' }}>
                       Est. Duration: {bestWindow.estimatedDurationMinutes}m (Saves approx. {bestWindow.expectedDelayMinutes || 0}m congestion delay)
                     </div>
                   </div>
@@ -305,8 +305,8 @@ export default function MissionModal() {
                       <div
                         key={r.id}
                         style={{
-                          backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.08)' : 'var(--bg-card, #111821)',
-                          border: isSelected ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-subtle, #1B2531)',
+                          backgroundColor: isSelected ? 'var(--badge-info-bg)' : 'var(--bg-card)',
+                          border: isSelected ? '1.5px solid var(--badge-info-border)' : '1px solid var(--border-subtle)',
                           borderRadius: '10px',
                           padding: '14px',
                           display: 'flex',
@@ -321,8 +321,8 @@ export default function MissionModal() {
                               fontWeight: 800,
                               padding: '2px 8px',
                               borderRadius: '4px',
-                              backgroundColor: isSelected ? 'var(--accent-primary)' : 'var(--bg-elevated, #141B26)',
-                              color: isSelected ? '#FFFFFF' : 'var(--text-secondary)',
+                              backgroundColor: isSelected ? 'var(--button)' : 'var(--bg-elevated)',
+                              color: isSelected ? 'var(--button-foreground)' : 'var(--text-secondary)',
                               textTransform: 'uppercase',
                             }}
                           >

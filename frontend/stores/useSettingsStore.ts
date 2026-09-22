@@ -64,6 +64,9 @@ export function applyThemeToDOM(theme: AppTheme) {
   const effective = resolveEffectiveTheme(theme);
   document.documentElement.setAttribute('data-theme', effective);
   document.documentElement.style.colorScheme = effective;
+  if (document.body) {
+    document.body.style.colorScheme = effective;
+  }
 }
 
 export function applyAccessibilityToDOM(reducedMotion: boolean, highContrast: boolean, fontSize: FontSize) {

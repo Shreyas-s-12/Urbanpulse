@@ -155,10 +155,10 @@ export default function HeatmapControlBar({ className, style }: HeatmapControlBa
         height: '38px',
         padding: '3px 8px',
         borderRadius: '999px',
-        backgroundColor: 'rgba(255, 255, 255, 0.96)',
+        backgroundColor: 'var(--overlay-bg)',
         backdropFilter: 'blur(14px)',
-        border: '1px solid #CBD5E1',
-        boxShadow: '0 6px 20px rgba(15, 23, 42, 0.1)',
+        border: '1px solid var(--border)',
+        boxShadow: 'var(--shadow-panel)',
         pointerEvents: 'auto',
         maxWidth: 'calc(100vw - 32px)',
         overflowX: 'auto',
@@ -192,8 +192,8 @@ export default function HeatmapControlBar({ className, style }: HeatmapControlBa
                 padding: '0 11px',
                 borderRadius: '999px',
                 border: 'none',
-                backgroundColor: isActive ? '#2563EB' : 'transparent',
-                color: isActive ? '#FFFFFF' : '#475569',
+                backgroundColor: isActive ? 'var(--button)' : 'transparent',
+                color: isActive ? 'var(--button-foreground)' : 'var(--text-secondary)',
                 fontSize: '12px',
                 fontWeight: isActive ? 700 : 500,
                 cursor: 'pointer',
@@ -216,7 +216,7 @@ export default function HeatmapControlBar({ className, style }: HeatmapControlBa
         style={{
           width: '1px',
           height: '18px',
-          backgroundColor: '#CBD5E1',
+          backgroundColor: 'var(--border)',
           margin: '0 2px',
         }}
       />
@@ -243,15 +243,15 @@ export default function HeatmapControlBar({ className, style }: HeatmapControlBa
                 height: '30px',
                 padding: '0 10px',
                 borderRadius: '999px',
-                border: isActive ? '1px solid #334155' : '1px solid transparent',
-                backgroundColor: isActive ? '#1E293B' : 'transparent',
-                color: isActive ? '#FFFFFF' : '#475569',
+                border: isActive ? '1px solid var(--border)' : '1px solid transparent',
+                backgroundColor: isActive ? 'var(--button)' : 'transparent',
+                color: isActive ? 'var(--button-foreground)' : 'var(--text-secondary)',
                 fontSize: '11.5px',
                 fontWeight: isActive ? 700 : 500,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
                 transition: 'all 0.15s ease',
-                boxShadow: isActive ? '0 2px 6px rgba(30, 41, 59, 0.25)' : 'none',
+                boxShadow: isActive ? '0 2px 6px rgba(37, 99, 235, 0.25)' : 'none',
               }}
               aria-pressed={isActive}
               title={`View ${s.label} scale`}
@@ -268,7 +268,7 @@ export default function HeatmapControlBar({ className, style }: HeatmapControlBa
         style={{
           width: '1px',
           height: '18px',
-          backgroundColor: '#CBD5E1',
+          backgroundColor: 'var(--border)',
           margin: '0 2px',
         }}
       />
@@ -285,9 +285,9 @@ export default function HeatmapControlBar({ className, style }: HeatmapControlBa
           padding: '0 10px',
           borderRadius: '999px',
           border: '1px solid',
-          borderColor: isLegendVisible ? '#93C5FD' : '#E2E8F0',
-          backgroundColor: isLegendVisible ? '#EFF6FF' : 'transparent',
-          color: isLegendVisible ? '#1D4ED8' : '#64748B',
+          borderColor: isLegendVisible ? 'var(--accent-primary)' : 'var(--border-subtle)',
+          backgroundColor: isLegendVisible ? 'var(--accent-primary-light)' : 'transparent',
+          color: isLegendVisible ? 'var(--accent-primary)' : 'var(--text-secondary)',
           fontSize: '11px',
           fontWeight: 600,
           cursor: 'pointer',
@@ -311,7 +311,7 @@ export default function HeatmapControlBar({ className, style }: HeatmapControlBa
         style={{
           width: '1px',
           height: '18px',
-          backgroundColor: '#CBD5E1',
+          backgroundColor: 'var(--border)',
           margin: '0 2px',
         }}
       />
@@ -328,15 +328,15 @@ export default function HeatmapControlBar({ className, style }: HeatmapControlBa
           padding: '0 10px',
           borderRadius: '999px',
           border: '1px solid',
-          borderColor: isResearchModeOpen ? '#93C5FD' : '#E2E8F0',
-          backgroundColor: isResearchModeOpen ? '#1E293B' : 'transparent',
-          color: isResearchModeOpen ? '#60A5FA' : '#64748B',
+          borderColor: isResearchModeOpen ? 'var(--accent-primary)' : 'var(--border-subtle)',
+          backgroundColor: isResearchModeOpen ? 'var(--accent-primary-light)' : 'transparent',
+          color: isResearchModeOpen ? 'var(--accent-primary)' : 'var(--text-secondary)',
           fontSize: '11px',
           fontWeight: 600,
           cursor: 'pointer',
           whiteSpace: 'nowrap',
           transition: 'all 0.15s ease',
-          boxShadow: isResearchModeOpen ? '0 2px 8px rgba(30, 41, 59, 0.3)' : 'none',
+          boxShadow: isResearchModeOpen ? '0 2px 8px rgba(37, 99, 235, 0.25)' : 'none',
         }}
         title={isResearchModeOpen ? 'Hide Research Workbench' : 'Open Research Mode Workbench'}
         aria-label="Toggle Research Mode Workbench"
