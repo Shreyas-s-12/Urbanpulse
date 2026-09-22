@@ -89,15 +89,15 @@ export default function ScoreExplainabilityModal() {
     >
       <div
         style={{
-          backgroundColor: '#FFFFFF',
-          border: '1px solid var(--border-subtle)',
+          backgroundColor: 'var(--bg-panel, #101620)',
+          border: '1px solid var(--border-subtle, #1B2531)',
           borderRadius: '16px',
           width: '100%',
           maxWidth: '740px',
           maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: 'var(--shadow-panel)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
           color: 'var(--text-primary)',
           overflow: 'hidden',
         }}
@@ -107,11 +107,11 @@ export default function ScoreExplainabilityModal() {
         <div
           style={{
             padding: '20px 24px',
-            borderBottom: '1px solid var(--border-subtle)',
+            borderBottom: '1px solid var(--border-subtle, #1B2531)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: '#FFFFFF',
+            backgroundColor: 'var(--bg-header, #0C1119)',
           }}
         >
           <div>
@@ -144,17 +144,17 @@ export default function ScoreExplainabilityModal() {
         </div>
 
         {/* Content Body */}
-        <div style={{ padding: '24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '18px', backgroundColor: '#FFFFFF' }}>
+        <div style={{ padding: '24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '18px', backgroundColor: 'var(--bg-panel, #101620)' }}>
           {/* Top Score Banner */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              backgroundColor: 'var(--bg-app)',
+              backgroundColor: 'var(--bg-card, #111821)',
               borderRadius: '16px',
               padding: '20px 24px',
-              border: '1px solid var(--border-subtle)',
+              border: '1px solid var(--border-subtle, #1B2531)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
@@ -169,7 +169,7 @@ export default function ScoreExplainabilityModal() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexDirection: 'column',
-                  backgroundColor: '#FFFFFF',
+                  backgroundColor: 'var(--bg-elevated, #141B26)',
                   boxShadow: 'var(--shadow-sm)',
                 }}
               >
@@ -191,8 +191,8 @@ export default function ScoreExplainabilityModal() {
                       fontSize: '11px',
                       fontWeight: 700,
                       color: trendColor,
-                      backgroundColor: '#FFFFFF',
-                      border: '1px solid var(--border-subtle)',
+                      backgroundColor: 'var(--bg-elevated, #141B26)',
+                      border: '1px solid var(--border, #263241)',
                       padding: '2px 8px',
                       borderRadius: '10px',
                     }}
@@ -210,17 +210,17 @@ export default function ScoreExplainabilityModal() {
             <div
               style={{
                 textAlign: 'right',
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--bg-elevated, #141B26)',
                 padding: '10px 14px',
                 borderRadius: '10px',
-                border: '1px solid var(--border-subtle)',
+                border: '1px solid var(--border, #263241)',
                 boxShadow: 'var(--shadow-xs)',
               }}
             >
               <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Confidence
               </div>
-              <div style={{ fontSize: '18px', fontWeight: 700, color: confPercent >= 80 ? 'var(--accent-primary)' : '#D97706' }}>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: confPercent >= 80 ? 'var(--accent-primary)' : '#FBBF24' }}>
                 {confPercent}%
               </div>
               <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
@@ -233,18 +233,18 @@ export default function ScoreExplainabilityModal() {
           {missingSignals > 0 && (
             <div
               style={{
-                backgroundColor: 'rgba(245, 158, 11, 0.08)',
-                border: '1px solid rgba(245, 158, 11, 0.25)',
+                backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                border: '1px solid rgba(245, 158, 11, 0.30)',
                 borderRadius: '10px',
                 padding: '10px 14px',
                 fontSize: '12px',
-                color: '#92400E',
+                color: '#FBBF24',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
               }}
             >
-              <AlertTriangleIcon size={14} color="#D97706" />
+              <AlertTriangleIcon size={14} color="#FBBF24" />
               <span>
                 <strong>Confidence penalized</strong>: {missingSignals} signal domain(s) lack public verified feeds for this area. Score weights were re-normalized rather than assuming 100.
               </span>
@@ -255,45 +255,45 @@ export default function ScoreExplainabilityModal() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div
               style={{
-                backgroundColor: 'rgba(16, 185, 129, 0.06)',
-                border: '1px solid rgba(16, 185, 129, 0.25)',
+                backgroundColor: 'rgba(34, 197, 94, 0.10)',
+                border: '1px solid rgba(34, 197, 94, 0.30)',
                 borderRadius: '12px',
                 padding: '14px',
               }}
             >
-              <div style={{ fontSize: '11px', fontWeight: 700, color: '#047857', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <CheckIcon size={13} color="#047857" /> Key Positive Drivers
+              <div style={{ fontSize: '11px', fontWeight: 700, color: '#4ADE80', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <CheckIcon size={13} color="#4ADE80" /> Key Positive Drivers
               </div>
               {currentScore?.positiveFactors && currentScore.positiveFactors.length > 0 ? (
-                <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '12px', color: '#065F46' }}>
+                <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '12px', color: '#86EFAC' }}>
                   {currentScore.positiveFactors.map((f, i) => (
                     <li key={i}>{f}</li>
                   ))}
                 </ul>
               ) : (
-                <div style={{ fontSize: '12px', color: '#059669' }}>No individual domain exceeded 75 points.</div>
+                <div style={{ fontSize: '12px', color: '#4ADE80' }}>No individual domain exceeded 75 points.</div>
               )}
             </div>
 
             <div
               style={{
-                backgroundColor: 'rgba(239, 68, 68, 0.06)',
-                border: '1px solid rgba(239, 68, 68, 0.25)',
+                backgroundColor: 'rgba(239, 68, 68, 0.10)',
+                border: '1px solid rgba(239, 68, 68, 0.30)',
                 borderRadius: '12px',
                 padding: '14px',
               }}
             >
-              <div style={{ fontSize: '11px', fontWeight: 700, color: '#B91C1C', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <CloseIcon size={13} color="#B91C1C" /> Key Negative Drivers
+              <div style={{ fontSize: '11px', fontWeight: 700, color: '#F87171', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <CloseIcon size={13} color="#F87171" /> Key Negative Drivers
               </div>
               {currentScore?.negativeFactors && currentScore.negativeFactors.length > 0 ? (
-                <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '12px', color: '#991B1B' }}>
+                <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '12px', color: '#FCA5A5' }}>
                   {currentScore.negativeFactors.map((f, i) => (
                     <li key={i}>{f}</li>
                   ))}
                 </ul>
               ) : (
-                <div style={{ fontSize: '12px', color: '#DC2626' }}>No individual domain dropped below 70 points.</div>
+                <div style={{ fontSize: '12px', color: '#F87171' }}>No individual domain dropped below 70 points.</div>
               )}
             </div>
           </div>
@@ -311,10 +311,10 @@ export default function ScoreExplainabilityModal() {
                   <div
                     key={key}
                     style={{
-                      backgroundColor: 'var(--bg-app)',
+                      backgroundColor: 'var(--bg-card, #111821)',
                       borderRadius: '10px',
                       padding: '12px',
-                      border: '1px solid var(--border-subtle)',
+                      border: '1px solid var(--border-subtle, #1B2531)',
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -340,10 +340,10 @@ export default function ScoreExplainabilityModal() {
           {/* Why this score narrative */}
           <div
             style={{
-              backgroundColor: 'var(--bg-app)',
+              backgroundColor: 'var(--bg-card, #111821)',
               borderRadius: '10px',
               padding: '14px 16px',
-              border: '1px solid var(--border-subtle)',
+              border: '1px solid var(--border-subtle, #1B2531)',
             }}
           >
             <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase', marginBottom: '4px' }}>
@@ -359,8 +359,8 @@ export default function ScoreExplainabilityModal() {
         <div
           style={{
             padding: '12px 24px',
-            borderTop: '1px solid var(--border-subtle)',
-            backgroundColor: 'var(--bg-app)',
+            borderTop: '1px solid var(--border-subtle, #1B2531)',
+            backgroundColor: 'var(--bg-header, #0C1119)',
             display: 'flex',
             justifyContent: 'flex-end',
           }}
@@ -368,15 +368,15 @@ export default function ScoreExplainabilityModal() {
           <button
             onClick={() => setShowScoreModal(false)}
             style={{
-              backgroundColor: '#FFFFFF',
+              backgroundColor: 'var(--bg-elevated, #141B26)',
               color: 'var(--text-primary)',
-              border: '1px solid var(--border-subtle)',
+              border: '1px solid var(--border, #263241)',
               padding: '6px 14px',
               borderRadius: '8px',
               cursor: 'pointer',
               fontSize: '12px',
               fontWeight: 600,
-              boxShadow: 'var(--shadow-xs)',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.4)',
             }}
           >
             Close

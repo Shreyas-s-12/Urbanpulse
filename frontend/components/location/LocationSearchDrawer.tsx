@@ -36,6 +36,7 @@ export default function LocationSearchDrawer() {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
+  const searchSeqRef = useRef<number>(0);
 
   // Focus input when opened
   useEffect(() => {
@@ -72,7 +73,7 @@ export default function LocationSearchDrawer() {
     };
   }, [isSearchDrawerOpen, setSearchDrawerOpen]);
 
-  // Debounced autocomplete query
+  // Debounced autocomplete query with sequence protection against stale responses
   useEffect(() => {
     const q = query.trim();
     if (!q || q.length < 2) {
@@ -84,16 +85,26 @@ export default function LocationSearchDrawer() {
     }
 
     setIsSearching(true);
+    const currentSeq = ++searchSeqRef.current;
+
     const timer = setTimeout(async () => {
-      const items = await locationSearchService.autocomplete(q, {
-        latitude: currentDeviceLocation?.latitude ?? currentLocation?.latitude,
-        longitude: currentDeviceLocation?.longitude ?? currentLocation?.longitude,
-        countryCode: currentDeviceLocation?.addressMetadata?.countryCode ?? currentLocation?.countryCode ?? undefined,
-      });
-      setResults(items);
-      setIsSearching(false);
-      setHasSearched(true);
-      setSelectedIndex(-1);
+      try {
+        const items = await locationSearchService.autocomplete(q, {
+          latitude: currentDeviceLocation?.latitude ?? currentLocation?.latitude,
+          longitude: currentDeviceLocation?.longitude ?? currentLocation?.longitude,
+          countryCode: currentDeviceLocation?.addressMetadata?.countryCode ?? currentLocation?.countryCode ?? undefined,
+        });
+        if (currentSeq === searchSeqRef.current) {
+          setResults(items);
+          setIsSearching(false);
+          setHasSearched(true);
+          setSelectedIndex(-1);
+        }
+      } catch {
+        if (currentSeq === searchSeqRef.current) {
+          setIsSearching(false);
+        }
+      }
     }, 250);
 
     return () => clearTimeout(timer);

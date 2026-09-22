@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { WeatherConditionSummary } from '@shared/types';
 import { weatherClient } from '@/services/weatherClient';
 
@@ -6,6 +6,7 @@ export function useWeather(latitude: number | null | undefined, longitude: numbe
   const [weather, setWeather] = useState<WeatherConditionSummary | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const requestSeqRef = useRef<number>(0);
 
   useEffect(() => {
     // Reset immediately to avoid stale data leakage when switching locations
@@ -17,26 +18,26 @@ export function useWeather(latitude: number | null | undefined, longitude: numbe
       return;
     }
 
-    let isMounted = true;
+    const currentSeq = ++requestSeqRef.current;
     setLoading(true);
 
     weatherClient
       .fetchWeather(latitude, longitude)
       .then((data) => {
-        if (isMounted) {
+        if (currentSeq === requestSeqRef.current) {
           setWeather(data);
           setLoading(false);
         }
       })
       .catch((err) => {
-        if (isMounted) {
+        if (currentSeq === requestSeqRef.current) {
           setError(err?.message || 'Failed to load weather data');
           setLoading(false);
         }
       });
 
     return () => {
-      isMounted = false;
+      // Incremented sequence protects against delayed asynchronous responses
     };
   }, [latitude, longitude]);
 

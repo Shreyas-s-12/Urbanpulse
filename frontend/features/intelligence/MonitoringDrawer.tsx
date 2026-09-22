@@ -77,11 +77,11 @@ export default function MonitoringDrawer() {
           width: '100%',
           maxWidth: '480px',
           height: '100%',
-          backgroundColor: '#FFFFFF',
-          borderLeft: '1px solid var(--border-subtle)',
+          backgroundColor: 'var(--bg-panel, #101620)',
+          borderLeft: '1px solid var(--border-subtle, #1B2531)',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: 'var(--shadow-panel)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
           color: 'var(--text-primary)',
         }}
         onClick={(e) => e.stopPropagation()}
@@ -90,11 +90,11 @@ export default function MonitoringDrawer() {
         <div
           style={{
             padding: '20px 24px',
-            borderBottom: '1px solid var(--border-subtle)',
+            borderBottom: '1px solid var(--border-subtle, #1B2531)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: '#FFFFFF',
+            backgroundColor: 'var(--bg-header, #0C1119)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -124,12 +124,12 @@ export default function MonitoringDrawer() {
         </div>
 
         {/* Drawer Content */}
-        <div style={{ padding: '20px 24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '22px', backgroundColor: '#FFFFFF' }}>
+        <div style={{ padding: '20px 24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '22px', backgroundColor: 'var(--bg-panel, #101620)' }}>
           {/* Add Monitor Section */}
           <div
             style={{
-              backgroundColor: 'var(--bg-app)',
-              border: '1px solid var(--border-subtle)',
+              backgroundColor: 'var(--bg-card, #111821)',
+              border: '1px solid var(--border-subtle, #1B2531)',
               borderRadius: '14px',
               padding: '16px',
             }}
@@ -152,8 +152,8 @@ export default function MonitoringDrawer() {
                     onChange={(e) => setCustomName(e.target.value)}
                     style={{
                       flex: 1,
-                      backgroundColor: '#FFFFFF',
-                      border: '1px solid var(--border-subtle)',
+                      backgroundColor: 'var(--bg-input, #0D141D)',
+                      border: '1px solid var(--border, #263241)',
                       borderRadius: '8px',
                       padding: '8px 12px',
                       fontSize: '12px',
@@ -204,8 +204,8 @@ export default function MonitoringDrawer() {
                   <div
                     key={m.id}
                     style={{
-                      backgroundColor: 'var(--bg-app)',
-                      border: '1px solid var(--border-subtle)',
+                      backgroundColor: 'var(--bg-card, #111821)',
+                      border: '1px solid var(--border-subtle, #1B2531)',
                       borderRadius: '10px',
                       padding: '12px',
                       display: 'flex',
@@ -227,7 +227,7 @@ export default function MonitoringDrawer() {
                       style={{
                         background: 'none',
                         border: 'none',
-                        color: '#DC2626',
+                        color: '#F87171',
                         cursor: 'pointer',
                         padding: '4px',
                         display: 'flex',
@@ -236,7 +236,7 @@ export default function MonitoringDrawer() {
                       }}
                       title="Remove Monitor"
                     >
-                      <TrashIcon size={14} color="#DC2626" />
+                      <TrashIcon size={14} color="#F87171" />
                     </button>
                   </div>
                 ))}
@@ -265,8 +265,8 @@ export default function MonitoringDrawer() {
                     <div
                       key={alert.id}
                       style={{
-                        backgroundColor: isRes ? 'var(--bg-subtle)' : 'var(--bg-app)',
-                        border: isRes ? '1px solid var(--border-subtle)' : isAck ? '1px solid rgba(59, 130, 246, 0.4)' : '1px solid rgba(245, 158, 11, 0.35)',
+                        backgroundColor: isRes ? 'var(--bg-elevated, #141B26)' : 'var(--bg-card, #111821)',
+                        border: isRes ? '1px solid var(--border-subtle, #1B2531)' : isAck ? '1px solid rgba(59, 130, 246, 0.4)' : '1px solid rgba(245, 158, 11, 0.35)',
                         borderRadius: '10px',
                         padding: '12px 14px',
                         opacity: isRes ? 0.7 : 1,
@@ -274,7 +274,7 @@ export default function MonitoringDrawer() {
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontWeight: 700, fontSize: '12px', color: isRes ? 'var(--text-muted)' : isAck ? '#2563EB' : '#D97706' }}>
+                          <span style={{ fontWeight: 700, fontSize: '12px', color: isRes ? 'var(--text-muted)' : isAck ? '#60A5FA' : '#FBBF24' }}>
                             {alert.trigger || (alert as any).signal || 'Threshold Exceeded'}
                           </span>
                           <span
@@ -283,8 +283,8 @@ export default function MonitoringDrawer() {
                               fontWeight: 800,
                               padding: '1px 6px',
                               borderRadius: '4px',
-                              backgroundColor: isRes ? '#E2E8F0' : isAck ? 'rgba(59, 130, 246, 0.12)' : 'rgba(245, 158, 11, 0.15)',
-                              color: isRes ? '#475569' : isAck ? '#1D4ED8' : '#B45309',
+                              backgroundColor: isRes ? 'var(--bg-card, #111821)' : isAck ? 'rgba(59, 130, 246, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                              color: isRes ? 'var(--text-muted)' : isAck ? '#60A5FA' : '#FBBF24',
                             }}
                           >
                             {status}
@@ -319,8 +319,8 @@ export default function MonitoringDrawer() {
                                 fontWeight: 600,
                                 borderRadius: '4px',
                                 border: '1px solid rgba(59, 130, 246, 0.3)',
-                                backgroundColor: 'rgba(59, 130, 246, 0.08)',
-                                color: '#1D4ED8',
+                                backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                                color: '#60A5FA',
                                 cursor: 'pointer',
                               }}
                             >
@@ -342,8 +342,8 @@ export default function MonitoringDrawer() {
                               fontSize: '10.5px',
                               fontWeight: 600,
                               borderRadius: '4px',
-                              border: '1px solid var(--border-subtle)',
-                              backgroundColor: '#FFFFFF',
+                              border: '1px solid var(--border, #263241)',
+                              backgroundColor: 'var(--bg-elevated, #141B26)',
                               color: 'var(--text-secondary)',
                               cursor: 'pointer',
                             }}

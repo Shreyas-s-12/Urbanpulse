@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     BACKEND_PORT: int = 8000
     BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
     SECRET_KEY: str = "urbanpulse-development-secret-key"
+    SESSION_COOKIE_NAME: str = "urbanpulse_session"
+    SESSION_MAX_AGE_SECONDS: int = 60 * 60 * 24 * 7  # 7 days
+
 
     # Database & Cache
     DATABASE_URL: str = "sqlite+aiosqlite:///./test.db"

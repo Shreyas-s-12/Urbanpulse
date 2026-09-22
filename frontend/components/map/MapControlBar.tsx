@@ -66,13 +66,13 @@ export default function MapControlBar({
           aria-label="Reset orientation to North"
           title={`Heading: ${Math.round(heading)}°, Tilt: ${Math.round(tilt)}°. Click to reset North`}
           style={{
-            height: '32px',
-            width: '32px',
+            height: '34px',
+            width: '34px',
             borderRadius: 'var(--radius-md, 8px)',
-            backgroundColor: 'rgba(255, 255, 255, 0.96)',
+            backgroundColor: 'var(--bg-card, #FFFFFF)',
             backdropFilter: 'blur(10px)',
-            border: '1px solid var(--border-subtle, #E2E8F0)',
-            boxShadow: 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.08))',
+            border: '1px solid var(--border, #E2E7EF)',
+            boxShadow: 'var(--card-shadow, 0 2px 6px rgba(15, 23, 42, 0.08))',
             color: 'var(--accent-primary, #2563EB)',
             cursor: 'pointer',
             display: 'inline-flex',
@@ -81,9 +81,17 @@ export default function MapControlBar({
             padding: 0,
             transition: 'all 0.15s ease',
           }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'var(--bg-card-hover, #F3F6FA)';
+            e.currentTarget.style.borderColor = 'var(--accent-primary, #2563EB)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'var(--bg-card, #FFFFFF)';
+            e.currentTarget.style.borderColor = 'var(--border, #E2E7EF)';
+          }}
         >
           <CompassIcon
-            size={16}
+            size={17}
             color="var(--accent-primary, #2563EB)"
             style={{
               transform: `rotate(${-heading}deg)`,
@@ -93,20 +101,20 @@ export default function MapControlBar({
         </button>
       )}
 
-
-
       {/* Base Map Modes Group */}
       <div
         style={{
           display: 'inline-flex',
-          backgroundColor: 'rgba(255, 255, 255, 0.96)',
+          alignItems: 'center',
+          backgroundColor: 'var(--bg-card, #FFFFFF)',
           backdropFilter: 'blur(10px)',
           borderRadius: 'var(--radius-md, 8px)',
-          border: '1px solid var(--border-subtle, #E2E8F0)',
-          boxShadow: 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.08))',
+          border: '1px solid var(--border, #E2E7EF)',
+          boxShadow: 'var(--card-shadow, 0 2px 6px rgba(15, 23, 42, 0.08))',
           padding: '2px',
-          height: '32px',
+          height: '34px',
           boxSizing: 'border-box',
+          gap: '2px',
         }}
       >
         {baseModes.map((m) => {
@@ -118,20 +126,32 @@ export default function MapControlBar({
               onClick={() => onModeChange(m.id)}
               aria-pressed={isActive}
               style={{
-                height: '26px',
-                padding: '0 9px',
+                height: '28px',
+                padding: '0 10px',
                 borderRadius: '6px',
-                border: 'none',
-                fontSize: '11px',
+                border: isActive ? '1px solid var(--accent-primary-soft, #BFDBFE)' : '1px solid transparent',
+                fontSize: '11.5px',
                 fontWeight: isActive ? 700 : 500,
                 backgroundColor: isActive ? 'var(--accent-primary-light, #EFF6FF)' : 'transparent',
-                color: isActive ? 'var(--accent-primary, #2563EB)' : 'var(--text-secondary, #475569)',
+                color: isActive ? 'var(--accent-primary, #2563EB)' : 'var(--text-secondary, #566174)',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 whiteSpace: 'nowrap',
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.backgroundColor = 'var(--bg-card-hover, #F3F6FA)';
+                  e.currentTarget.style.color = 'var(--text-primary, #172033)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = 'var(--text-secondary, #566174)';
+                }
               }}
             >
               {m.label}

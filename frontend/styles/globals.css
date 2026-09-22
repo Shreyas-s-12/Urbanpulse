@@ -1,22 +1,72 @@
-:root {
-  /* UrbanPulse Light Geospatial Intelligence Theme */
-  --bg-app: #F8FAFC;
-  --bg-surface: #FFFFFF;
-  --bg-surface-secondary: #F1F5F9;
-  --bg-surface-tertiary: #E2E8F0;
-  --bg-surface-elevated: #FFFFFF;
-  --bg-subtle: #F8FAFC;
-  
-  --text-primary: #111827;
-  --text-secondary: #4B5563;
-  --text-muted: #6B7280;
+:root,
+[data-theme='light'] {
+  /* UrbanPulse Light Geospatial Intelligence Tokens */
+  --light-background: #F6F8FB;
+  --light-surface: #FFFFFF;
+  --light-surface-subtle: #F9FAFC;
+  --light-surface-elevated: #FFFFFF;
+  --light-border: #E2E7EF;
+  --light-border-subtle: #EDF0F4;
+  --light-border-hover: #CBD5E1;
+  --light-text-primary: #172033;
+  --light-text-secondary: #566174;
+  --light-text-muted: #7B8798;
+  --light-text-disabled: #A7B0BE;
+  --light-primary: #2563EB;
+  --light-primary-hover: #1D4ED8;
+  --light-primary-soft: #EFF6FF;
+  --light-focus: #3B82F6;
+
+  /* Layered Surface Hierarchy */
+  --bg-app: var(--light-background);
+  --background: var(--light-background);
+  --bg-sidebar: var(--light-surface);
+  --sidebar: var(--light-surface);
+  --bg-header: var(--light-surface);
+  --header: var(--light-surface);
+  --bg-panel: var(--light-surface);
+  --panel: var(--light-surface);
+  --bg-panel-elevated: var(--light-surface-elevated);
+  --bg-surface: var(--light-surface);
+  --surface: var(--light-surface);
+  --bg-card: var(--light-surface);
+  --bg-card-hover: var(--light-surface-subtle);
+  --bg-surface-secondary: var(--light-surface-subtle);
+  --bg-surface-tertiary: #EEF2F6;
+  --bg-surface-elevated: var(--light-surface-elevated);
+  --bg-subtle: var(--light-surface-subtle);
+  --bg-input: var(--light-surface-subtle);
+  --input: var(--light-surface-subtle);
+
+  /* Typography Hierarchy */
+  --text-primary: var(--light-text-primary);
+  --foreground: var(--light-text-primary);
+  --text-secondary: var(--light-text-secondary);
+  --text-muted: var(--light-text-muted);
+  --muted: var(--light-text-muted);
+  --text-disabled: var(--light-text-disabled);
   --text-inverse: #FFFFFF;
-  
-  --border: #E2E8F0;
-  --border-subtle: #E2E8F0;
-  --border-light: #CBD5E1;
+
+  /* High-Definition Borders */
+  --border: var(--light-border);
+  --border-subtle: var(--light-border-subtle);
+  --border-hover: var(--light-border-hover);
+  --border-light: var(--light-border-subtle);
   --border-strong: #94A3B8;
-  
+
+  /* Standard Audited Theme Variables */
+  --primary: var(--light-primary);
+  --primary-hover: var(--light-primary-hover);
+  --primary-active: #1E40AF;
+  --primary-soft: var(--light-primary-soft);
+  --button: var(--light-primary);
+  --button-hover: var(--light-primary-hover);
+  --button-foreground: #FFFFFF;
+  --button-secondary: var(--light-surface-subtle);
+  --button-secondary-border: var(--light-border);
+  --button-secondary-text: var(--light-text-secondary);
+  --button-secondary-hover: #EEF2F6;
+
   /* Global Spacing System */
   --space-1: 4px;
   --space-2: 8px;
@@ -35,29 +85,85 @@
   --map-card-max-width: 340px;
 
   /* Brand Accent: Cobalt / Electric Blue */
-  --accent-primary: #2563EB;
-  --accent-primary-hover: #1D4ED8;
-  --accent-primary-light: rgba(37, 99, 235, 0.08);
-  --accent-blue: #2563EB;
-  --accent-blue-hover: #1D4ED8;
-  --accent-blue-light: rgba(37, 99, 235, 0.08);
+  --accent-primary: var(--light-primary);
+  --accent-primary-hover: var(--light-primary-hover);
+  --accent-primary-light: var(--light-primary-soft);
+  --accent-blue: var(--light-primary);
+  --accent-blue-hover: var(--light-primary-hover);
+  --accent-blue-light: var(--light-primary-soft);
+  --focus: var(--light-focus);
 
-  /* Semantic Data Status Palette (NOT for general branding) */
-  --status-good: #10B981;
-  --status-good-bg: rgba(16, 185, 129, 0.1);
-  --status-warning: #F59E0B;
-  --status-warning-bg: rgba(245, 158, 11, 0.1);
-  --status-critical: #EF4444;
-  --status-critical-bg: rgba(239, 68, 68, 0.1);
+  /* Semantic Data Status Palette */
+  --status-good: #15803D;
+  --status-good-bg: #ECFDF5;
+  --status-good-border: #BBF7D0;
+  --status-good-text: #15803D;
 
-  --severity-critical: #EF4444;
-  --severity-critical-bg: rgba(239, 68, 68, 0.1);
-  --severity-high: #F59E0B;
-  --severity-high-bg: rgba(245, 158, 11, 0.1);
+  --status-warning: #B45309;
+  --status-warning-bg: #FFFBEB;
+  --status-warning-border: #FDE68A;
+  --status-warning-text: #B45309;
+
+  --status-critical: #DC2626;
+  --status-critical-bg: #FEF2F2;
+  --status-critical-border: #FECACA;
+  --status-critical-text: #DC2626;
+
+  --severity-critical: #DC2626;
+  --severity-critical-bg: #FEF2F2;
+  --severity-high: #B45309;
+  --severity-high-bg: #FFFBEB;
   --severity-moderate: #2563EB;
-  --severity-moderate-bg: rgba(37, 99, 235, 0.1);
-  --severity-low: #10B981;
-  --severity-low-bg: rgba(16, 185, 129, 0.1);
+  --severity-moderate-bg: #EFF6FF;
+  --severity-low: #15803D;
+  --severity-low-bg: #ECFDF5;
+
+  /* Semantic Status Badge Tokens (Light Theme) */
+  --badge-live-bg: #ECFDF5;
+  --badge-live-border: #BBF7D0;
+  --badge-live-text: #15803D;
+
+  --badge-approx-bg: #FFF7ED;
+  --badge-approx-border: #FED7AA;
+  --badge-approx-text: #C2410C;
+
+  --badge-hazard-bg: #FEF2F2;
+  --badge-hazard-border: #FECACA;
+  --badge-hazard-text: #DC2626;
+
+  --badge-warning-bg: #FFFBEB;
+  --badge-warning-border: #FDE68A;
+  --badge-warning-text: #B45309;
+
+  --badge-info-bg: #EFF6FF;
+  --badge-info-border: #BFDBFE;
+  --badge-info-text: #2563EB;
+
+  /* Hand Control Tokens (Light Theme) */
+  --hand-control-off-bg: #F3F4F6;
+  --hand-control-off-border: #E2E7EF;
+  --hand-control-off-text: #64748B;
+  --hand-control-on-bg: #EFF6FF;
+  --hand-control-on-border: #BFDBFE;
+  --hand-control-on-text: #2563EB;
+
+  /* Card & Control Shadows (Light Theme) */
+  --card-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  --card-shadow-hover: 0 4px 12px rgba(15, 23, 42, 0.07);
+  --control-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+
+  /* Nexus Conversation System (Light Theme) */
+  --conversation-bg: #F8FAFC;
+  --assistant-card-bg: #FFFFFF;
+  --assistant-card-border: #E2E7EF;
+  --nested-metric-bg: #F8FAFC;
+  --nested-metric-border: #E8EDF3;
+  --weather-summary-bg: #EFF6FF;
+  --weather-summary-border: #BFDBFE;
+  --weather-summary-text: #1D4ED8;
+  --location-badge-bg: #EFF6FF;
+  --location-badge-border: #BFDBFE;
+  --location-badge-text: #2563EB;
 
   /* Clean Restrained Shadows */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
@@ -78,6 +184,219 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
+/* UrbanPulse Dark Geospatial Intelligence Theme */
+[data-theme='dark'] {
+  /* Starting Design Tokens */
+  --dark-background: #080B10;
+  --dark-sidebar: #0B0F15;
+  --dark-header: #0C1119;
+  --dark-panel: #101620;
+  --dark-panel-elevated: #141B26;
+  --dark-card: #111821;
+  --dark-card-hover: #17202C;
+  --dark-input: #0D141D;
+  --dark-border: #263241;
+  --dark-border-subtle: #1B2531;
+  --dark-text-primary: #F3F6FA;
+  --dark-text-secondary: #AAB4C2;
+  --dark-text-muted: #748091;
+  --dark-text-disabled: #566170;
+  --dark-primary: #3B82F6;
+  --dark-primary-hover: #60A5FA;
+  --dark-primary-active: #2563EB;
+  --dark-focus: #60A5FA;
+
+  /* Layered Surface Hierarchy */
+  --bg-app: #080B10;
+  --background: #080B10;
+  --bg-sidebar: #0B0F15;
+  --sidebar: #0B0F15;
+  --bg-header: #0C1119;
+  --header: #0C1119;
+  --bg-panel: #101620;
+  --panel: #101620;
+  --bg-panel-elevated: #141B26;
+  --bg-surface: #101620;
+  --surface: #101620;
+  --bg-card: #111821;
+  --card: #111821;
+  --bg-card-hover: #151F2B;
+  --card-hover: #151F2B;
+  --bg-surface-secondary: #111821;
+  --bg-surface-tertiary: #17202C;
+  --bg-surface-elevated: #141B26;
+  --bg-subtle: #0D141D;
+  --bg-input: #0D141D;
+  --input: #0D141D;
+
+  /* High-Contrast Borders */
+  --border: #263241;
+  --border-subtle: #1B2531;
+  --border-hover: #344154;
+  --border-light: #263241;
+  --border-strong: #344154;
+
+  /* Typography Hierarchy */
+  --text-primary: #F3F6FA;
+  --foreground: #F3F6FA;
+  --text-secondary: #AAB4C2;
+  --text-muted: #748091;
+  --text-disabled: #566170;
+  --text-inverse: #080B10;
+
+  /* Accent / Primary */
+  --accent-primary: #3B82F6;
+  --accent-primary-hover: #60A5FA;
+  --accent-primary-active: #2563EB;
+  --accent-primary-light: rgba(59, 130, 246, 0.12);
+  --accent-blue: #3B82F6;
+  --accent-blue-hover: #60A5FA;
+  --accent-blue-light: rgba(59, 130, 246, 0.12);
+  --primary: #3B82F6;
+  --primary-hover: #60A5FA;
+  --primary-active: #2563EB;
+  --focus: #60A5FA;
+
+  /* Button System */
+  --button: #2563EB;
+  --button-hover: #3B82F6;
+  --button-foreground: #FFFFFF;
+  --button-secondary: #141B26;
+  --button-secondary-border: #344154;
+  --button-secondary-text: #AAB4C2;
+  --button-secondary-hover: #1B2635;
+
+  /* Controlled Semantic Palette */
+  --status-good: #22C55E;
+  --status-good-bg: rgba(34, 197, 94, 0.10);
+  --status-good-border: rgba(34, 197, 94, 0.30);
+  --status-good-text: #4ADE80;
+
+  --status-warning: #EAB308;
+  --status-warning-bg: rgba(234, 179, 8, 0.10);
+  --status-warning-border: rgba(234, 179, 8, 0.30);
+  --status-warning-text: #FACC15;
+
+  --status-caution: #F59E0B;
+  --status-caution-bg: rgba(245, 158, 11, 0.10);
+  --status-caution-border: rgba(245, 158, 11, 0.30);
+  --status-caution-text: #FBBF24;
+
+  --status-critical: #EF4444;
+  --status-critical-bg: rgba(239, 68, 68, 0.12);
+  --status-critical-border: rgba(239, 68, 68, 0.30);
+  --status-critical-text: #F87171;
+
+  --severity-critical: #EF4444;
+  --severity-critical-bg: rgba(239, 68, 68, 0.12);
+  --severity-high: #F59E0B;
+  --severity-high-bg: rgba(245, 158, 11, 0.10);
+  --severity-moderate: #3B82F6;
+  --severity-moderate-bg: rgba(59, 130, 246, 0.12);
+  --severity-low: #22C55E;
+  --severity-low-bg: rgba(34, 197, 94, 0.10);
+
+  /* Semantic Status Badge Tokens (Dark Theme) */
+  --badge-live-bg: rgba(34, 197, 94, 0.12);
+  --badge-live-border: rgba(34, 197, 94, 0.30);
+  --badge-live-text: #4ADE80;
+
+  --badge-approx-bg: rgba(245, 158, 11, 0.12);
+  --badge-approx-border: rgba(245, 158, 11, 0.30);
+  --badge-approx-text: #FBBF24;
+
+  --badge-hazard-bg: rgba(239, 68, 68, 0.12);
+  --badge-hazard-border: rgba(239, 68, 68, 0.30);
+  --badge-hazard-text: #F87171;
+
+  --badge-warning-bg: rgba(245, 158, 11, 0.12);
+  --badge-warning-border: rgba(245, 158, 11, 0.30);
+  --badge-warning-text: #FBBF24;
+
+  --badge-info-bg: rgba(14, 165, 233, 0.12);
+  --badge-info-border: rgba(14, 165, 233, 0.30);
+  --badge-info-text: #38BDF8;
+
+  /* Hand Control Tokens (Dark Theme) */
+  --hand-control-off-bg: #141B26;
+  --hand-control-off-border: #263241;
+  --hand-control-off-text: #AAB4C2;
+  --hand-control-on-bg: rgba(59, 130, 246, 0.12);
+  --hand-control-on-border: rgba(59, 130, 246, 0.35);
+  --hand-control-on-text: #60A5FA;
+
+  /* Card & Control Shadows (Dark Theme) */
+  --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --card-shadow-hover: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --control-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+
+  /* Nexus Conversation System (Dark Theme) */
+  --conversation-bg: #0D141D;
+  --assistant-card-bg: #111821;
+  --assistant-card-border: #263241;
+  --nested-metric-bg: #0D141D;
+  --nested-metric-border: #263241;
+  --weather-summary-bg: rgba(59, 130, 246, 0.10);
+  --weather-summary-border: rgba(59, 130, 246, 0.30);
+  --weather-summary-text: #93C5FD;
+  --location-badge-bg: rgba(59, 130, 246, 0.10);
+  --location-badge-border: rgba(59, 130, 246, 0.30);
+  --location-badge-text: #60A5FA;
+
+  /* Restrained Dark Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.45), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.25);
+  --shadow-panel: 0 16px 32px -4px rgba(0, 0, 0, 0.6), 0 4px 12px -2px rgba(0, 0, 0, 0.4);
+}
+
+/* Accessibility: High Contrast */
+[data-contrast='high'] {
+  --border: #000000 !important;
+  --border-subtle: #333333 !important;
+  --border-light: #444444 !important;
+  --border-strong: #000000 !important;
+}
+[data-theme='dark'][data-contrast='high'] {
+  --border: #FFFFFF !important;
+  --border-subtle: #CCCCCC !important;
+  --border-light: #DDDDDD !important;
+  --border-strong: #FFFFFF !important;
+}
+
+/* Accessibility: Reduced Motion */
+[data-reduced-motion='true'] * {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* Accessibility: Text Scaling */
+[data-font-size='sm'] {
+  font-size: 14px;
+}
+[data-font-size='md'] {
+  font-size: 16px;
+}
+[data-font-size='lg'] {
+  font-size: 18px;
+}
+
+/* Internationalization: RTL Support */
+[dir='rtl'] {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Prevent geospatial / map elements from being reversed in RTL */
+[dir='rtl'] .map-container,
+[dir='rtl'] .gm-style,
+[dir='rtl'] #google-map,
+[dir='rtl'] canvas {
+  direction: ltr !important;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -92,7 +411,11 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color-scheme: light;
+}
+
+[data-theme='dark'] html,
+[data-theme='dark'] body {
+  color-scheme: dark;
 }
 
 a {
@@ -104,7 +427,6 @@ button {
   cursor: pointer;
   border: none;
   font-family: inherit;
-  background: none;
 }
 
 input, select, textarea {
@@ -126,10 +448,32 @@ input, select, textarea {
 ::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
 }
+[data-theme='dark'] ::-webkit-scrollbar-track {
+  background: #0B0F15;
+}
+[data-theme='dark'] ::-webkit-scrollbar-thumb {
+  background: #263241;
+}
+[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+  background: #344154;
+}
 
 /* Quick Action Scroller clean scrollbar hiding */
-.quick-action-scroller::-webkit-scrollbar {
+.quick-action-scroller::-webkit-scrollbar,
+.nexus-scrollbar-hidden::-webkit-scrollbar {
   display: none;
   height: 0px;
   width: 0px;
 }
+
+@keyframes nexusDotPulse {
+  0%, 80%, 100% {
+    transform: scale(0.65);
+    opacity: 0.35;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+

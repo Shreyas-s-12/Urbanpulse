@@ -182,9 +182,13 @@ function GoogleMapViewInner({
   // Nexus Global Ranking State
   const { activeRanking, showRankedMarkers } = useAgentStore();
 
-  // Unified Map State Machine (User requirements 2 & 10)
-  const [mapStatus, setMapStatus] = useState<MapStatus>('loading');
-  const [mapErrorMessage, setMapErrorMessage] = useState<string | null>(null);
+  const hasApiKey = Boolean(apiKey && apiKey.trim().length > 0);
+
+  // Unified Map State Machine (Strict terminal states: idle | loading | ready | error | timeout | unavailable)
+  const [mapStatus, setMapStatus] = useState<MapStatus>(() => (hasApiKey ? 'loading' : 'unavailable'));
+  const [mapErrorMessage, setMapErrorMessage] = useState<string | null>(() =>
+    hasApiKey ? null : 'Google Maps API key is not configured. All location search, site analysis, weather, traffic, and intelligence systems remain fully operational.'
+  );
 
   // Derived backward-compatible booleans for internal subcomponents
   const mapReady = mapStatus === 'ready';
@@ -253,31 +257,49 @@ function GoogleMapViewInner({
     return Math.max(5, Math.min(15, 12 - Math.log2(Math.max(radiusKm, 1) / 10)));
   }, [radiusKm, center, zoomOverride]);
 
-  // Base Map Initialization: Google Maps -> render map immediately
+  // Dedicated Watchdog Timer (12s, cleanly inside 10-15s requirement)
+  // Operates independently of container node presence - guarantees map can NEVER be trapped in 'loading' forever!
   useEffect(() => {
-    // 1. Unconditional 7-second hard watchdog timer: Guarantees map CAN NEVER stay in 'loading' forever!
+    if (mapStatus !== 'loading') return;
+
+    const slowTimer = setTimeout(() => {
+      setLoadSlow(true);
+    }, 3000);
+
     const watchdogTimer = setTimeout(() => {
-      setMapStatus((prev) => {
-        if (prev === 'loading') {
-          console.warn('[UrbanPulse Map] 7-second watchdog timeout fired. Transitioning to timeout state.');
-          setMapErrorMessage('Interactive map connection timed out. All location search, site analysis, weather, traffic, and intelligence systems remain fully active.');
+      setMapStatus((current) => {
+        if (current === 'loading') {
+          console.warn('[UrbanPulse Map] 12-second watchdog timeout fired. Transitioning to timeout state.');
+          setMapErrorMessage(
+            'Interactive map connection timed out (12s). All location search, site analysis, weather, traffic, and intelligence systems remain fully active.'
+          );
           return 'timeout';
         }
-        return prev;
+        return current;
       });
-    }, 7000);
+    }, 12000);
+
+    return () => {
+      clearTimeout(slowTimer);
+      clearTimeout(watchdogTimer);
+    };
+  }, [mapStatus, retryKey]);
+
+  // Base Map Initialization: Google Maps -> render map immediately
+  useEffect(() => {
+    if (!hasApiKey) {
+      setMapStatus('unavailable');
+      setMapErrorMessage(
+        'Google Maps API key is not configured. All location search, site analysis, weather, traffic, and intelligence systems remain fully operational.'
+      );
+      return;
+    }
 
     if (!containerNode) {
-      return () => clearTimeout(watchdogTimer);
+      return;
     }
     const currentGen = ++initGenRef.current;
-
-    // Timer to detect slow loading (> 2.5s)
-    const slowTimer = setTimeout(() => {
-      if (currentGen === initGenRef.current && mapStatus === 'loading') {
-        setLoadSlow(true);
-      }
-    }, 2500);
+    let isCancelled = false;
 
     const initMap = async () => {
       setMapStatus('loading');
@@ -302,8 +324,6 @@ function GoogleMapViewInner({
               mapInstanceRef.current.setMapTypeId(typeMapping[currentMode] || 'roadmap');
             }
           } catch (_) {}
-          clearTimeout(watchdogTimer);
-          clearTimeout(slowTimer);
           setMapStatus('ready');
           setMapErrorMessage(null);
           setGoogleServiceStatus('AVAILABLE');
@@ -311,11 +331,12 @@ function GoogleMapViewInner({
           return;
         }
 
-        // Non-blocking container size check (never freeze UI thread)
-        if (containerNode.offsetWidth === 0 || containerNode.offsetHeight === 0) {
-          console.log('[UrbanPulse Map] MAP CONTAINER: initial zero size, yielding brief frame tick');
+        // Non-blocking container size check (never freeze UI thread; poll up to 1.5s max)
+        let waitAttempts = 0;
+        while ((containerNode.offsetWidth === 0 || containerNode.offsetHeight === 0) && waitAttempts < 15) {
           await new Promise((r) => setTimeout(r, 100));
-          if (currentGen !== initGenRef.current) return;
+          waitAttempts++;
+          if (isCancelled || currentGen !== initGenRef.current) return;
         }
 
         console.log('[UrbanPulse Map] MAP LOADER: START');
@@ -326,7 +347,7 @@ function GoogleMapViewInner({
           MapClass = mapsLib?.Map || (window as any).google?.maps?.Map;
         }
 
-        if (currentGen !== initGenRef.current) return;
+        if (isCancelled || currentGen !== initGenRef.current) return;
 
         if (!MapClass) {
           console.error('[UrbanPulse Map] MAP LOADER: ERROR - Map constructor missing');
@@ -380,8 +401,6 @@ function GoogleMapViewInner({
             (window as any).__UP_STREET_VIEW_STATUS__ = streetViewStatus;
           }
 
-          clearTimeout(watchdogTimer);
-          clearTimeout(slowTimer);
           setMapStatus('ready');
           setMapErrorMessage(null);
           setGoogleServiceStatus('AVAILABLE');
@@ -565,17 +584,16 @@ function GoogleMapViewInner({
 
         }
       } catch (err: any) {
-        clearTimeout(watchdogTimer);
-        clearTimeout(slowTimer);
-        if (currentGen !== initGenRef.current) return;
+        if (isCancelled) return;
         console.error('[UrbanPulse Map] MAP STATUS: ERROR - initialization failed:', err);
         const isTimeout =
           err?.name === 'MapsTimeoutError' ||
           err?.message?.includes('timeout') ||
+          err?.message?.includes('timed out') ||
           err?.message?.includes('Timed out');
         setMapStatus(isTimeout ? 'timeout' : 'error');
         setMapErrorMessage(
-          err?.message || 'Google Maps could not be initialized.'
+          err?.message || 'Google Maps could not be initialized. Location search, site analysis, weather, and intelligence remain active.'
         );
         setGoogleServiceStatus('ERROR');
       }
@@ -584,11 +602,10 @@ function GoogleMapViewInner({
     initMap();
 
     return () => {
-      clearTimeout(watchdogTimer);
-      clearTimeout(slowTimer);
+      isCancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [containerNode, apiKey, retryKey]);
+  }, [containerNode, hasApiKey, apiKey, retryKey]);
 
   // Handle container resizing (e.g. Map Expansion toggle or window resize) without reinitializing map
   useEffect(() => {
@@ -1454,11 +1471,11 @@ function GoogleMapViewInner({
                 backgroundColor: mapStatus === 'timeout' ? '#D97706' : '#EF4444',
               }}
             />
-            {mapStatus === 'timeout' ? 'Connection Timeout' : 'Map Temporarily Unavailable'}
+            {mapStatus === 'timeout' ? 'Connection Timeout (12s)' : 'Map Temporarily Unavailable'}
           </div>
 
-          <div style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>
-            {mapStatus === 'timeout' ? 'Interactive Map Connection Timed Out' : 'Interactive Map Offline'}
+          <div style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A' }}>
+            Map Temporarily Unavailable
           </div>
 
           <div style={{ fontSize: '12px', color: '#64748B', maxWidth: '460px', lineHeight: 1.5 }}>
@@ -1491,7 +1508,7 @@ function GoogleMapViewInner({
               onClick={handleRetry}
               disabled={retryCooldown}
               style={{
-                padding: '8px 20px',
+                padding: '8px 24px',
                 borderRadius: 'var(--radius-sm, 6px)',
                 backgroundColor: retryCooldown ? '#94A3B8' : 'var(--accent-primary, #2563EB)',
                 color: '#FFFFFF',
@@ -1502,7 +1519,7 @@ function GoogleMapViewInner({
                 boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
               }}
             >
-              {retryCooldown ? 'Retrying…' : 'Retry Connection'}
+              {retryCooldown ? 'Retrying…' : 'Retry'}
             </button>
           </div>
 

@@ -33,6 +33,8 @@ import PulseWireRail from '@/features/pulsewire/PulseWireRail';
 import { usePulseWireStore } from '@/stores/usePulseWireStore';
 import { SelectedPlaceDetail } from '@/components/map/PlaceDetailCard';
 import { agentService } from '@/services/agentService';
+import VoiceControl from '@/features/multimodal/voice/VoiceControl';
+import { useLanguage } from '@/context/LanguageContext';
 
 const NexusHoloOrb = dynamic(() => import('@/components/3d/NexusHoloOrb'), {
   ssr: false,
@@ -80,302 +82,17 @@ const SUGGESTED_PROMPTS = [
   'Live updates in San Francisco',
 ];
 
-interface NexusMessageItemProps {
-  msg: import('@/stores/useAgentStore').AgentChatMessage;
-  isUser: boolean;
-}
-
-function NexusMessageItem({ msg, isUser }: NexusMessageItemProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  // Check if message has supporting intelligence data (sources, confidence, location, telemetry)
-  const hasSupportingData =
-    !isUser &&
-    Boolean(
-      (msg.sources && msg.sources.length > 0) ||
-      msg.confidence !== undefined ||
-      msg.location ||
-      msg.data?.traffic ||
-      msg.data?.weather ||
-      msg.data?.airQuality ||
-      msg.data?.activities
-    );
-
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: isUser ? 'flex-end' : 'flex-start',
-        gap: '4px',
-        width: '100%',
-      }}
-    >
-      <div
-        style={{
-          maxWidth: isUser ? '85%' : '92%',
-          backgroundColor: isUser ? 'var(--accent-primary)' : 'var(--bg-app)',
-          color: isUser ? '#FFFFFF' : 'var(--text-primary)',
-          padding: isUser ? '10px 14px' : '12px 14px',
-          borderRadius: isUser ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
-          fontSize: '13px',
-          lineHeight: 1.5,
-          border: isUser ? 'none' : '1px solid var(--border-subtle)',
-          boxShadow: 'var(--shadow-xs)',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        {/* Render Specialized Structured Response Cards for Agent Messages if available */}
-        {!isUser && msg.structuredResponse?.type === 'RANKING' ? (
-          <NexusRankingResponse response={msg.structuredResponse} rawRanking={msg.data?.ranking} />
-        ) : !isUser && (msg.data?.ranking && !msg.structuredResponse) ? (
-          <NexusRankingResponse
-            response={{
-              type: 'RANKING',
-              title: `Top ${msg.data.ranking.results?.length || 10} ${msg.data.ranking.metric} in ${msg.data.ranking.scope}`,
-              summary: msg.data.ranking.rankingMetric || '',
-              results: msg.data.ranking.results,
-              metadata: msg.data.ranking,
-              sources: [{ name: msg.data.ranking.source }],
-            }}
-            rawRanking={msg.data.ranking}
-          />
-        ) : !isUser && msg.structuredResponse?.type === 'COMPARISON' ? (
-          <NexusComparisonResponse response={msg.structuredResponse} rawComparison={msg.data?.cityComparison || msg.data?.comparison} />
-        ) : !isUser && (msg.data?.cityComparison && !msg.structuredResponse) ? (
-          <NexusComparisonResponse
-            response={{
-              type: 'COMPARISON',
-              title: 'City Comparison',
-              summary: msg.data.cityComparison.verdict || '',
-              metadata: { cityComparison: msg.data.cityComparison },
-              sources: [{ name: 'UrbanPulse Multi-City Engine' }],
-            }}
-            rawComparison={msg.data.cityComparison}
-          />
-        ) : !isUser && msg.structuredResponse?.type === 'CURRENT_STATUS' ? (
-          <NexusConditionResponse response={msg.structuredResponse} data={msg.data} />
-        ) : !isUser && msg.structuredResponse?.type === 'EXPLANATION' ? (
-          <NexusExplanationResponse response={msg.structuredResponse} data={msg.data} />
-        ) : !isUser && msg.structuredResponse?.type === 'FORECAST' ? (
-          <NexusForecastResponse response={msg.structuredResponse} data={msg.data} />
-        ) : !isUser && msg.structuredResponse?.type === 'SCENARIO' ? (
-          <NexusScenarioResponse response={msg.structuredResponse} data={msg.data} />
-        ) : (
-          <MarkdownRenderer content={msg.content} isUser={isUser} />
-        )}
-
-        {/* Know More contextual action toggle */}
-        {hasSupportingData && (
-          <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              onClick={() => setIsExpanded((prev) => !prev)}
-              aria-expanded={isExpanded}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                padding: '3px 8px',
-                fontSize: '11px',
-                fontWeight: 600,
-                borderRadius: '6px',
-                backgroundColor: isExpanded ? 'var(--accent-primary-light, #EFF6FF)' : 'var(--bg-surface)',
-                color: isExpanded ? 'var(--accent-primary, #2563EB)' : 'var(--text-secondary)',
-                border: '1px solid var(--border-subtle)',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <InfoIcon size={12} color="var(--accent-primary)" />
-              <span>{isExpanded ? 'Hide Details' : 'Know more'}</span>
-              <ChevronDownIcon
-                size={11}
-                style={{
-                  transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.15s ease',
-                }}
-              />
-            </button>
-
-            {msg.confidence !== undefined && (
-              <span style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>
-                Confidence: {Math.round(msg.confidence * 100)}%
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Nexus Details Panel */}
-        {hasSupportingData && isExpanded && (
-          <div
-            style={{
-              marginTop: '10px',
-              paddingTop: '10px',
-              borderTop: '1px solid var(--border-subtle)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              animation: 'fadeIn 0.15s ease-out',
-            }}
-          >
-            {/* Sources & Freshness */}
-            {msg.sources && msg.sources.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                <span
-                  style={{
-                    fontSize: '9.5px',
-                    fontWeight: 700,
-                    color: 'var(--text-muted)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                  }}
-                >
-                  VERIFIED SOURCES & FRESHNESS
-                </span>
-                {msg.sources.map((src, idx) => {
-                  const targetUrl = (src as any).articleUrl || (src as any).url || (src.detail && /^https?:\/\//i.test(src.detail) ? src.detail : null);
-                  const validUrl = targetUrl && /^https?:\/\//i.test(targetUrl) && !/^(javascript|data|vbscript|file):/i.test(targetUrl) ? targetUrl : null;
-                  const displayDetail = src.detail && !/^https?:\/\//i.test(src.detail) ? src.detail : '';
-
-                  return (
-                    <div
-                      key={idx}
-                      style={{
-                        fontSize: '11px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '6px',
-                        color: 'var(--text-secondary)',
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
-                        <span
-                          style={{
-                            width: '6px',
-                            height: '6px',
-                            borderRadius: '50%',
-                            backgroundColor: src.freshness === 'LIVE' ? '#10B981' : '#F59E0B',
-                            flexShrink: 0,
-                          }}
-                        />
-                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          <strong style={{ color: 'var(--text-primary)' }}>{src.type || 'Source'}</strong>
-                          {displayDetail ? `: ${displayDetail}` : ''}
-                          {src.source ? ` (${src.source})` : ''}
-                        </span>
-                      </div>
-
-                      {validUrl && (
-                        <a
-                          href={validUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title="Open source reference in a new tab"
-                          style={{
-                            fontSize: '10.5px',
-                            fontWeight: 650,
-                            color: 'var(--accent-primary, #0284C7)',
-                            textDecoration: 'none',
-                            flexShrink: 0,
-                            padding: '1px 6px',
-                            borderRadius: '4px',
-                            backgroundColor: 'rgba(2, 132, 199, 0.08)',
-                            transition: 'all 0.15s ease',
-                          }}
-                        >
-                          Know more →
-                        </a>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Location Provenance */}
-            {msg.location && (
-              <div
-                style={{
-                  marginTop: '4px',
-                  padding: '6px 8px',
-                  borderRadius: '6px',
-                  backgroundColor: 'var(--bg-surface)',
-                  border: '1px solid var(--border-subtle)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '8px',
-                  fontSize: '11px',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', overflow: 'hidden' }}>
-                  <PinIcon size={12} color="var(--accent-primary)" style={{ flexShrink: 0 }} />
-                  <span
-                    style={{
-                      fontWeight: 600,
-                      color: 'var(--text-primary)',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {msg.location.name || msg.location.city || msg.location.displayName}
-                  </span>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>
-                    ({msg.location.latitude.toFixed(4)}, {msg.location.longitude.toFixed(4)})
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (msg.location?.latitude && msg.location?.longitude) {
-                      const locName = msg.location.displayName || msg.location.name || msg.location.city || 'Selected Location';
-                      useAgentStore.getState().setActiveLocation({
-                        displayName: locName,
-                        name: locName,
-                        city: msg.location.city || locName,
-                        state: msg.location.state || '',
-                        country: msg.location.country || '',
-                        latitude: msg.location.latitude,
-                        longitude: msg.location.longitude,
-                        isUserLocation: false,
-                        source: 'SEARCH',
-                      });
-                    }
-                  }}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    fontSize: '10.5px',
-                    fontWeight: 600,
-                    color: 'var(--accent-primary)',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    backgroundColor: 'var(--bg-app)',
-                    border: '1px solid var(--border-subtle)',
-                    cursor: 'pointer',
-                    flexShrink: 0,
-                  }}
-                  title="Focus on canvas map"
-                >
-                  <PinIcon size={10} color="var(--accent-primary)" />
-                  <span>Focus</span>
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+import {
+  NexusHeader,
+  NexusUserMessage,
+  NexusAssistantMessage,
+  NexusThinkingIndicator,
+  NexusSuggestedPrompts,
+  NexusComposer,
+} from '@/features/agent/components';
 
 export default function AgentHomeView() {
+  const { t, speechLocale } = useLanguage();
   const {
     messages,
     activeLocation,
@@ -689,79 +406,21 @@ export default function AgentHomeView() {
         <div
           className="chat-shell"
           style={{
-            width: isMapExpanded ? '0px' : 'clamp(340px, calc((100vh - 58px) * 9 / 16), 440px)',
+            width: isMapExpanded ? '0px' : 'clamp(330px, 25vw, 380px)',
             minWidth: 0,
-            aspectRatio: '9 / 16',
-            maxHeight: 'calc(100vh - 58px)',
-            minHeight: 0,
             height: '100%',
             flexShrink: 0,
             display: isMapExpanded ? 'none' : 'flex',
             flexDirection: 'column',
-            backgroundColor: '#FFFFFF',
-            backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.90)), url("/images/Chat Background.png")',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            borderRight: '1px solid var(--border-subtle)',
+            backgroundColor: 'var(--bg-panel, #FFFFFF)',
+            borderRight: '1px solid var(--border, #E2E7EF)',
             zIndex: 20,
             overflow: 'hidden',
             position: 'relative',
           }}
         >
-        {/* Agent Header */}
-        <div
-          style={{
-            height: '56px',
-            padding: '0 var(--space-4)',
-            borderBottom: '1px solid var(--border-subtle)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            backgroundColor: 'var(--bg-surface)',
-            flexShrink: 0,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <UrbanPulseLogo size={26} />
-            <div>
-              <h2 style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1.2 }}>
-                UrbanPulse Agent
-              </h2>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1 }}>
-                Conversational Location Intelligence
-              </span>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {displayLoc && (
-              <span
-                style={{
-                  fontSize: '11px',
-                  padding: '3px 8px',
-                  borderRadius: 'var(--radius-full)',
-                  backgroundColor: 'var(--accent-primary-light)',
-                  color: 'var(--accent-primary)',
-                  fontWeight: 700,
-                  maxWidth: '120px',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-                title={displayLoc.displayName}
-              >
-                <PinIcon size={12} color="var(--accent-primary)" />
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {displayLoc.city || displayLoc.displayName}
-                </span>
-              </span>
-            )}
-          </div>
-        </div>
+        {/* Nexus Header (56-64px height) */}
+        <NexusHeader locationName={displayLoc ? (displayLoc.city || displayLoc.displayName) : null} />
 
         {/* Master Intelligence Quick Navigation Row */}
         <div
@@ -784,7 +443,7 @@ export default function AgentHomeView() {
               bottom: 0,
               left: 0,
               width: '36px',
-              background: 'linear-gradient(to right, rgba(248, 250, 252, 0.98) 50%, rgba(248, 250, 252, 0))',
+              background: 'linear-gradient(to right, rgba(13, 20, 29, 0.98) 50%, rgba(13, 20, 29, 0))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-start',
@@ -805,27 +464,27 @@ export default function AgentHomeView() {
                   width: '24px',
                   height: '24px',
                   borderRadius: '50%',
-                  backgroundColor: '#FFFFFF',
-                  border: '1px solid var(--border-subtle)',
+                  backgroundColor: 'var(--bg-elevated, #141B26)',
+                  border: '1px solid var(--border, #263241)',
                   boxShadow: 'var(--shadow-xs)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: 'var(--text-primary)',
+                  color: 'var(--text-primary, #F3F6FA)',
                   cursor: 'pointer',
                   padding: 0,
                   transition: 'border-color 0.15s ease, background-color 0.15s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--accent-primary)';
-                  e.currentTarget.style.backgroundColor = 'var(--accent-primary-light)';
+                  e.currentTarget.style.borderColor = 'var(--accent-primary, #3B82F6)';
+                  e.currentTarget.style.backgroundColor = 'var(--bg-card-hover, #17202C)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border-subtle)';
-                  e.currentTarget.style.backgroundColor = '#FFFFFF';
+                  e.currentTarget.style.borderColor = 'var(--border, #263241)';
+                  e.currentTarget.style.backgroundColor = 'var(--bg-elevated, #141B26)';
                 }}
               >
-                <ChevronLeftIcon size={14} color="var(--text-primary)" />
+                <ChevronLeftIcon size={14} color="var(--text-primary, #F3F6FA)" />
               </button>
             )}
           </div>
@@ -838,7 +497,7 @@ export default function AgentHomeView() {
               bottom: 0,
               right: 0,
               width: '36px',
-              background: 'linear-gradient(to left, rgba(248, 250, 252, 0.98) 50%, rgba(248, 250, 252, 0))',
+              background: 'linear-gradient(to left, rgba(13, 20, 29, 0.98) 50%, rgba(13, 20, 29, 0))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-end',
@@ -859,27 +518,27 @@ export default function AgentHomeView() {
                   width: '24px',
                   height: '24px',
                   borderRadius: '50%',
-                  backgroundColor: '#FFFFFF',
-                  border: '1px solid var(--border-subtle)',
+                  backgroundColor: 'var(--bg-elevated, #141B26)',
+                  border: '1px solid var(--border, #263241)',
                   boxShadow: 'var(--shadow-xs)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: 'var(--text-primary)',
+                  color: 'var(--text-primary, #F3F6FA)',
                   cursor: 'pointer',
                   padding: 0,
                   transition: 'border-color 0.15s ease, background-color 0.15s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--accent-primary)';
-                  e.currentTarget.style.backgroundColor = 'var(--accent-primary-light)';
+                  e.currentTarget.style.borderColor = 'var(--accent-primary, #3B82F6)';
+                  e.currentTarget.style.backgroundColor = 'var(--bg-card-hover, #17202C)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border-subtle)';
-                  e.currentTarget.style.backgroundColor = '#FFFFFF';
+                  e.currentTarget.style.borderColor = 'var(--border, #263241)';
+                  e.currentTarget.style.backgroundColor = 'var(--bg-elevated, #141B26)';
                 }}
               >
-                <ChevronRightIcon size={14} color="var(--text-primary)" />
+                <ChevronRightIcon size={14} color="var(--text-primary, #F3F6FA)" />
               </button>
             )}
           </div>
@@ -1103,12 +762,12 @@ export default function AgentHomeView() {
           </div>
         </div>
 
-        {/* Nexus Event Filter Bar (Phase 1) */}
+        {/* Nexus Event Filter Bar */}
         <div
           style={{
-            padding: '6px 10px',
-            backgroundColor: '#FFFFFF',
-            borderBottom: '1px solid var(--border-subtle)',
+            padding: '8px 12px',
+            backgroundColor: 'var(--bg-subtle, #F9FAFC)',
+            borderBottom: '1px solid var(--border, #E2E7EF)',
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
@@ -1117,7 +776,7 @@ export default function AgentHomeView() {
             flexShrink: 0,
           }}
         >
-          <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', flexShrink: 0 }}>
+          <span style={{ fontSize: '10.5px', fontWeight: 750, color: 'var(--text-muted, #7B8798)', textTransform: 'uppercase', letterSpacing: '0.04em', flexShrink: 0 }}>
             FILTER:
           </span>
           {(['ALL', 'CRIME', 'WEATHER', 'TRAFFIC', 'HAZARD', 'MUNICIPAL', 'LIVE', 'RECENT', 'FORECAST', 'ALERTS'] as const).map((filterOpt) => {
@@ -1133,18 +792,18 @@ export default function AgentHomeView() {
                   }
                 }}
                 style={{
-                  height: '24px',
-                  padding: '0 8px',
-                  borderRadius: '12px',
-                  fontSize: '10.5px',
+                  height: '26px',
+                  padding: '0 10px',
+                  borderRadius: '13px',
+                  fontSize: '11px',
                   fontWeight: 600,
-                  border: isSelected ? '1px solid var(--accent-primary)' : '1px solid var(--border-subtle)',
-                  backgroundColor: isSelected ? 'var(--accent-primary-light)' : 'var(--bg-surface)',
-                  color: isSelected ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                  border: isSelected ? '1px solid var(--accent-primary, #2563EB)' : '1px solid var(--border, #E2E7EF)',
+                  backgroundColor: isSelected ? 'var(--accent-primary, #2563EB)' : 'var(--bg-card, #FFFFFF)',
+                  color: isSelected ? '#FFFFFF' : 'var(--text-secondary, #566174)',
                   cursor: 'pointer',
                   flexShrink: 0,
                   whiteSpace: 'nowrap',
-                  transition: 'background-color 0.15s ease, border-color 0.15s ease',
+                  transition: 'all 0.15s ease',
                 }}
               >
                 {filterOpt}
@@ -1153,16 +812,18 @@ export default function AgentHomeView() {
           })}
         </div>
 
-        {/* Chat History & Stream Area */}
+        {/* Chat History & Stream Area - ONLY scrollable region */}
         <div
           style={{
             flex: 1,
             overflowY: 'auto',
-            padding: 'var(--space-4)',
+            backgroundColor: 'var(--conversation-bg, #F8FAFC)',
+            padding: '16px',
             display: 'flex',
             flexDirection: 'column',
-            gap: 'var(--space-3)',
+            gap: '14px',
             minHeight: 0,
+            boxSizing: 'border-box',
           }}
         >
           {messages.length === 0 && (
@@ -1173,8 +834,10 @@ export default function AgentHomeView() {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: 'var(--space-3)',
-                padding: 'var(--space-2) 0',
+                gap: '14px',
+                padding: '16px 8px',
+                width: '100%',
+                boxSizing: 'border-box',
               }}
             >
               <div
@@ -1186,16 +849,19 @@ export default function AgentHomeView() {
                   gap: '12px',
                 }}
               >
-                <NexusHoloOrb size={72} />
+                <NexusHoloOrb size={76} />
                 <UrbanPulseLogo size={32} />
               </div>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.45, margin: 0, maxWidth: '290px' }}>
-                Ask anything about any city on Earth. UrbanPulse Nexus analyzes live conditions and moves the map to show real traffic, weather, or air quality.
+              <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-primary, #172033)', margin: '0 0 2px 0' }}>
+                Ask anything about your city or location.
+              </h3>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary, #566174)', lineHeight: 1.5, margin: 0, maxWidth: '290px' }}>
+                UrbanPulse Nexus analyzes live geospatial signals, traffic bottlenecks, weather, and environmental safety in real time.
               </p>
 
-              {/* Suggested Prompts */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', width: '100%', marginTop: 'var(--space-1)' }}>
-                <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+              {/* Initial Suggested Prompts */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', maxWidth: '330px', marginTop: '6px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted, #7B8798)', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'left' }}>
                   TRY ASKING:
                 </span>
                 {SUGGESTED_PROMPTS.slice(0, 4).map((prompt, i) => (
@@ -1204,31 +870,34 @@ export default function AgentHomeView() {
                     onClick={() => handleSend(prompt)}
                     style={{
                       width: '100%',
-                      padding: '9px 12px',
-                      fontSize: '12px',
+                      height: '42px',
+                      padding: '0 12px',
+                      fontSize: '12.5px',
                       fontWeight: 500,
-                      borderRadius: 'var(--radius-md)',
-                      backgroundColor: 'var(--bg-app)',
-                      border: '1px solid var(--border-subtle)',
-                      color: 'var(--text-primary)',
+                      borderRadius: '8px',
+                      backgroundColor: 'var(--assistant-card-bg, #FFFFFF)',
+                      border: '1px solid var(--assistant-card-border, #E2E7EF)',
+                      color: 'var(--text-primary, #172033)',
                       textAlign: 'left',
                       cursor: 'pointer',
                       transition: 'all 0.15s ease',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '8px',
+                      gap: '10px',
                       boxSizing: 'border-box',
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--accent-primary)';
-                      e.currentTarget.style.backgroundColor = 'var(--accent-primary-light)';
+                      e.currentTarget.style.borderColor = 'var(--accent-primary, #2563EB)';
+                      e.currentTarget.style.backgroundColor = 'var(--accent-primary-light, #EFF6FF)';
+                      e.currentTarget.style.color = 'var(--accent-primary, #2563EB)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--border-subtle)';
-                      e.currentTarget.style.backgroundColor = 'var(--bg-app)';
+                      e.currentTarget.style.borderColor = 'var(--assistant-card-border, #E2E7EF)';
+                      e.currentTarget.style.backgroundColor = 'var(--assistant-card-bg, #FFFFFF)';
+                      e.currentTarget.style.color = 'var(--text-primary, #172033)';
                     }}
                   >
-                    <MessageSquareIcon size={13} color="var(--accent-primary)" style={{ flexShrink: 0 }} />
+                    <MessageSquareIcon size={14} color="var(--accent-primary, #2563EB)" style={{ flexShrink: 0 }} />
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prompt}</span>
                   </button>
                 ))}
@@ -1237,149 +906,34 @@ export default function AgentHomeView() {
           )}
 
           {/* Render Message List */}
-          {messages.map((msg) => (
-            <NexusMessageItem key={msg.id} msg={msg} isUser={msg.sender === 'user'} />
-          ))}
-
-          {/* Activity Progress (Compact Non-Distracting Pills) */}
-          {toolActivities.length > 0 && isProcessing && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
-              {toolActivities.slice(-3).map((act, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '6px 12px',
-                    borderRadius: '20px',
-                    backgroundColor: 'var(--bg-app)',
-                    border: '1px solid var(--border-subtle)',
-                    fontSize: '11px',
-                    color: 'var(--text-secondary)',
-                    alignSelf: 'flex-start',
-                  }}
-                >
-                  <span
-                    style={{
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      backgroundColor: act.status === 'IN_PROGRESS' ? 'var(--accent-primary)' : '#10B981',
-                      animation: act.status === 'IN_PROGRESS' ? 'pulse 1.2s infinite' : 'none',
-                    }}
-                  />
-                  <span>{act.step}</span>
-                  {act.detail && <span style={{ color: 'var(--text-muted)' }}>• {act.detail}</span>}
-                </div>
-              ))}
-            </div>
+          {messages.map((msg) =>
+            msg.sender === 'user' ? (
+              <NexusUserMessage key={msg.id} content={msg.content} />
+            ) : (
+              <NexusAssistantMessage key={msg.id} msg={msg} />
+            )
           )}
+
+          {/* Subtle Thinking / Processing Indicator */}
+          {isProcessing && <NexusThinkingIndicator />}
 
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Bottom Suggested Prompt Chips */}
-        {messages.length > 0 && (
-          <div
-            style={{
-              padding: 'var(--space-2) var(--space-4)',
-              display: 'flex',
-              gap: 'var(--space-1)',
-              overflowX: 'auto',
-              borderTop: '1px solid var(--border-subtle)',
-              backgroundColor: 'var(--bg-surface)',
-              scrollbarWidth: 'none',
-              flexShrink: 0,
-            }}
-          >
-            {SUGGESTED_PROMPTS.map((prompt, i) => (
-              <button
-                key={i}
-                onClick={() => handleSend(prompt)}
-                disabled={isProcessing}
-                style={{
-                  height: '26px',
-                  fontSize: '11px',
-                  padding: '0 10px',
-                  borderRadius: 'var(--radius-full)',
-                  backgroundColor: 'var(--bg-app)',
-                  border: '1px solid var(--border-subtle)',
-                  color: 'var(--text-secondary)',
-                  whiteSpace: 'nowrap',
-                  cursor: 'pointer',
-                  flexShrink: 0,
-                  transition: 'all 0.15s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--accent-primary)';
-                  e.currentTarget.style.color = 'var(--accent-primary)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border-subtle)';
-                  e.currentTarget.style.color = 'var(--text-secondary)';
-                }}
-              >
-                {prompt}
-              </button>
-            ))}
-          </div>
-        )}
+        {/* Pinned Stable Suggested Prompts Row */}
+        <NexusSuggestedPrompts
+          prompts={SUGGESTED_PROMPTS}
+          onSelectPrompt={handleSend}
+          disabled={isProcessing}
+        />
 
-        {/* Input Bar */}
-        <div
-          style={{
-            padding: 'var(--space-3) var(--space-4)',
-            borderTop: '1px solid var(--border-subtle)',
-            backgroundColor: 'var(--bg-surface)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--space-2)',
-            flexShrink: 0,
-          }}
-        >
-          <input
-            type="text"
-            placeholder="Ask about traffic, weather, air quality, or a city..."
-            value={inputQuery}
-            onChange={(e) => setInputQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSend(inputQuery);
-            }}
-            disabled={isProcessing}
-            style={{
-              flex: 1,
-              height: '40px',
-              padding: '0 14px',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border-subtle)',
-              backgroundColor: 'var(--bg-app)',
-              fontSize: '13px',
-              color: 'var(--text-primary)',
-              outline: 'none',
-              transition: 'border-color 0.15s ease',
-            }}
-          />
-          <button
-            onClick={() => handleSend(inputQuery)}
-            disabled={isProcessing || !inputQuery.trim()}
-            style={{
-              height: '40px',
-              padding: '0 18px',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: isProcessing ? 'var(--text-muted)' : 'var(--accent-primary)',
-              color: '#FFFFFF',
-              fontSize: '13px',
-              fontWeight: 600,
-              border: 'none',
-              cursor: isProcessing ? 'not-allowed' : 'pointer',
-              transition: 'background-color 0.15s ease',
-              flexShrink: 0,
-            }}
-          >
-            {isProcessing ? 'Thinking...' : 'Send'}
-          </button>
-        </div>
+        {/* Pinned Stable Composer Dock */}
+        <NexusComposer
+          inputQuery={inputQuery}
+          setInputQuery={setInputQuery}
+          onSend={handleSend}
+          isProcessing={isProcessing}
+        />
       </div>
       </ErrorBoundary>
 
@@ -1400,11 +954,11 @@ export default function AgentHomeView() {
                 height: '36px',
                 padding: '0 14px',
                 borderRadius: 'var(--radius-md)',
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                backdropFilter: 'blur(8px)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--border-subtle)',
-                boxShadow: 'var(--shadow-sm)',
+                backgroundColor: 'rgba(13, 20, 29, 0.94)',
+                backdropFilter: 'blur(12px)',
+                color: 'var(--text-primary, #F3F6FA)',
+                border: '1px solid var(--border, #263241)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
                 fontSize: '12px',
                 fontWeight: 600,
                 display: 'inline-flex',
@@ -1413,7 +967,7 @@ export default function AgentHomeView() {
                 cursor: 'pointer',
               }}
             >
-              <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'var(--accent-primary)', boxShadow: '0 0 6px rgba(37, 99, 235, 0.6)' }} />
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#3B82F6', boxShadow: '0 0 8px rgba(59, 130, 246, 0.8)' }} />
               <span>Open Agent Console</span>
             </button>
           )}

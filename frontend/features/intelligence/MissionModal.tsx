@@ -89,15 +89,15 @@ export default function MissionModal() {
     >
       <div
         style={{
-          backgroundColor: '#FFFFFF',
-          border: '1px solid var(--border-subtle)',
+          backgroundColor: 'var(--bg-panel, #101620)',
+          border: '1px solid var(--border-subtle, #1B2531)',
           borderRadius: '16px',
           width: '100%',
           maxWidth: '780px',
           maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: 'var(--shadow-panel)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
           color: 'var(--text-primary)',
           overflow: 'hidden',
         }}
@@ -107,11 +107,11 @@ export default function MissionModal() {
         <div
           style={{
             padding: '18px 24px',
-            borderBottom: '1px solid var(--border-subtle)',
+            borderBottom: '1px solid var(--border-subtle, #1B2531)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: 'var(--bg-subtle)',
+            backgroundColor: 'var(--bg-header, #0C1119)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -133,8 +133,8 @@ export default function MissionModal() {
               width: '28px',
               height: '28px',
               borderRadius: '6px',
-              border: '1px solid var(--border-subtle)',
-              backgroundColor: '#FFFFFF',
+              border: '1px solid var(--border, #263241)',
+              backgroundColor: 'var(--bg-elevated, #141B26)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -147,12 +147,12 @@ export default function MissionModal() {
         </div>
 
         {/* Body */}
-        <div style={{ padding: '20px 24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ padding: '20px 24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: 'var(--bg-panel, #101620)' }}>
           {/* Query Inputs */}
           <div
             style={{
-              backgroundColor: 'var(--bg-app)',
-              border: '1px solid var(--border-subtle)',
+              backgroundColor: 'var(--bg-card, #111821)',
+              border: '1px solid var(--border-subtle, #1B2531)',
               borderRadius: '12px',
               padding: '16px',
               display: 'flex',
@@ -174,10 +174,11 @@ export default function MissionModal() {
                     width: '100%',
                     padding: '8px 12px',
                     borderRadius: '8px',
-                    border: '1px solid var(--border-subtle)',
+                    border: '1px solid var(--border, #263241)',
                     fontSize: '12.5px',
                     outline: 'none',
-                    backgroundColor: '#FFFFFF',
+                    backgroundColor: 'var(--bg-input, #0D141D)',
+                    color: 'var(--text-primary)',
                   }}
                 />
               </div>
@@ -195,10 +196,11 @@ export default function MissionModal() {
                     width: '100%',
                     padding: '8px 12px',
                     borderRadius: '8px',
-                    border: '1px solid var(--border-subtle)',
+                    border: '1px solid var(--border, #263241)',
                     fontSize: '12.5px',
                     outline: 'none',
-                    backgroundColor: '#FFFFFF',
+                    backgroundColor: 'var(--bg-input, #0D141D)',
+                    color: 'var(--text-primary)',
                   }}
                 />
               </div>
@@ -218,8 +220,8 @@ export default function MissionModal() {
                       fontSize: '11px',
                       fontWeight: 600,
                       cursor: 'pointer',
-                      border: preference === pref ? '1px solid var(--accent-primary)' : '1px solid var(--border-subtle)',
-                      backgroundColor: preference === pref ? 'var(--accent-primary-light)' : '#FFFFFF',
+                      border: preference === pref ? '1px solid var(--accent-primary)' : '1px solid var(--border, #263241)',
+                      backgroundColor: preference === pref ? 'rgba(59, 130, 246, 0.15)' : 'var(--bg-elevated, #141B26)',
                       color: preference === pref ? 'var(--accent-primary)' : 'var(--text-secondary)',
                     }}
                   >
@@ -283,7 +285,7 @@ export default function MissionModal() {
                     <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
                       <strong>Why this window:</strong> {bestWindow.rationale}
                     </div>
-                    <div style={{ fontSize: '11px', color: '#16A34A', fontWeight: 600, marginTop: '4px' }}>
+                    <div style={{ fontSize: '11px', color: '#4ADE80', fontWeight: 600, marginTop: '4px' }}>
                       Est. Duration: {bestWindow.estimatedDurationMinutes}m (Saves approx. {bestWindow.expectedDelayMinutes || 0}m congestion delay)
                     </div>
                   </div>
@@ -303,8 +305,8 @@ export default function MissionModal() {
                       <div
                         key={r.id}
                         style={{
-                          backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.04)' : 'var(--bg-surface)',
-                          border: isSelected ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-subtle)',
+                          backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.08)' : 'var(--bg-card, #111821)',
+                          border: isSelected ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-subtle, #1B2531)',
                           borderRadius: '10px',
                           padding: '14px',
                           display: 'flex',
@@ -319,7 +321,7 @@ export default function MissionModal() {
                               fontWeight: 800,
                               padding: '2px 8px',
                               borderRadius: '4px',
-                              backgroundColor: isSelected ? 'var(--accent-primary)' : 'var(--bg-subtle)',
+                              backgroundColor: isSelected ? 'var(--accent-primary)' : 'var(--bg-elevated, #141B26)',
                               color: isSelected ? '#FFFFFF' : 'var(--text-secondary)',
                               textTransform: 'uppercase',
                             }}

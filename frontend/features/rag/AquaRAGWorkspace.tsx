@@ -111,9 +111,9 @@ export default function AquaRAGWorkspace({
             {/* Map Canvas */}
             <div
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--bg-panel, #101620)',
                 borderRadius: '12px',
-                border: '1px solid #E2E8F0',
+                border: '1px solid var(--border-subtle, #1B2531)',
                 boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                 overflow: 'hidden',
                 display: 'flex',
@@ -176,7 +176,7 @@ export default function AquaRAGWorkspace({
               <div
                 style={{
                   padding: '10px 14px',
-                  backgroundColor: '#F8FAFC',
+                  backgroundColor: 'var(--bg-card, #111821)',
                   borderTop: '1px solid #E2E8F0',
                   fontSize: '11px',
                   color: '#475569',
@@ -204,9 +204,9 @@ export default function AquaRAGWorkspace({
             {/* Water Quality Classification & Physical Telemetry Grid */}
             <div
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--bg-panel, #101620)',
                 borderRadius: '12px',
-                border: '1px solid #E2E8F0',
+                border: '1px solid var(--border-subtle, #1B2531)',
                 padding: '16px',
                 boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                 display: 'flex',
@@ -243,7 +243,7 @@ export default function AquaRAGWorkspace({
 
               {/* Sensor Metrics Grid */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
-                <div style={{ backgroundColor: '#F8FAFC', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle, #1B2531)' }}>
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>Turbidity</div>
                   <div style={{ fontSize: '17px', fontWeight: 800, color: '#0284C7', marginTop: '2px' }}>
                     {context?.sensorStatus?.turbidityNtu ?? '14.5'} NTU
@@ -253,7 +253,7 @@ export default function AquaRAGWorkspace({
                   </div>
                 </div>
 
-                <div style={{ backgroundColor: '#F8FAFC', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle, #1B2531)' }}>
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>Dissolved Oxygen</div>
                   <div style={{ fontSize: '17px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>
                     {context?.sensorStatus?.dissolvedOxygenMgL ?? '6.2'} mg/L
@@ -263,7 +263,7 @@ export default function AquaRAGWorkspace({
                   </div>
                 </div>
 
-                <div style={{ backgroundColor: '#F8FAFC', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle, #1B2531)' }}>
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>pH Level</div>
                   <div style={{ fontSize: '17px', fontWeight: 800, color: '#334155', marginTop: '2px' }}>
                     {context?.sensorStatus?.ph ?? '7.40'}
@@ -273,7 +273,7 @@ export default function AquaRAGWorkspace({
                   </div>
                 </div>
 
-                <div style={{ backgroundColor: '#F8FAFC', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle, #1B2531)' }}>
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>Water Temp</div>
                   <div style={{ fontSize: '17px', fontWeight: 800, color: '#D97706', marginTop: '2px' }}>
                     {context?.sensorStatus?.temperatureC ?? '24.8'}°C
@@ -281,7 +281,7 @@ export default function AquaRAGWorkspace({
                   <div style={{ fontSize: '9.5px', color: '#64748B', marginTop: '2px' }}>Thermal In-situ</div>
                 </div>
 
-                <div style={{ backgroundColor: '#F8FAFC', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle, #1B2531)' }}>
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>Biochemical Demand</div>
                   <div style={{ fontSize: '17px', fontWeight: 800, color: '#334155', marginTop: '2px' }}>
                     {context?.sensorStatus?.biochemicalOxygenDemandMgL ?? '3.2'} mg/L
@@ -289,7 +289,7 @@ export default function AquaRAGWorkspace({
                   <div style={{ fontSize: '9.5px', color: '#64748B', marginTop: '2px' }}>BOD-5 Clean</div>
                 </div>
 
-                <div style={{ backgroundColor: '#F8FAFC', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle, #1B2531)' }}>
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>Flow Velocity</div>
                   <div style={{ fontSize: '17px', fontWeight: 800, color: '#0284C7', marginTop: '2px' }}>
                     {context?.sensorStatus?.flowVelocityMs ?? '0.42'} m/s
@@ -302,7 +302,7 @@ export default function AquaRAGWorkspace({
               {context?.aiWaterIntelligence && (
                 <div
                   style={{
-                    backgroundColor: '#F8FAFC',
+                    backgroundColor: 'var(--bg-card, #111821)',
                     borderLeft: '3px solid #0284C7',
                     borderRadius: '0 6px 6px 0',
                     padding: '9px 12px',
@@ -319,9 +319,9 @@ export default function AquaRAGWorkspace({
             {/* 5-Month Historical Trend Table */}
             <div
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--bg-panel, #101620)',
                 borderRadius: '12px',
-                border: '1px solid #E2E8F0',
+                border: '1px solid var(--border-subtle, #1B2531)',
                 padding: '16px',
                 boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                 display: 'flex',
@@ -339,7 +339,7 @@ export default function AquaRAGWorkspace({
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', textAlign: 'left' }}>
                   <thead>
-                    <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#64748B' }}>
+                    <tr style={{ backgroundColor: 'var(--bg-card, #111821)', borderBottom: '1px solid #E2E8F0', color: '#64748B' }}>
                       <th style={{ padding: '8px 10px', fontWeight: 700 }}>Month</th>
                       <th style={{ padding: '8px 10px', fontWeight: 700 }}>Turbidity (NTU)</th>
                       <th style={{ padding: '8px 10px', fontWeight: 700 }}>DO (mg/L)</th>
@@ -363,9 +363,9 @@ export default function AquaRAGWorkspace({
             {/* Hybrid Retrieved Citations */}
             <div
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--bg-panel, #101620)',
                 borderRadius: '12px',
-                border: '1px solid #E2E8F0',
+                border: '1px solid var(--border-subtle, #1B2531)',
                 padding: '16px',
                 boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                 display: 'flex',

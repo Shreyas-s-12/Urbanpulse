@@ -112,15 +112,15 @@ export default function ScenarioSimulatorModal() {
     >
       <div
         style={{
-          backgroundColor: '#FFFFFF',
-          border: '1px solid var(--border-subtle)',
+          backgroundColor: 'var(--bg-panel, #101620)',
+          border: '1px solid var(--border-subtle, #1B2531)',
           borderRadius: '16px',
           width: '100%',
           maxWidth: '780px',
           maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: 'var(--shadow-panel)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
           color: 'var(--text-primary)',
           overflow: 'hidden',
         }}
@@ -130,11 +130,11 @@ export default function ScenarioSimulatorModal() {
         <div
           style={{
             padding: '20px 24px',
-            borderBottom: '1px solid var(--border-subtle)',
+            borderBottom: '1px solid var(--border-subtle, #1B2531)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: '#FFFFFF',
+            backgroundColor: 'var(--bg-header, #0C1119)',
           }}
         >
           <div>
@@ -148,7 +148,7 @@ export default function ScenarioSimulatorModal() {
                   fontSize: '10px',
                   fontWeight: 800,
                   backgroundColor: 'rgba(245, 158, 11, 0.15)',
-                  color: '#D97706',
+                  color: '#FBBF24',
                   padding: '2px 8px',
                   borderRadius: '6px',
                   letterSpacing: '0.08em',
@@ -182,24 +182,24 @@ export default function ScenarioSimulatorModal() {
         {/* Warning Banner */}
         <div
           style={{
-            backgroundColor: 'rgba(245, 158, 11, 0.08)',
-            borderBottom: '1px solid rgba(245, 158, 11, 0.2)',
+            backgroundColor: 'rgba(245, 158, 11, 0.12)',
+            borderBottom: '1px solid rgba(245, 158, 11, 0.25)',
             padding: '10px 24px',
             fontSize: '11px',
-            color: '#92400E',
+            color: '#FBBF24',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
           }}
         >
-          <AlertTriangleIcon size={14} color="#D97706" />
+          <AlertTriangleIcon size={14} color="#FBBF24" />
           <span>
             <strong>EXPLICIT SIMULATION NOTICE</strong>: Projected impacts are generated from deterministic urban models, not observed live telemetry. Intended for preparedness evaluation.
           </span>
         </div>
 
         {/* Content Body */}
-        <div style={{ padding: '24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', backgroundColor: '#FFFFFF' }}>
+        <div style={{ padding: '24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', backgroundColor: 'var(--bg-panel, #101620)' }}>
           {/* Scenario Picker */}
           <div>
             <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>
@@ -215,8 +215,8 @@ export default function ScenarioSimulatorModal() {
                     alignItems: 'center',
                     gap: '10px',
                     padding: '12px 14px',
-                    backgroundColor: selectedType === sc.id ? 'var(--accent-primary-light)' : 'var(--bg-app)',
-                    border: selectedType === sc.id ? '1px solid var(--accent-primary)' : '1px solid var(--border-subtle)',
+                    backgroundColor: selectedType === sc.id ? 'rgba(59, 130, 246, 0.15)' : 'var(--bg-card, #111821)',
+                    border: selectedType === sc.id ? '1px solid var(--accent-primary)' : '1px solid var(--border-subtle, #1B2531)',
                     borderRadius: '10px',
                     color: selectedType === sc.id ? 'var(--accent-primary)' : 'var(--text-primary)',
                     textAlign: 'left',
@@ -234,7 +234,7 @@ export default function ScenarioSimulatorModal() {
 
           {/* Scenario Parameters Controls */}
           {selectedType === 'heavy_rainfall' && (
-            <div style={{ backgroundColor: 'var(--bg-app)', borderRadius: '12px', padding: '16px', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ backgroundColor: 'var(--bg-card, #111821)', borderRadius: '12px', padding: '16px', border: '1px solid var(--border-subtle, #1B2531)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px' }}>
                 <span style={{ color: 'var(--text-secondary)' }}>Rainfall Intensity: <strong>{intensityMm} mm/hr</strong></span>
                 <span style={{ color: 'var(--text-secondary)' }}>Duration: <strong>{durationHrs} hours</strong> (Total: {intensityMm * durationHrs} mm)</span>
@@ -252,7 +252,7 @@ export default function ScenarioSimulatorModal() {
           )}
 
           {selectedType === 'traffic_surge' && (
-            <div style={{ backgroundColor: 'var(--bg-app)', borderRadius: '12px', padding: '16px', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ backgroundColor: 'var(--bg-card, #111821)', borderRadius: '12px', padding: '16px', border: '1px solid var(--border-subtle, #1B2531)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px' }}>
                 <span style={{ color: 'var(--text-secondary)' }}>Vehicular Volume Surge: <strong>+{surgePct}%</strong></span>
               </div>
@@ -300,24 +300,24 @@ export default function ScenarioSimulatorModal() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 {/* Score Drop Card */}
-                <div style={{ backgroundColor: 'var(--bg-app)', padding: '14px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '14px', borderRadius: '10px', border: '1px solid var(--border-subtle, #1B2531)' }}>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
                     Urban Livability Impact
                   </div>
-                  <div style={{ fontSize: '20px', fontWeight: 800, color: '#DC2626', marginTop: '2px' }}>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: '#F87171', marginTop: '2px' }}>
                     {scoreImpact.baselineScore || simResult.baselineScore || 75} → {scoreImpact.projectedScore || simResult.projectedScoreRange?.[0] || 55}
                   </div>
-                  <div style={{ fontSize: '11px', color: '#EF4444', marginTop: '2px' }}>
+                  <div style={{ fontSize: '11px', color: '#F87171', marginTop: '2px' }}>
                     Score drop of {Math.abs(scoreImpact.delta || 15)} points under stress
                   </div>
                 </div>
 
                 {/* Traffic Delay Surge */}
-                <div style={{ backgroundColor: 'var(--bg-app)', padding: '14px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '14px', borderRadius: '10px', border: '1px solid var(--border-subtle, #1B2531)' }}>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
                     Corridor Transit Delays
                   </div>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: '#D97706', marginTop: '4px' }}>
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: '#FBBF24', marginTop: '4px' }}>
                     {impacts.traffic?.description || simResult.projectedTrafficImpact || '+25–40% delay'}
                   </div>
                 </div>
@@ -325,7 +325,7 @@ export default function ScenarioSimulatorModal() {
 
               {/* Flood / Disruption Risk */}
               {simResult.projectedFloodRisk && (
-                <div style={{ backgroundColor: 'var(--bg-app)', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--border-subtle, #1B2531)' }}>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Drainage & Flood Impact</div>
                   <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px' }}>
                     {simResult.projectedFloodRisk}
@@ -334,7 +334,7 @@ export default function ScenarioSimulatorModal() {
               )}
 
               {/* Assumptions & Uncertainty */}
-              <div style={{ backgroundColor: 'var(--bg-app)', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--border-subtle)', fontSize: '11px' }}>
+              <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--border-subtle, #1B2531)', fontSize: '11px' }}>
                 <div style={{ color: 'var(--text-muted)', fontWeight: 700, marginBottom: '4px' }}>Assumptions & Uncertainty:</div>
                 <ul style={{ margin: 0, paddingLeft: '16px', color: 'var(--text-secondary)' }}>
                   {(simResult.assumptions || []).map((a: string, i: number) => (
@@ -350,8 +350,8 @@ export default function ScenarioSimulatorModal() {
         <div
           style={{
             padding: '12px 24px',
-            borderTop: '1px solid var(--border-subtle)',
-            backgroundColor: 'var(--bg-app)',
+            borderTop: '1px solid var(--border-subtle, #1B2531)',
+            backgroundColor: 'var(--bg-header, #0C1119)',
             display: 'flex',
             justifyContent: 'flex-end',
           }}
@@ -359,15 +359,15 @@ export default function ScenarioSimulatorModal() {
           <button
             onClick={() => setShowScenarioModal(false)}
             style={{
-              backgroundColor: '#FFFFFF',
+              backgroundColor: 'var(--bg-elevated, #141B26)',
               color: 'var(--text-primary)',
-              border: '1px solid var(--border-subtle)',
+              border: '1px solid var(--border, #263241)',
               padding: '6px 14px',
               borderRadius: '8px',
               cursor: 'pointer',
               fontSize: '12px',
               fontWeight: 600,
-              boxShadow: 'var(--shadow-xs)',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.4)',
             }}
           >
             Close

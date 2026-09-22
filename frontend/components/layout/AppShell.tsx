@@ -12,15 +12,19 @@ interface AppShellProps {
 
 export default function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
-  const isLandingPage = pathname === '/';
+  const isStandalonePage =
+    pathname === '/' ||
+    pathname === '/signin' ||
+    pathname === '/signup' ||
+    pathname === '/welcome';
 
-  if (isLandingPage) {
+  if (isStandalonePage) {
     return (
       <ErrorBoundary
-        fallbackTitle="Welcome Screen Unavailable"
-        fallbackMessage="UrbanPulse welcome screen encountered an issue. Please refresh or navigate to the overview."
+        fallbackTitle="Page Unavailable"
+        fallbackMessage="UrbanPulse encountered an issue rendering this screen. Please refresh or navigate to the sign in page."
       >
-        <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
+        <div style={{ position: 'relative', width: '100%', minHeight: '100vh', overflow: 'auto', backgroundColor: 'var(--bg-app)', color: 'var(--text-primary)' }}>
           {children}
         </div>
       </ErrorBoundary>

@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { NexusStructuredResponse } from '@shared/types';
+import { ChevronDownIcon } from '@/components/common/Icons';
 
 interface NexusConditionResponseProps {
   response: NexusStructuredResponse;
@@ -9,69 +10,110 @@ interface NexusConditionResponseProps {
 }
 
 export const NexusConditionResponse: React.FC<NexusConditionResponseProps> = ({ response, data }) => {
+  const [showDetails, setShowDetails] = useState(false);
   const meta = response.metadata || {};
   const sections = response.sections || [];
   const kvSection = sections.find(s => s.type === 'key_values') || sections[0];
   const keyValues = kvSection?.keyValues || kvSection?.key_values || meta.keyValues || {};
   const sourceName = (response.sources && response.sources[0]?.name) || meta.source || 'Verified Provider';
+  const confidence = meta.confidence !== undefined 
+    ? Math.round(meta.confidence * 100) 
+    : (response as any).confidence !== undefined 
+    ? Math.round((response as any).confidence * 100) 
+    : 90;
+
+  // Derive weather city name or title
+  const displayTitle = response.title.startsWith('Weather:')
+    ? response.title
+    : `Weather: ${response.title}`;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', fontSize: '12.5px' }}>
-      {/* Title */}
-      <div style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: '4px' }}>
-        <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--accent-primary)' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+        width: '100%',
+        backgroundColor: 'var(--assistant-card-bg, #FFFFFF)',
+        border: '1px solid var(--assistant-card-border, #E2E7EF)',
+        borderRadius: '12px',
+        padding: '12px 14px',
+        boxShadow: 'var(--card-shadow, 0 2px 8px rgba(15, 23, 42, 0.05))',
+        boxSizing: 'border-box',
+      }}
+    >
+      {/* Current Conditions Header */}
+      <div>
+        <span
+          style={{
+            fontSize: '11px',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em',
+            color: 'var(--accent-primary, #2563EB)',
+            display: 'block',
+          }}
+        >
           CURRENT CONDITIONS
         </span>
-        <h4 style={{ margin: '1px 0 0 0', fontSize: '13.5px', fontWeight: 750, color: 'var(--text-primary)' }}>
-          {response.title}
+        <h4
+          style={{
+            margin: '4px 0 0 0',
+            fontSize: '14px',
+            fontWeight: 600,
+            color: 'var(--text-primary, #172033)',
+            lineHeight: 1.3,
+          }}
+        >
+          {displayTitle}
         </h4>
       </div>
 
-      {/* Summary / Primary Value Banner */}
+      {/* Subtle Weather Summary */}
       {response.summary && (
         <div
           style={{
-            padding: '8px 10px',
-            borderRadius: '6px',
-            backgroundColor: 'var(--accent-primary-light, #EFF6FF)',
-            border: '1px solid rgba(37, 99, 235, 0.2)',
-            display: 'flex',
-            alignItems: 'baseline',
-            justifyContent: 'space-between',
-            gap: '8px',
+            padding: '10px 12px',
+            borderRadius: '8px',
+            backgroundColor: 'var(--weather-summary-bg, #EFF6FF)',
+            border: '1px solid var(--weather-summary-border, #BFDBFE)',
+            color: 'var(--weather-summary-text, #1D4ED8)',
+            fontSize: '12.5px',
+            lineHeight: 1.45,
+            fontWeight: 500,
           }}
         >
-          <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--accent-primary, #2563EB)' }}>
-            {response.summary}
-          </span>
-          {meta.category && (
-            <span style={{ fontSize: '10.5px', fontWeight: 700, padding: '1px 6px', borderRadius: '4px', backgroundColor: 'var(--bg-app)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)' }}>
-              {meta.category}
-            </span>
-          )}
+          {response.summary}
         </div>
       )}
 
-      {/* Key-Value Chips */}
+      {/* Compact 2-Column Metrics Grid */}
       {Object.keys(keyValues).length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '6px' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+            gap: '6px 8px',
+          }}
+        >
           {Object.entries(keyValues).map(([key, val], idx) => (
             <div
               key={idx}
               style={{
-                padding: '5px 8px',
-                borderRadius: '5px',
-                backgroundColor: 'var(--bg-surface-secondary, #F8FAFC)',
-                border: '1px solid var(--border-subtle)',
+                padding: '8px 10px',
+                borderRadius: '8px',
+                backgroundColor: 'var(--nested-metric-bg, #F8FAFC)',
+                border: '1px solid var(--nested-metric-border, #E8EDF3)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '1px',
+                gap: '2px',
+                boxSizing: 'border-box',
               }}
             >
-              <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 600 }}>
+              <span style={{ fontSize: '10px', color: 'var(--text-muted, #7B8798)', fontWeight: 500 }}>
                 {key}
               </span>
-              <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary, #172033)' }}>
                 {String(val)}
               </span>
             </div>
@@ -79,12 +121,86 @@ export const NexusConditionResponse: React.FC<NexusConditionResponseProps> = ({ 
         </div>
       )}
 
-      {/* Footer: Plain text Source & Freshness */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10.5px', color: 'var(--text-muted)', paddingTop: '2px' }}>
-        <span>Source: {sourceName}</span>
-        <span>Verified Telemetry</span>
+      {/* Metadata Row: Source, Confidence & Subtle Know More */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontSize: '10.5px',
+          color: 'var(--text-muted, #7B8798)',
+          paddingTop: '2px',
+          flexWrap: 'wrap',
+          gap: '6px',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span>Source: <strong style={{ color: 'var(--text-secondary, #566174)' }}>{sourceName}</strong></span>
+          <span>•</span>
+          <span>Confidence: <strong style={{ color: 'var(--text-secondary, #566174)' }}>{confidence}%</strong></span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowDetails((prev) => !prev)}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '3px',
+            fontSize: '10.5px',
+            fontWeight: 600,
+            color: 'var(--accent-primary, #2563EB)',
+            backgroundColor: 'transparent',
+            border: 'none',
+            padding: '2px 4px',
+            cursor: 'pointer',
+            borderRadius: '4px',
+          }}
+        >
+          <span>Know more</span>
+          <ChevronDownIcon
+            size={10}
+            style={{
+              transform: showDetails ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.15s ease',
+            }}
+          />
+        </button>
       </div>
+
+      {/* Expanded Provenance Details */}
+      {showDetails && (
+        <div
+          style={{
+            padding: '8px 10px',
+            borderRadius: '6px',
+            backgroundColor: 'var(--nested-metric-bg, #F8FAFC)',
+            border: '1px solid var(--nested-metric-border, #E8EDF3)',
+            fontSize: '11px',
+            color: 'var(--text-secondary, #566174)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px',
+            animation: 'fadeIn 0.15s ease-out',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ fontWeight: 600 }}>Telemetry Provider:</span>
+            <span>{sourceName}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ fontWeight: 600 }}>Signal Freshness:</span>
+            <span style={{ color: '#10B981', fontWeight: 600 }}>Live Telemetry</span>
+          </div>
+          {response.sources && response.sources.length > 0 && response.sources[0]?.detail && (
+            <div style={{ fontSize: '10.5px', color: 'var(--text-muted, #7B8798)', marginTop: '2px' }}>
+              {response.sources[0].detail}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
+
 export default NexusConditionResponse;

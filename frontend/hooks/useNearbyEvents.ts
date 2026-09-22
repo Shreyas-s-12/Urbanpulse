@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { IntelligenceRadiusKm, UnifiedCityEvent } from '@shared/types';
 import { eventService } from '@/services/eventService';
 
@@ -10,6 +10,7 @@ export function useNearbyEvents(
   const [events, setEvents] = useState<UnifiedCityEvent[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const requestSeqRef = useRef<number>(0);
 
   useEffect(() => {
     // Reset immediately to avoid stale events when switching locations
@@ -21,26 +22,26 @@ export function useNearbyEvents(
       return;
     }
 
-    let isMounted = true;
+    const currentSeq = ++requestSeqRef.current;
     setLoading(true);
 
     eventService
       .getEventsWithinRadius(latitude, longitude, radiusKm)
       .then((data) => {
-        if (isMounted) {
+        if (currentSeq === requestSeqRef.current) {
           setEvents(data);
           setLoading(false);
         }
       })
       .catch((err) => {
-        if (isMounted) {
+        if (currentSeq === requestSeqRef.current) {
           setError(err?.message || 'Failed to fetch nearby events');
           setLoading(false);
         }
       });
 
     return () => {
-      isMounted = false;
+      // Incremented sequence protects against delayed asynchronous responses
     };
   }, [latitude, longitude, radiusKm]);
 

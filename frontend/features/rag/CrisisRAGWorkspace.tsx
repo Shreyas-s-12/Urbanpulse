@@ -112,9 +112,9 @@ export default function CrisisRAGWorkspace({
             {/* Situation Map */}
             <div
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--bg-panel, #101620)',
                 borderRadius: '12px',
-                border: '1px solid #E2E8F0',
+                border: '1px solid var(--border-subtle, #1B2531)',
                 boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                 overflow: 'hidden',
                 display: 'flex',
@@ -177,7 +177,7 @@ export default function CrisisRAGWorkspace({
               <div
                 style={{
                   padding: '10px 14px',
-                  backgroundColor: '#F8FAFC',
+                  backgroundColor: 'var(--bg-card, #111821)',
                   borderTop: '1px solid #E2E8F0',
                   fontSize: '11px',
                   color: '#475569',
@@ -205,9 +205,9 @@ export default function CrisisRAGWorkspace({
             {/* Designated Shelters & Transit Closures */}
             <div
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--bg-panel, #101620)',
                 borderRadius: '12px',
-                border: '1px solid #E2E8F0',
+                border: '1px solid var(--border-subtle, #1B2531)',
                 padding: '16px',
                 boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                 display: 'flex',
@@ -277,10 +277,10 @@ export default function CrisisRAGWorkspace({
                   <div
                     key={`shelter-${idx}`}
                     style={{
-                      backgroundColor: '#F8FAFC',
+                      backgroundColor: 'var(--bg-card, #111821)',
                       padding: '8px 10px',
                       borderRadius: '6px',
-                      border: '1px solid #E2E8F0',
+                      border: '1px solid var(--border-subtle, #1B2531)',
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
@@ -315,9 +315,9 @@ export default function CrisisRAGWorkspace({
             {/* AI Situation Brief */}
             <div
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--bg-panel, #101620)',
                 borderRadius: '12px',
-                border: '1px solid #E2E8F0',
+                border: '1px solid var(--border-subtle, #1B2531)',
                 padding: '16px',
                 boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                 display: 'flex',
@@ -355,9 +355,9 @@ export default function CrisisRAGWorkspace({
             {/* Current Active Emergency Alerts */}
             <div
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--bg-panel, #101620)',
                 borderRadius: '12px',
-                border: '1px solid #E2E8F0',
+                border: '1px solid var(--border-subtle, #1B2531)',
                 padding: '16px',
                 boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                 display: 'flex',
@@ -389,10 +389,10 @@ export default function CrisisRAGWorkspace({
                   <div
                     key={idx}
                     style={{
-                      backgroundColor: '#F8FAFC',
+                      backgroundColor: 'var(--bg-card, #111821)',
                       padding: '10px 12px',
                       borderRadius: '8px',
-                      border: '1px solid #E2E8F0',
+                      border: '1px solid var(--border-subtle, #1B2531)',
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -433,9 +433,9 @@ export default function CrisisRAGWorkspace({
             {/* Official Disaster Advisories / Citations */}
             <div
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--bg-panel, #101620)',
                 borderRadius: '12px',
-                border: '1px solid #E2E8F0',
+                border: '1px solid var(--border-subtle, #1B2531)',
                 padding: '16px',
                 boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                 display: 'flex',
@@ -465,9 +465,9 @@ export default function CrisisRAGWorkspace({
         {/* Temporal Categorization Section */}
         <div
           style={{
-            backgroundColor: '#FFFFFF',
+            backgroundColor: 'var(--bg-panel, #101620)',
             borderRadius: '12px',
-            border: '1px solid #E2E8F0',
+            border: '1px solid var(--border-subtle, #1B2531)',
             padding: '16px',
             boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
             display: 'flex',

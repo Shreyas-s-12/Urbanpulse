@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import UrbanPulseLogo from '@/components/common/UrbanPulseLogo';
+import { ROUTES } from '@/lib/routes';
 
 interface RAGPageLayoutProps {
   moduleName: string;
@@ -29,8 +30,8 @@ export default function RAGPageLayout({
     <div
       style={{
         minHeight: '100vh',
-        backgroundColor: '#F8FAFC',
-        color: '#0F172A',
+        backgroundColor: 'var(--bg-app, #080B10)',
+        color: 'var(--text-primary)',
         display: 'flex',
         flexDirection: 'column',
         fontFamily: 'inherit',
@@ -40,8 +41,8 @@ export default function RAGPageLayout({
       <header
         style={{
           height: '62px',
-          backgroundColor: '#FFFFFF',
-          borderBottom: '1px solid #E2E8F0',
+          backgroundColor: 'var(--bg-header, #0C1119)',
+          borderBottom: '1px solid var(--border-subtle, #1B2531)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -49,33 +50,33 @@ export default function RAGPageLayout({
           position: 'sticky',
           top: 0,
           zIndex: 40,
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.3)',
         }}
       >
         {/* Left: Branding & Module Title */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <Link
-            href="/"
+            href={ROUTES.home}
             title="UrbanPulse Home"
             style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}
           >
             <UrbanPulseLogo size="sm" showWordmark={false} />
           </Link>
 
-          <div style={{ width: '1px', height: '26px', backgroundColor: '#E2E8F0' }} />
+          <div style={{ width: '1px', height: '26px', backgroundColor: 'var(--border-subtle, #1B2531)' }} />
 
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h1 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.3px' }}>
+              <h1 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>
                 {moduleName}
               </h1>
               <span
                 style={{
                   fontSize: '9.5px',
                   fontWeight: 700,
-                  backgroundColor: '#EFF6FF',
-                  color: '#2563EB',
-                  border: '1px solid #BFDBFE',
+                  backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                  color: 'var(--accent-primary, #60A5FA)',
+                  border: '1px solid rgba(59, 130, 246, 0.3)',
                   padding: '1px 6px',
                   borderRadius: '4px',
                   textTransform: 'uppercase',
@@ -85,7 +86,7 @@ export default function RAGPageLayout({
                 Intelligence Workspace
               </span>
             </div>
-            <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 500 }}>
+            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 500 }}>
               {moduleSubtitle}
             </div>
           </div>
@@ -94,8 +95,8 @@ export default function RAGPageLayout({
         {/* Center: Shared Location Context Header */}
         <div
           style={{
-            backgroundColor: '#F8FAFC',
-            border: '1px solid #E2E8F0',
+            backgroundColor: 'var(--bg-card, #111821)',
+            border: '1px solid var(--border-subtle, #1B2531)',
             borderRadius: '8px',
             padding: '5px 14px',
             display: 'flex',
@@ -104,7 +105,7 @@ export default function RAGPageLayout({
             maxWidth: '440px',
           }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2.2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #60A5FA)" strokeWidth="2.2">
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
             <circle cx="12" cy="10" r="3" />
           </svg>
@@ -113,7 +114,7 @@ export default function RAGPageLayout({
               style={{
                 fontSize: '12px',
                 fontWeight: 700,
-                color: '#0F172A',
+                color: 'var(--text-primary)',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -121,7 +122,7 @@ export default function RAGPageLayout({
             >
               {locationName || cityName}
             </div>
-            <div style={{ fontSize: '10px', color: '#64748B' }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
               {latitude.toFixed(4)}° N, {longitude.toFixed(4)}° E · {cityName}
             </div>
           </div>
@@ -134,24 +135,24 @@ export default function RAGPageLayout({
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
-            backgroundColor: '#FFFFFF',
-            border: '1px solid #CBD5E1',
+            backgroundColor: 'var(--bg-elevated, #141B26)',
+            border: '1px solid var(--border, #263241)',
             borderRadius: '6px',
             padding: '7px 14px',
             fontSize: '12px',
             fontWeight: 600,
-            color: '#1E293B',
+            color: 'var(--text-primary)',
             textDecoration: 'none',
-            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)',
+            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.4)',
             transition: 'all 0.15s ease',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#F1F5F9';
-            e.currentTarget.style.borderColor = '#94A3B8';
+            e.currentTarget.style.backgroundColor = 'var(--bg-card-hover, #17202C)';
+            e.currentTarget.style.borderColor = 'var(--accent-primary, #3B82F6)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#FFFFFF';
-            e.currentTarget.style.borderColor = '#CBD5E1';
+            e.currentTarget.style.backgroundColor = 'var(--bg-elevated, #141B26)';
+            e.currentTarget.style.borderColor = 'var(--border, #263241)';
           }}
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">

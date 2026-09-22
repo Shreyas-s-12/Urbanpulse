@@ -25,7 +25,42 @@ const nextConfig = {
       },
       {
         source: '/events',
-        destination: '/overview',
+        destination: '/updates',
+        permanent: false,
+      },
+      {
+        source: '/pulsewire',
+        destination: '/updates',
+        permanent: false,
+      },
+      {
+        source: '/intelligence',
+        destination: '/analytics',
+        permanent: false,
+      },
+      {
+        source: '/urban-condition',
+        destination: '/analytics',
+        permanent: false,
+      },
+      {
+        source: '/copilot',
+        destination: '/simulate',
+        permanent: false,
+      },
+      {
+        source: '/agent',
+        destination: '/simulate',
+        permanent: false,
+      },
+      {
+        source: '/scenario',
+        destination: '/simulate',
+        permanent: false,
+      },
+      {
+        source: '/research-mode',
+        destination: '/research',
         permanent: false,
       },
     ];
@@ -35,6 +70,10 @@ const nextConfig = {
       {
         source: '/api/v1/:path*',
         destination: 'http://127.0.0.1:8000/api/v1/:path*',
+      },
+      {
+        source: '/api/auth/:path*',
+        destination: 'http://127.0.0.1:8000/api/auth/:path*',
       },
     ];
   },

@@ -104,15 +104,15 @@ export default function CityComparisonModal() {
     >
       <div
         style={{
-          backgroundColor: '#FFFFFF',
-          border: '1px solid var(--border-subtle)',
+          backgroundColor: 'var(--bg-panel, #101620)',
+          border: '1px solid var(--border-subtle, #1B2531)',
           borderRadius: '16px',
           width: '100%',
           maxWidth: '860px',
           maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: 'var(--shadow-panel)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
           color: 'var(--text-primary)',
           overflow: 'hidden',
         }}
@@ -122,11 +122,11 @@ export default function CityComparisonModal() {
         <div
           style={{
             padding: '20px 24px',
-            borderBottom: '1px solid var(--border-subtle)',
+            borderBottom: '1px solid var(--border-subtle, #1B2531)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: '#FFFFFF',
+            backgroundColor: 'var(--bg-header, #0C1119)',
           }}
         >
           <div>
@@ -164,8 +164,8 @@ export default function CityComparisonModal() {
         <div
           style={{
             padding: '12px 24px',
-            backgroundColor: 'var(--bg-app)',
-            borderBottom: '1px solid var(--border-subtle)',
+            backgroundColor: 'var(--bg-card, #111821)',
+            borderBottom: '1px solid var(--border-subtle, #1B2531)',
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
@@ -182,8 +182,8 @@ export default function CityComparisonModal() {
               height: '32px',
               padding: '0 10px',
               borderRadius: '6px',
-              border: '1px solid var(--border-subtle)',
-              backgroundColor: '#FFFFFF',
+              border: '1px solid var(--border, #263241)',
+              backgroundColor: 'var(--bg-input, #0D141D)',
               fontSize: '12px',
               fontWeight: 600,
               color: 'var(--text-primary)',
@@ -218,7 +218,7 @@ export default function CityComparisonModal() {
         </div>
 
         {/* Content Body */}
-        <div style={{ padding: '24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', backgroundColor: '#FFFFFF' }}>
+        <div style={{ padding: '24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', backgroundColor: 'var(--bg-panel, #101620)' }}>
           {/* Comparative Verdict Callout */}
           {verdict && (
             <div
@@ -240,11 +240,11 @@ export default function CityComparisonModal() {
 
           {/* Comparison Matrix Table */}
           {matrix.length > 0 && (
-            <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid var(--border-subtle, #1B2531)' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                    <th style={{ textAlign: 'left', padding: '10px 14px', color: 'var(--text-muted)', fontWeight: 600, backgroundColor: 'var(--bg-app)' }}>
+                  <tr style={{ borderBottom: '1px solid var(--border-subtle, #1B2531)' }}>
+                    <th style={{ textAlign: 'left', padding: '10px 14px', color: 'var(--text-muted)', fontWeight: 600, backgroundColor: 'var(--bg-header, #0C1119)' }}>
                       Signal Domain
                     </th>
                     {cities.map((city, idx) => (
@@ -255,7 +255,7 @@ export default function CityComparisonModal() {
                           padding: '10px 14px',
                           color: 'var(--text-primary)',
                           fontWeight: 700,
-                          backgroundColor: 'var(--bg-app)',
+                          backgroundColor: 'var(--bg-header, #0C1119)',
                         }}
                       >
                         {(city as any).cityName || city.location?.city || city.location?.displayName}
@@ -270,8 +270,8 @@ export default function CityComparisonModal() {
                       <tr
                         key={rIdx}
                         style={{
-                          borderBottom: '1px solid var(--border-subtle)',
-                          backgroundColor: isScore ? 'var(--accent-primary-light)' : (rIdx % 2 === 0 ? 'transparent' : 'var(--bg-app)'),
+                          borderBottom: '1px solid var(--border-subtle, #1B2531)',
+                          backgroundColor: isScore ? 'rgba(59, 130, 246, 0.12)' : (rIdx % 2 === 0 ? 'transparent' : 'var(--bg-card, #111821)'),
                         }}
                       >
                         <td style={{ padding: '12px 14px', color: isScore ? 'var(--accent-primary)' : 'var(--text-primary)', fontWeight: isScore ? 700 : 500 }}>
@@ -308,8 +308,8 @@ export default function CityComparisonModal() {
         <div
           style={{
             padding: '12px 24px',
-            borderTop: '1px solid var(--border-subtle)',
-            backgroundColor: 'var(--bg-app)',
+            borderTop: '1px solid var(--border-subtle, #1B2531)',
+            backgroundColor: 'var(--bg-header, #0C1119)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -321,15 +321,15 @@ export default function CityComparisonModal() {
           <button
             onClick={() => setShowComparisonModal(false)}
             style={{
-              backgroundColor: '#FFFFFF',
+              backgroundColor: 'var(--bg-elevated, #141B26)',
               color: 'var(--text-primary)',
-              border: '1px solid var(--border-subtle)',
+              border: '1px solid var(--border, #263241)',
               padding: '6px 14px',
               borderRadius: '8px',
               cursor: 'pointer',
               fontSize: '12px',
               fontWeight: 600,
-              boxShadow: 'var(--shadow-xs)',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.4)',
             }}
           >
             Close

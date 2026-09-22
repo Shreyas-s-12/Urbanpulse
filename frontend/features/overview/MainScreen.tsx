@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ROUTES } from '@/lib/routes';
 import dynamic from 'next/dynamic';
 import { UnifiedCityEvent } from '@shared/types';
 import MapOverlayManager from '@/components/map/MapOverlayManager';
@@ -18,6 +19,7 @@ import { locationService } from '@/services/locationService';
 import { MAP_SAFE_AREAS } from '@/components/map/overlaySafeArea';
 import SiteAnalysisModal from '@/components/site/SiteAnalysisModal';
 import { GoogleMapErrorBoundary } from '@/components/common/ErrorBoundary';
+import { googleMapsLoader } from '@/services/googleMapsLoader';
 import {
   PinIcon,
   ThermometerIcon,
@@ -218,17 +220,17 @@ export default function MainScreen() {
   const currentLng = currentLocation?.longitude;
   const locationTitle = currentLocation
     ? currentLocation.city || currentLocation.displayName || 'Selected Coordinates'
-    : 'Global Intelligence Canvas';
+    : 'No location selected';
 
   const locationSubtitle = currentLocation
     ? [currentLocation.district, currentLocation.state, currentLocation.country].filter(Boolean).join(', ') || currentLocation.displayName
-    : 'Select any city, site, landmark, or coordinates globally to begin site and urban decision analysis.';
+    : 'Select any location to begin.';
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       {/* 1. Geospatial Canvas - Dominates the Main Workspace */}
       <div style={{ flex: 1, position: 'relative', width: '100%', minHeight: 0 }}>
-        <GoogleMapErrorBoundary>
+        <GoogleMapErrorBoundary onRetry={() => googleMapsLoader.retry()}>
           <GoogleMapView
             center={currentLocation}
             radiusKm={selectedRadiusKm}
@@ -266,30 +268,36 @@ export default function MainScreen() {
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: 25,
-              backgroundColor: 'rgba(15, 23, 42, 0.88)',
+              backgroundColor: 'rgba(15, 23, 42, 0.9)',
               backdropFilter: 'blur(8px)',
               color: '#FFFFFF',
-              padding: '6px 16px',
+              padding: '8px 20px',
               borderRadius: '20px',
-              fontSize: '11.5px',
+              fontSize: '12px',
               fontWeight: 600,
-              letterSpacing: '0.03em',
               boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
-              gap: '8px',
+              gap: '2px',
               pointerEvents: 'none',
+              textAlign: 'center',
             }}
           >
-            <span
-              style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                backgroundColor: '#38BDF8',
-              }}
-            />
-            <span>GLOBAL LOCATION INTELLIGENCE — Select any location to begin</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span
+                style={{
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  backgroundColor: '#38BDF8',
+                }}
+              />
+              <span style={{ fontWeight: 800, letterSpacing: '0.04em' }}>GLOBAL LOCATION INTELLIGENCE</span>
+            </div>
+            <span style={{ fontSize: '11px', color: '#CBD5E1', fontWeight: 500 }}>
+              Select any location to begin.
+            </span>
           </div>
         )}
 
@@ -298,11 +306,11 @@ export default function MainScreen() {
           <button
             onClick={() => setEventsDrawerOpen(!eventsDrawerOpen)}
             style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.96)',
+              backgroundColor: 'rgba(13, 20, 29, 0.94)',
               backdropFilter: 'blur(12px)',
               borderRadius: '20px',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
-              border: '1px solid #E2E8F0',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
+              border: '1px solid var(--border, #263241)',
               padding: '6px 14px',
               display: 'inline-flex',
               alignItems: 'center',
@@ -310,7 +318,7 @@ export default function MainScreen() {
               cursor: 'pointer',
               fontSize: '11px',
               fontWeight: 700,
-              color: '#0F172A',
+              color: 'var(--text-primary, #F3F6FA)',
             }}
             title="Toggle Events Near You Drawer"
           >
@@ -319,11 +327,12 @@ export default function MainScreen() {
                 width: '7px',
                 height: '7px',
                 borderRadius: '50%',
-                backgroundColor: events.length > 0 ? '#2563EB' : '#94A3B8',
+                backgroundColor: events.length > 0 ? '#3B82F6' : '#64748B',
+                boxShadow: events.length > 0 ? '0 0 6px rgba(59, 130, 246, 0.8)' : 'none',
               }}
             />
             <span>Events ({events.length})</span>
-            <ChevronDownIcon size={12} style={{ transform: eventsDrawerOpen ? 'rotate(180deg)' : 'none', color: '#64748B' }} />
+            <ChevronDownIcon size={12} style={{ transform: eventsDrawerOpen ? 'rotate(180deg)' : 'none', color: 'var(--text-secondary, #AAB4C2)' }} />
           </button>
         </div>
 
@@ -336,10 +345,10 @@ export default function MainScreen() {
               right: '16px',
               width: '320px',
               maxHeight: 'calc(100% - 72px)',
-              backgroundColor: '#FFFFFF',
+              backgroundColor: 'var(--bg-panel, #101620)',
               borderRadius: '12px',
-              boxShadow: '0 12px 32px rgba(0, 0, 0, 0.15)',
-              border: '1px solid #E2E8F0',
+              boxShadow: '0 12px 32px rgba(0, 0, 0, 0.5)',
+              border: '1px solid var(--border, #263241)',
               padding: '16px',
               display: 'flex',
               flexDirection: 'column',
@@ -349,16 +358,16 @@ export default function MainScreen() {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <div>
-                <h3 style={{ fontSize: '13.5px', fontWeight: 700, color: '#0F172A', margin: 0 }}>
+                <h3 style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary, #F3F6FA)', margin: 0 }}>
                   Events in Radius
                 </h3>
-                <div style={{ fontSize: '11px', color: '#64748B' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted, #748091)' }}>
                   {eventsLoading ? 'Scanning signals...' : `${events.length} verified signals within ${selectedRadiusKm} km`}
                 </div>
               </div>
               <button
                 onClick={() => setEventsDrawerOpen(false)}
-                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#94A3B8', padding: '4px' }}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted, #748091)', padding: '4px' }}
               >
                 <CloseIcon size={14} />
               </button>
@@ -366,7 +375,7 @@ export default function MainScreen() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {events.length === 0 && !eventsLoading && (
-                <div style={{ padding: '20px 12px', textAlign: 'center', color: '#64748B', fontSize: '11.5px' }}>
+                <div style={{ padding: '20px 12px', textAlign: 'center', color: 'var(--text-muted, #748091)', fontSize: '11.5px' }}>
                   No verified incidents or road hazards currently active in this radius.
                 </div>
               )}
@@ -376,10 +385,10 @@ export default function MainScreen() {
                   onClick={() => setSelectedEvent(event)}
                   style={{
                     textAlign: 'left',
-                    backgroundColor: selectedEvent?.eventId === event.eventId ? '#F1F5F9' : '#F8FAFC',
+                    backgroundColor: selectedEvent?.eventId === event.eventId ? 'var(--bg-card-hover, #17202C)' : 'var(--bg-card, #111821)',
                     borderRadius: '8px',
                     padding: '9px 11px',
-                    border: '1px solid #E2E8F0',
+                    border: selectedEvent?.eventId === event.eventId ? '1px solid #3B82F6' : '1px solid var(--border, #263241)',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
                   }}
@@ -391,17 +400,18 @@ export default function MainScreen() {
                         fontWeight: 700,
                         padding: '2px 5px',
                         borderRadius: '4px',
-                        backgroundColor: event.severity >= 75 ? '#FEF2F2' : event.severity >= 55 ? '#FFFBEB' : '#EFF6FF',
-                        color: event.severity >= 75 ? '#DC2626' : event.severity >= 55 ? '#D97706' : '#2563EB',
+                        backgroundColor: event.severity >= 75 ? 'rgba(239, 68, 68, 0.15)' : event.severity >= 55 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(59, 130, 246, 0.15)',
+                        color: event.severity >= 75 ? '#F87171' : event.severity >= 55 ? '#FBBF24' : '#60A5FA',
+                        border: `1px solid ${event.severity >= 75 ? 'rgba(239, 68, 68, 0.3)' : event.severity >= 55 ? 'rgba(245, 158, 11, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`,
                       }}
                     >
                       {event.eventType} · SEV {event.severity}
                     </span>
-                    <span style={{ fontSize: '10px', color: '#64748B' }}>
+                    <span style={{ fontSize: '10px', color: 'var(--text-muted, #748091)' }}>
                       {event.distanceKm ?? '--'} km away
                     </span>
                   </div>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A', lineHeight: 1.3 }}>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary, #F3F6FA)', lineHeight: 1.3 }}>
                     {event.title}
                   </div>
                 </button>
@@ -415,9 +425,9 @@ export default function MainScreen() {
       <section
         aria-label="Location Intelligence Summary"
         style={{
-          backgroundColor: '#FFFFFF',
-          borderTop: '1px solid #E2E8F0',
-          boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.06)',
+          backgroundColor: 'var(--bg-panel, #101620)',
+          borderTop: '1px solid var(--border, #263241)',
+          boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.4)',
           zIndex: 40,
           display: 'flex',
           flexDirection: 'column',
@@ -431,8 +441,8 @@ export default function MainScreen() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: bottomPanelExpanded ? '1px solid #F1F5F9' : 'none',
-            backgroundColor: '#FAFAFA',
+            borderBottom: bottomPanelExpanded ? '1px solid var(--border-subtle, #1B2531)' : 'none',
+            backgroundColor: 'var(--bg-header, #0C1119)',
           }}
         >
           {/* Location Title & Context */}
@@ -442,19 +452,19 @@ export default function MainScreen() {
                 width: '28px',
                 height: '28px',
                 borderRadius: '6px',
-                backgroundColor: '#EFF6FF',
+                backgroundColor: 'rgba(59, 130, 246, 0.12)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
               }}
             >
-              <PinIcon size={14} color="#2563EB" />
+              <PinIcon size={14} color="#60A5FA" />
             </div>
 
             <div style={{ minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '10px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted, #748091)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                   {currentLocation ? 'Selected Location' : 'Global Intelligence'}
                 </span>
                 {currentLat && currentLng ? (
@@ -462,9 +472,9 @@ export default function MainScreen() {
                     style={{
                       fontSize: '9.5px',
                       fontWeight: 600,
-                      color: '#2563EB',
-                      backgroundColor: '#EFF6FF',
-                      border: '1px solid #DBEAFE',
+                      color: '#60A5FA',
+                      backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                      border: '1px solid rgba(59, 130, 246, 0.25)',
                       padding: '1px 5px',
                       borderRadius: '4px',
                     }}
@@ -476,9 +486,9 @@ export default function MainScreen() {
                     style={{
                       fontSize: '9.5px',
                       fontWeight: 600,
-                      color: '#64748B',
-                      backgroundColor: '#F1F5F9',
-                      border: '1px solid #E2E8F0',
+                      color: 'var(--text-muted, #748091)',
+                      backgroundColor: 'var(--bg-elevated, #141B26)',
+                      border: '1px solid var(--border, #263241)',
                       padding: '1px 5px',
                       borderRadius: '4px',
                     }}
@@ -490,8 +500,9 @@ export default function MainScreen() {
                   style={{
                     fontSize: '9.5px',
                     fontWeight: 700,
-                    color: conditionScore !== null ? '#16A34A' : '#D97706',
-                    backgroundColor: conditionScore !== null ? '#DCFCE7' : '#FEF3C7',
+                    color: conditionScore !== null && conditionScore >= 75 ? '#4ADE80' : '#FBBF24',
+                    backgroundColor: conditionScore !== null && conditionScore >= 75 ? 'rgba(34, 197, 94, 0.12)' : 'rgba(245, 158, 11, 0.12)',
+                    border: `1px solid ${conditionScore !== null && conditionScore >= 75 ? 'rgba(34, 197, 94, 0.25)' : 'rgba(245, 158, 11, 0.25)'}`,
                     padding: '1px 5px',
                     borderRadius: '4px',
                   }}
@@ -499,11 +510,11 @@ export default function MainScreen() {
                   {conditionScore !== null
                     ? `Condition: ${conditionScore}/100`
                     : currentLocation
-                    ? (conditionLoading ? 'Condition: Evaluating...' : 'Condition: No verified data')
-                    : 'Condition: Neutral Baseline'}
+                    ? (conditionLoading ? 'Loading available intelligence...' : 'No verified data available')
+                    : 'No location selected'}
                 </span>
               </div>
-              <div style={{ fontSize: '14px', fontWeight: 800, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: '1px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary, #F3F6FA)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: '1px' }}>
                 {locationTitle}
               </div>
             </div>
@@ -519,9 +530,9 @@ export default function MainScreen() {
                 gap: '5px',
                 padding: '5px 12px',
                 borderRadius: '6px',
-                backgroundColor: '#EFF6FF',
-                border: '1px solid #BFDBFE',
-                color: '#2563EB',
+                backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                border: '1px solid #3B82F6',
+                color: '#60A5FA',
                 fontSize: '11px',
                 fontWeight: 700,
                 cursor: 'pointer',
@@ -531,14 +542,14 @@ export default function MainScreen() {
             </button>
 
             <Link
-              href="/copilot"
+              href={ROUTES.simulate}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '5px',
                 padding: '5px 12px',
                 borderRadius: '6px',
-                backgroundColor: '#0F172A',
+                backgroundColor: '#2563EB',
                 color: '#FFFFFF',
                 fontSize: '11px',
                 fontWeight: 700,
@@ -553,9 +564,9 @@ export default function MainScreen() {
               style={{
                 padding: '4px 8px',
                 borderRadius: '6px',
-                backgroundColor: 'transparent',
-                border: '1px solid #CBD5E1',
-                color: '#64748B',
+                backgroundColor: 'var(--bg-elevated, #141B26)',
+                border: '1px solid var(--border, #263241)',
+                color: 'var(--text-secondary, #AAB4C2)',
                 fontSize: '11px',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -584,29 +595,29 @@ export default function MainScreen() {
           >
             {/* Column 1: Location Context */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+              <div style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-muted, #748091)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                 Location Context
               </div>
-              <div style={{ backgroundColor: '#F8FAFC', padding: '10px 12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                <div style={{ fontSize: '12px', color: '#475569', lineHeight: 1.4 }}>
+              <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border, #263241)' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary, #AAB4C2)', lineHeight: 1.4 }}>
                   {locationSubtitle}
                 </div>
-                <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '10.5px', color: '#64748B' }}>
-                  <div>Radius: <strong>{currentLocation ? `${selectedRadiusKm} km` : 'Global Canvas'}</strong></div>
-                  <div>Confidence: <strong style={{ color: currentLocation ? '#16A34A' : '#64748B' }}>{currentLocation ? 'Verified Geospatial Fix (88%)' : 'No target selected'}</strong></div>
-                  <div>Mode: <strong>{currentLocation ? 'Active Location Analysis' : 'Neutral Global Baseline'}</strong></div>
+                <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '10.5px', color: 'var(--text-muted, #748091)' }}>
+                  <div>Radius: <strong style={{ color: 'var(--text-primary, #F3F6FA)' }}>{currentLocation ? `${selectedRadiusKm} km` : 'Global Canvas'}</strong></div>
+                  <div>Confidence: <strong style={{ color: currentLocation ? '#4ADE80' : 'var(--text-muted, #748091)' }}>{currentLocation ? 'Verified Geospatial Fix (88%)' : 'No target selected'}</strong></div>
+                  <div>Mode: <strong style={{ color: 'var(--text-primary, #F3F6FA)' }}>{currentLocation ? 'Active Location Analysis' : 'Neutral Global Baseline'}</strong></div>
                 </div>
               </div>
             </div>
 
             {/* Column 2: Urban Condition Score */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+              <div style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-muted, #748091)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                 Urban Condition
               </div>
-              <div style={{ backgroundColor: '#F8FAFC', padding: '10px 12px', borderRadius: '8px', border: '1px solid #E2E8F0', flex: 1 }}>
+              <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border, #263241)', flex: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A' }}>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-primary, #F3F6FA)' }}>
                     {!currentLocation ? 'Neutral' : conditionLoading ? 'Evaluating...' : conditionScore !== null ? `${conditionScore}/100` : 'Unavailable'}
                   </div>
                   <span
@@ -615,14 +626,15 @@ export default function MainScreen() {
                       fontWeight: 700,
                       padding: '2px 6px',
                       borderRadius: '4px',
-                      backgroundColor: conditionScore !== null && conditionScore >= 75 ? '#DCFCE7' : '#FEF3C7',
-                      color: conditionScore !== null && conditionScore >= 75 ? '#16A34A' : '#D97706',
+                      backgroundColor: conditionScore !== null && conditionScore >= 75 ? 'rgba(34, 197, 94, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                      color: conditionScore !== null && conditionScore >= 75 ? '#4ADE80' : '#FBBF24',
+                      border: `1px solid ${conditionScore !== null && conditionScore >= 75 ? 'rgba(34, 197, 94, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
                     }}
                   >
                     {!currentLocation ? 'GLOBAL BASELINE' : conditionStatus}
                   </span>
                 </div>
-                <div style={{ fontSize: '11px', color: '#475569', marginTop: '4px', lineHeight: 1.35 }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary, #AAB4C2)', marginTop: '4px', lineHeight: 1.35 }}>
                   {conditionScore !== null
                     ? `Composite condition score evaluated from verified atmospheric sensors and local infrastructure reports.`
                     : currentLocation
@@ -630,8 +642,8 @@ export default function MainScreen() {
                     : 'Select any place or coordinate to analyze urban condition metrics.'}
                 </div>
                 <Link
-                  href="/urban-condition"
-                  style={{ fontSize: '11px', color: '#2563EB', fontWeight: 600, marginTop: '6px', display: 'inline-block', textDecoration: 'none' }}
+                  href={ROUTES.analytics}
+                  style={{ fontSize: '11px', color: '#60A5FA', fontWeight: 600, marginTop: '6px', display: 'inline-block', textDecoration: 'none' }}
                 >
                   View Urban Intelligence Breakdown →
                 </Link>
@@ -640,70 +652,70 @@ export default function MainScreen() {
 
             {/* Column 3: Structured Signal Cards */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+              <div style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-muted, #748091)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                 Verified Signals
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
                 {/* Weather Card */}
-                <div style={{ backgroundColor: '#F8FAFC', padding: '8px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border, #263241)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '9.5px', fontWeight: 700, color: '#64748B' }}>WEATHER</span>
-                    <span style={{ fontSize: '8px', fontWeight: 700, color: weather ? '#16A34A' : '#64748B' }}>
+                    <span style={{ fontSize: '9.5px', fontWeight: 700, color: 'var(--text-muted, #748091)' }}>WEATHER</span>
+                    <span style={{ fontSize: '8px', fontWeight: 700, color: weather ? '#4ADE80' : 'var(--text-muted, #748091)' }}>
                       {currentLocation ? weatherStatusBadge : 'IDLE'}
                     </span>
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary, #F3F6FA)', marginTop: '2px' }}>
                     {!currentLocation ? 'Select location' : weatherLoading ? 'Loading...' : weather?.temperatureC !== undefined ? `${weather.temperatureC}°C` : 'Unavailable'}
                   </div>
-                  <div style={{ fontSize: '9.5px', color: '#64748B', marginTop: '1px' }}>
+                  <div style={{ fontSize: '9.5px', color: 'var(--text-muted, #748091)', marginTop: '1px' }}>
                     {!currentLocation ? 'Awaiting target' : weather?.conditionLabel || 'Open-Meteo'}
                   </div>
                 </div>
 
                 {/* Traffic Card */}
-                <div style={{ backgroundColor: '#F8FAFC', padding: '8px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border, #263241)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '9.5px', fontWeight: 700, color: '#64748B' }}>TRAFFIC</span>
-                    <span style={{ fontSize: '8px', fontWeight: 700, color: trafficStatusBadge === 'AVAILABLE' ? '#16A34A' : '#64748B' }}>
+                    <span style={{ fontSize: '9.5px', fontWeight: 700, color: 'var(--text-muted, #748091)' }}>TRAFFIC</span>
+                    <span style={{ fontSize: '8px', fontWeight: 700, color: trafficStatusBadge === 'AVAILABLE' ? '#4ADE80' : 'var(--text-muted, #748091)' }}>
                       {currentLocation ? trafficStatusBadge : 'IDLE'}
                     </span>
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: currentLocation ? trafficColor : '#64748B', marginTop: '2px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: currentLocation ? trafficColor : 'var(--text-muted, #748091)', marginTop: '2px' }}>
                     {!currentLocation ? 'Select location' : trafficLabel}
                   </div>
-                  <div style={{ fontSize: '9.5px', color: '#64748B', marginTop: '1px' }}>
+                  <div style={{ fontSize: '9.5px', color: 'var(--text-muted, #748091)', marginTop: '1px' }}>
                     {!currentLocation ? 'Awaiting target' : trafficDetail}
                   </div>
                 </div>
 
                 {/* Roads Card */}
-                <div style={{ backgroundColor: '#F8FAFC', padding: '8px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border, #263241)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '9.5px', fontWeight: 700, color: '#64748B' }}>ROADS</span>
-                    <span style={{ fontSize: '8px', fontWeight: 700, color: currentLocation ? '#16A34A' : '#64748B' }}>
+                    <span style={{ fontSize: '9.5px', fontWeight: 700, color: 'var(--text-muted, #748091)' }}>ROADS</span>
+                    <span style={{ fontSize: '8px', fontWeight: 700, color: currentLocation ? '#4ADE80' : 'var(--text-muted, #748091)' }}>
                       {currentLocation ? 'AVAILABLE' : 'IDLE'}
                     </span>
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: potholeCount > 0 ? '#DC2626' : '#0F172A', marginTop: '2px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: potholeCount > 0 ? '#F87171' : 'var(--text-primary, #F3F6FA)', marginTop: '2px' }}>
                     {!currentLocation ? 'Select location' : potholeCount > 0 ? `${potholeCount} Hazards` : 'Mapped'}
                   </div>
-                  <div style={{ fontSize: '9.5px', color: '#64748B', marginTop: '1px' }}>
+                  <div style={{ fontSize: '9.5px', color: 'var(--text-muted, #748091)', marginTop: '1px' }}>
                     {!currentLocation ? 'Awaiting target' : 'Surface: Asphalt (OSM)'}
                   </div>
                 </div>
 
                 {/* Air Quality Card */}
-                <div style={{ backgroundColor: '#F8FAFC', padding: '8px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border, #263241)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '9.5px', fontWeight: 700, color: '#64748B' }}>AIR QUALITY</span>
-                    <span style={{ fontSize: '8px', fontWeight: 700, color: aqiStatusBadge === 'AVAILABLE' ? '#16A34A' : '#64748B' }}>
+                    <span style={{ fontSize: '9.5px', fontWeight: 700, color: 'var(--text-muted, #748091)' }}>AIR QUALITY</span>
+                    <span style={{ fontSize: '8px', fontWeight: 700, color: aqiStatusBadge === 'AVAILABLE' ? '#4ADE80' : 'var(--text-muted, #748091)' }}>
                       {currentLocation ? aqiStatusBadge : 'IDLE'}
                     </span>
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: currentLocation ? '#2563EB' : '#64748B', marginTop: '2px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: currentLocation ? '#60A5FA' : 'var(--text-muted, #748091)', marginTop: '2px' }}>
                     {!currentLocation ? 'Select location' : airQualityLabel}
                   </div>
-                  <div style={{ fontSize: '9.5px', color: '#64748B', marginTop: '1px' }}>
+                  <div style={{ fontSize: '9.5px', color: 'var(--text-muted, #748091)', marginTop: '1px' }}>
                     {!currentLocation ? 'Awaiting target' : airQualityDetail}
                   </div>
                 </div>
@@ -712,7 +724,7 @@ export default function MainScreen() {
 
             {/* Column 4: Dedicated Intelligence Systems */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+              <div style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-muted, #748091)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                 Dedicated Intelligence Modules
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
@@ -723,16 +735,16 @@ export default function MainScreen() {
                     flexDirection: 'column',
                     alignItems: 'center',
                     padding: '8px 4px',
-                    backgroundColor: '#F8FAFC',
-                    border: '1px solid #E2E8F0',
+                    backgroundColor: 'var(--bg-card, #111821)',
+                    border: '1px solid var(--border, #263241)',
                     borderRadius: '6px',
                     textDecoration: 'none',
                     textAlign: 'center',
                     transition: 'all 0.15s ease',
                   }}
                 >
-                  <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#2563EB' }}>GeoRAG</span>
-                  <span style={{ fontSize: '9px', color: '#64748B', marginTop: '1px' }}>Satellite</span>
+                  <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#60A5FA' }}>GeoRAG</span>
+                  <span style={{ fontSize: '9px', color: 'var(--text-muted, #748091)', marginTop: '1px' }}>Satellite</span>
                 </Link>
 
                 <Link
@@ -742,16 +754,16 @@ export default function MainScreen() {
                     flexDirection: 'column',
                     alignItems: 'center',
                     padding: '8px 4px',
-                    backgroundColor: '#F8FAFC',
-                    border: '1px solid #E2E8F0',
+                    backgroundColor: 'var(--bg-card, #111821)',
+                    border: '1px solid var(--border, #263241)',
                     borderRadius: '6px',
                     textDecoration: 'none',
                     textAlign: 'center',
                     transition: 'all 0.15s ease',
                   }}
                 >
-                  <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#DC2626' }}>CrisisRAG</span>
-                  <span style={{ fontSize: '9px', color: '#64748B', marginTop: '1px' }}>Emergency</span>
+                  <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#F87171' }}>CrisisRAG</span>
+                  <span style={{ fontSize: '9px', color: 'var(--text-muted, #748091)', marginTop: '1px' }}>Emergency</span>
                 </Link>
 
                 <Link
@@ -761,16 +773,16 @@ export default function MainScreen() {
                     flexDirection: 'column',
                     alignItems: 'center',
                     padding: '8px 4px',
-                    backgroundColor: '#F8FAFC',
-                    border: '1px solid #E2E8F0',
+                    backgroundColor: 'var(--bg-card, #111821)',
+                    border: '1px solid var(--border, #263241)',
                     borderRadius: '6px',
                     textDecoration: 'none',
                     textAlign: 'center',
                     transition: 'all 0.15s ease',
                   }}
                 >
-                  <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#0284C7' }}>AquaRAG</span>
-                  <span style={{ fontSize: '9px', color: '#64748B', marginTop: '1px' }}>Water</span>
+                  <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#38BDF8' }}>AquaRAG</span>
+                  <span style={{ fontSize: '9px', color: 'var(--text-muted, #748091)', marginTop: '1px' }}>Water</span>
                 </Link>
               </div>
 
@@ -780,9 +792,9 @@ export default function MainScreen() {
                   marginTop: '4px',
                   padding: '7px 10px',
                   borderRadius: '6px',
-                  backgroundColor: '#EFF6FF',
-                  border: '1px solid #BFDBFE',
-                  color: '#2563EB',
+                  backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                  border: '1px solid #3B82F6',
+                  color: '#60A5FA',
                   fontSize: '11px',
                   fontWeight: 700,
                   cursor: 'pointer',
@@ -803,11 +815,11 @@ export default function MainScreen() {
             position: 'absolute',
             bottom: bottomPanelExpanded ? '280px' : '65px',
             right: '20px',
-            backgroundColor: '#FFFFFF',
+            backgroundColor: 'var(--bg-panel, #101620)',
             borderRadius: '10px',
             padding: '14px 18px',
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
-            border: '1px solid #E2E8F0',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
+            border: '1px solid var(--border, #263241)',
             maxWidth: '360px',
             zIndex: 45,
           }}
@@ -819,29 +831,30 @@ export default function MainScreen() {
                 fontWeight: 700,
                 padding: '2px 6px',
                 borderRadius: '4px',
-                backgroundColor: selectedEvent.severity >= 75 ? '#FEF2F2' : '#EFF6FF',
-                color: selectedEvent.severity >= 75 ? '#DC2626' : '#2563EB',
+                backgroundColor: selectedEvent.severity >= 75 ? 'rgba(239, 68, 68, 0.15)' : 'rgba(59, 130, 246, 0.15)',
+                color: selectedEvent.severity >= 75 ? '#F87171' : '#60A5FA',
+                border: `1px solid ${selectedEvent.severity >= 75 ? 'rgba(239, 68, 68, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`,
               }}
             >
               {selectedEvent.eventType} · SEV {selectedEvent.severity}/100
             </span>
             <button
               onClick={() => setSelectedEvent(null)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8' }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted, #748091)' }}
             >
               <CloseIcon size={14} />
             </button>
           </div>
-          <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 700, color: '#0F172A' }}>
+          <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary, #F3F6FA)' }}>
             {selectedEvent.title}
           </h4>
           {selectedEvent.description && (
-            <p style={{ margin: '4px 0 0', fontSize: '11.5px', color: '#475569', lineHeight: 1.4 }}>
+            <p style={{ margin: '4px 0 0', fontSize: '11.5px', color: 'var(--text-secondary, #AAB4C2)', lineHeight: 1.4 }}>
               {selectedEvent.description}
             </p>
           )}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-            <span style={{ fontSize: '10.5px', color: '#64748B' }}>
+            <span style={{ fontSize: '10.5px', color: 'var(--text-muted, #748091)' }}>
               {selectedEvent.distanceKm} km away
             </span>
             {selectedEvent.latitude && selectedEvent.longitude && (
@@ -873,7 +886,7 @@ export default function MainScreen() {
         isOpen={isSiteModalOpen}
         onClose={() => setIsSiteModalOpen(false)}
         onOpenRAG={(rag) => router.push(buildModuleUrl('/' + rag))}
-        onAskNexus={(q) => router.push('/copilot?q=' + encodeURIComponent(q))}
+        onAskNexus={(q) => router.push(`${ROUTES.simulate}?q=${encodeURIComponent(q)}`)}
       />
     </div>
   );

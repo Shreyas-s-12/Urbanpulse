@@ -1,14 +1,20 @@
 /**
  * Single-Instance Google Maps Loader Service
  * Enforces exactly ONE loader initialization across the entire application.
- * Provides explicit lifecycle state machine: IDLE -> LOADING -> READY | ERROR.
+ * Explicit lifecycle state machine: IDLE -> LOADING -> READY | ERROR | TIMEOUT | UNAVAILABLE.
  * Protected against race conditions, StrictMode double effects, and unhandled promise rejections.
- * Short 5-second timeout ensures the application never hangs on map initialization.
+ * Hard 12-second timeout guarantees the application never hangs on map initialization.
  */
 
 import { Loader } from '@googlemaps/js-api-loader';
 
-export type MapsLoadingStatus = 'IDLE' | 'LOADING' | 'READY' | 'ERROR' | 'TIMEOUT';
+export type MapsLoadingStatus =
+  | 'IDLE'
+  | 'LOADING'
+  | 'READY'
+  | 'ERROR'
+  | 'TIMEOUT'
+  | 'UNAVAILABLE';
 
 export interface MapsLoaderState {
   status: MapsLoadingStatus;
@@ -16,8 +22,7 @@ export interface MapsLoaderState {
   mapsLibrary: google.maps.MapsLibrary | null;
 }
 
-const DEFAULT_MAPS_KEY = 'AIzaSyCRm7GF2AcuT5bLElP1fMyejdO2SotpGoo';
-const TIMEOUT_MS = 6000; // 6-second hard timeout guard to prevent app freeze
+const TIMEOUT_MS = 12000; // 12-second hard timeout guard (within 10-15s requirement)
 
 class GoogleMapsLoaderService {
   private loaderInstance: Loader | null = null;
@@ -41,9 +46,9 @@ class GoogleMapsLoaderService {
 
     const existingHandler = (window as any).gm_authFailure;
     (window as any).gm_authFailure = () => {
-      console.warn('[GoogleMapsLoader] Google Maps authentication failure detected (key policy / quota).');
+      console.warn('[GoogleMapsLoader] Google Maps authentication failure detected (API key policy / quota / billing).');
       this.currentStatus = 'ERROR';
-      this.lastError = 'Map unavailable (Google Maps authentication failure). All other UrbanPulse intelligence tools remain operational.';
+      this.lastError = 'Map unavailable (Google Maps API key / billing restriction). Location search, site analysis, weather, traffic, and intelligence systems remain fully operational.';
       if (this.activeReject) {
         this.activeReject(new Error(this.lastError));
         this.activeReject = null;
@@ -93,6 +98,14 @@ class GoogleMapsLoaderService {
     });
   }
 
+  public hasApiKey(apiKeyOverride?: string): boolean {
+    const key =
+      apiKeyOverride ||
+      process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
+      (typeof window !== 'undefined' && (window as any).__UP_GMAPS_KEY ? (window as any).__UP_GMAPS_KEY : '');
+    return Boolean(key && key.trim().length > 0);
+  }
+
   public async loadMaps(apiKeyOverride?: string): Promise<google.maps.MapsLibrary> {
     if (typeof window === 'undefined') {
       throw new Error('Google Maps cannot be loaded on the server.');
@@ -100,12 +113,21 @@ class GoogleMapsLoaderService {
 
     this.attachAuthFailureHandler();
 
-    // If already fully ready with a valid global google.maps object, return immediately
+    // 1. If already fully ready with valid global google.maps.Map constructor, return immediately
     if (this.currentStatus === 'READY' && this.mapsLib && (window as any).google?.maps?.Map) {
       return this.mapsLib;
     }
 
-    // If already in flight, return the single active promise to prevent duplicate injection
+    // 2. Check if google.maps is already attached to window by a previous script tag
+    if ((window as any).google?.maps?.Map) {
+      this.mapsLib = (window as any).google.maps as google.maps.MapsLibrary;
+      this.currentStatus = 'READY';
+      this.lastError = null;
+      this.notify();
+      return this.mapsLib;
+    }
+
+    // 3. If already in flight, return the single active promise (Strict Mode & concurrency safe)
     if (this.currentStatus === 'LOADING' && this.loadPromise) {
       return this.loadPromise;
     }
@@ -113,12 +135,12 @@ class GoogleMapsLoaderService {
     const effectiveKey =
       apiKeyOverride ||
       process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
-      (typeof window !== 'undefined' && (window as any).__UP_GMAPS_KEY ? (window as any).__UP_GMAPS_KEY : '') ||
-      DEFAULT_MAPS_KEY;
+      ((window as any).__UP_GMAPS_KEY ? (window as any).__UP_GMAPS_KEY : '');
 
+    // 4. If key is missing, fail immediately into UNAVAILABLE without hanging
     if (!effectiveKey || effectiveKey.trim() === '') {
-      this.currentStatus = 'ERROR';
-      this.lastError = 'Missing Google Maps API Key.';
+      this.currentStatus = 'UNAVAILABLE';
+      this.lastError = 'Google Maps API key is not configured. All location search, site analysis, weather, traffic, and intelligence systems remain fully operational.';
       this.notify();
       throw new Error(this.lastError);
     }
@@ -127,12 +149,11 @@ class GoogleMapsLoaderService {
     this.lastError = null;
     this.notify();
 
-    // Check if google.maps is already attached to window by a previous script
-    if ((window as any).google?.maps?.Map) {
-      this.mapsLib = (window as any).google.maps as google.maps.MapsLibrary;
-      this.currentStatus = 'READY';
-      this.notify();
-      return this.mapsLib;
+    // 5. Clean up any existing duplicate script tags before initializing Loader
+    const existingScripts = document.querySelectorAll('script[src*="maps.googleapis.com/maps/api"]');
+    if (existingScripts.length > 0 && !(window as any).google?.maps?.Map) {
+      // If scripts exist but google.maps is not attached, remove stale tags to avoid conflict
+      existingScripts.forEach((s) => s.parentNode?.removeChild(s));
     }
 
     if (!this.loaderInstance || (this.loaderInstance as any).apiKey !== effectiveKey) {
@@ -146,7 +167,7 @@ class GoogleMapsLoaderService {
     let timeoutId: NodeJS.Timeout | null = null;
     const timeoutPromise = new Promise<never>((_, reject) => {
       timeoutId = setTimeout(() => {
-        reject(new Error('Google Maps connection timed out (6s). Operating in map fallback mode.'));
+        reject(new Error(`Google Maps connection timed out (${TIMEOUT_MS / 1000}s). Operating in fallback mode.`));
       }, TIMEOUT_MS);
     });
 
@@ -187,11 +208,35 @@ class GoogleMapsLoaderService {
 
   public async importLibrary<T = any>(name: string, apiKeyOverride?: string): Promise<T | null> {
     if (typeof window === 'undefined') return null;
-    try {
-      if ((window as any).google?.maps?.importLibrary) {
+
+    // Fast check: if google.maps is already available, use it directly
+    if ((window as any).google?.maps?.importLibrary) {
+      try {
         return (await (window as any).google.maps.importLibrary(name)) as T;
-      }
-      await this.loadMaps(apiKeyOverride);
+      } catch {}
+    }
+
+    // If map status is already terminal failure, do NOT block downstream callers
+    if (
+      this.currentStatus === 'ERROR' ||
+      this.currentStatus === 'TIMEOUT' ||
+      this.currentStatus === 'UNAVAILABLE' ||
+      !this.hasApiKey(apiKeyOverride)
+    ) {
+      return null;
+    }
+
+    try {
+      // Race loadMaps with a 600ms timeout so external callers (search/autocomplete) never hang
+      const loadWithFastTimeout = Promise.race([
+        this.loadMaps(apiKeyOverride),
+        new Promise<null>((_, reject) =>
+          setTimeout(() => reject(new Error('Fast library import timeout')), 600)
+        ),
+      ]);
+
+      await loadWithFastTimeout;
+
       if ((window as any).google?.maps?.importLibrary) {
         return (await (window as any).google.maps.importLibrary(name)) as T;
       }
@@ -199,7 +244,7 @@ class GoogleMapsLoaderService {
         return (await this.loaderInstance.importLibrary(name as any)) as T;
       }
     } catch (err) {
-      console.warn(`[GoogleMapsLoader] Failed to import library '${name}' (non-fatal):`, err);
+      console.warn(`[GoogleMapsLoader] Fast library import skipped for '${name}' (non-fatal):`, err);
     }
     return null;
   }
@@ -211,6 +256,13 @@ class GoogleMapsLoaderService {
     this.currentStatus = 'IDLE';
     this.lastError = null;
     this.notify();
+
+    // Clean up any failed script tags from the DOM
+    if (typeof document !== 'undefined') {
+      const scripts = document.querySelectorAll('script[src*="maps.googleapis.com/maps/api"]');
+      scripts.forEach((s) => s.parentNode?.removeChild(s));
+    }
+
     return this.loadMaps(apiKeyOverride);
   }
 }

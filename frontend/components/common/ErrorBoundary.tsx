@@ -389,8 +389,8 @@ export function GoogleMapErrorBoundary({ children, onRetry }: { children: ReactN
               >
                 {classified.type}
               </div>
-              <h3 style={{ fontSize: '17px', fontWeight: 700, margin: 0 }}>
-                {classified.title}
+              <h3 style={{ fontSize: '17px', fontWeight: 800, margin: 0, textTransform: 'uppercase' }}>
+                MAP UNAVAILABLE
               </h3>
               <p style={{ fontSize: '13px', color: 'var(--text-secondary, #64748B)', maxWidth: '440px', lineHeight: 1.5, marginTop: '6px' }}>
                 {classified.message}
@@ -402,7 +402,7 @@ export function GoogleMapErrorBoundary({ children, onRetry }: { children: ReactN
                 onClick={reset}
                 style={{
                   height: '36px',
-                  padding: '0 18px',
+                  padding: '0 24px',
                   borderRadius: 'var(--radius-sm, 6px)',
                   backgroundColor: 'var(--accent-primary, #2563EB)',
                   color: '#FFFFFF',
@@ -419,7 +419,7 @@ export function GoogleMapErrorBoundary({ children, onRetry }: { children: ReactN
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
                 </svg>
-                <span>{classified.isRealMapOffline ? 'Reconnect Map' : 'Retry Rendering'}</span>
+                <span>Retry</span>
               </button>
             </div>
 

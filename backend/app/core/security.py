@@ -1,17 +1,22 @@
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Request, Depends, HTTPException, status
 from uuid import UUID
 from types import SimpleNamespace
+from typing import Optional
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
+from app.security.auth import get_current_user_optional
+from app.models.user import User
 
-async def get_current_user(token: str | None = Depends(oauth2_scheme)):
-    """Stub authentication dependency.
-    In production this would verify the JWT and fetch the user from DB.
-    Here we return a dummy user with a fixed UUID for ownership checks.
+async def get_current_user(
+    request: Request,
+    user: Optional[User] = Depends(get_current_user_optional)
+):
     """
-    # If token is missing, still return a dummy user for testing
-    if not token:
-        return SimpleNamespace(id=UUID("123e4567-e89b-12d3-a456-426614174000"))
-    # Dummy user; replace with real lookup as needed.
-    return SimpleNamespace(id=UUID("123e4567-e89b-12d3-a456-426614174000"))
+    Unified authentication dependency.
+    If authenticated via session cookie or Authorization header, returns the real User.
+    In testing/dev without session, falls back to a development user UUID.
+    """
+    if user:
+        return user
+    # Fallback for dev / unauthenticated monitoring calls
+    return SimpleNamespace(id=UUID("123e4567-e89b-12d3-a456-426614174000"), name="UrbanPulse Explorer", email="guest@urbanpulse.ai")
+

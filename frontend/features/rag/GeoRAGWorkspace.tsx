@@ -100,9 +100,9 @@ export default function GeoRAGWorkspace({
             {/* Satellite Map Canvas */}
             <div
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--bg-panel, #101620)',
                 borderRadius: '12px',
-                border: '1px solid #E2E8F0',
+                border: '1px solid var(--border-subtle, #1B2531)',
                 boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                 overflow: 'hidden',
                 display: 'flex',
@@ -157,7 +157,7 @@ export default function GeoRAGWorkspace({
                 <div
                   style={{
                     padding: '10px 14px',
-                    backgroundColor: '#F8FAFC',
+                    backgroundColor: 'var(--bg-card, #111821)',
                     borderTop: '1px solid #E2E8F0',
                     fontSize: '11px',
                     color: '#475569',
@@ -183,9 +183,9 @@ export default function GeoRAGWorkspace({
             {/* Environmental Indicators Grid */}
             <div
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--bg-panel, #101620)',
                 borderRadius: '12px',
-                border: '1px solid #E2E8F0',
+                border: '1px solid var(--border-subtle, #1B2531)',
                 padding: '16px',
                 boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                 display: 'flex',
@@ -198,7 +198,7 @@ export default function GeoRAGWorkspace({
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
-                <div style={{ backgroundColor: '#F8FAFC', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle, #1B2531)' }}>
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>NDVI Canopy Index</div>
                   <div style={{ fontSize: '17px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>
                     {context?.environmentalData?.vegetationIndex ?? '0.640'}
@@ -208,7 +208,7 @@ export default function GeoRAGWorkspace({
                   </div>
                 </div>
 
-                <div style={{ backgroundColor: '#F8FAFC', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle, #1B2531)' }}>
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>Aerosol Optical Depth</div>
                   <div style={{ fontSize: '17px', fontWeight: 800, color: '#2563EB', marginTop: '2px' }}>
                     {context?.environmentalData?.surfaceAerosolOpticalDepth ?? '0.24'}
@@ -216,7 +216,7 @@ export default function GeoRAGWorkspace({
                   <div style={{ fontSize: '9.5px', color: '#64748B', marginTop: '2px' }}>Clear Atmosphere</div>
                 </div>
 
-                <div style={{ backgroundColor: '#F8FAFC', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle, #1B2531)' }}>
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>Surface Temperature</div>
                   <div style={{ fontSize: '17px', fontWeight: 800, color: '#D97706', marginTop: '2px' }}>
                     {context?.environmentalData?.landSurfaceTemperatureC ?? '28.4'}°C
@@ -224,7 +224,7 @@ export default function GeoRAGWorkspace({
                   <div style={{ fontSize: '9.5px', color: '#64748B', marginTop: '2px' }}>Radiometric TIRS-2</div>
                 </div>
 
-                <div style={{ backgroundColor: '#F8FAFC', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                <div style={{ backgroundColor: 'var(--bg-card, #111821)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle, #1B2531)' }}>
                   <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>Plastic / Waste Index</div>
                   <div style={{ fontSize: '17px', fontWeight: 800, color: '#334155', marginTop: '2px' }}>
                     {context?.environmentalData?.plasticWasteAccumulationIndex ?? '36.2'}/100
@@ -238,7 +238,7 @@ export default function GeoRAGWorkspace({
               {context?.aiAnalysis && (
                 <div
                   style={{
-                    backgroundColor: '#F8FAFC',
+                    backgroundColor: 'var(--bg-card, #111821)',
                     borderLeft: '3px solid #2563EB',
                     borderRadius: '0 6px 6px 0',
                     padding: '9px 12px',
@@ -255,9 +255,9 @@ export default function GeoRAGWorkspace({
             {/* Retrieved Reports & Citations */}
             <div
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--bg-panel, #101620)',
                 borderRadius: '12px',
-                border: '1px solid #E2E8F0',
+                border: '1px solid var(--border-subtle, #1B2531)',
                 padding: '16px',
                 boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                 display: 'flex',

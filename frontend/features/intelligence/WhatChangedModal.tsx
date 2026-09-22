@@ -120,15 +120,15 @@ export default function WhatChangedModal() {
     >
       <div
         style={{
-          backgroundColor: '#FFFFFF',
-          border: '1px solid var(--border-subtle)',
+          backgroundColor: 'var(--bg-panel, #101620)',
+          border: '1px solid var(--border-subtle, #1B2531)',
           borderRadius: '16px',
           width: '100%',
           maxWidth: '780px',
           maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: 'var(--shadow-panel)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
           color: 'var(--text-primary)',
           overflow: 'hidden',
         }}
@@ -138,11 +138,11 @@ export default function WhatChangedModal() {
         <div
           style={{
             padding: '20px 24px',
-            borderBottom: '1px solid var(--border-subtle)',
+            borderBottom: '1px solid var(--border-subtle, #1B2531)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: '#FFFFFF',
+            backgroundColor: 'var(--bg-header, #0C1119)',
           }}
         >
           <div>
@@ -178,8 +178,8 @@ export default function WhatChangedModal() {
         <div
           style={{
             padding: '12px 24px',
-            backgroundColor: 'var(--bg-app)',
-            borderBottom: '1px solid var(--border-subtle)',
+            backgroundColor: 'var(--bg-card, #111821)',
+            borderBottom: '1px solid var(--border-subtle, #1B2531)',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
@@ -192,9 +192,9 @@ export default function WhatChangedModal() {
               disabled={isLoadingWindow}
               onClick={() => handleWindowChange(opt.value)}
               style={{
-                backgroundColor: selectedWindow === opt.value ? 'var(--accent-primary)' : 'var(--bg-surface)',
+                backgroundColor: selectedWindow === opt.value ? 'var(--accent-primary)' : 'var(--bg-elevated, #141B26)',
                 color: selectedWindow === opt.value ? '#FFFFFF' : 'var(--text-secondary)',
-                border: selectedWindow === opt.value ? '1px solid var(--accent-primary)' : '1px solid var(--border-subtle)',
+                border: selectedWindow === opt.value ? '1px solid var(--accent-primary)' : '1px solid var(--border, #263241)',
                 padding: '5px 12px',
                 borderRadius: '8px',
                 fontSize: '12px',
@@ -210,7 +210,7 @@ export default function WhatChangedModal() {
         </div>
 
         {/* Body Content */}
-        <div style={{ padding: '20px 24px', overflowY: 'auto', flex: 1, backgroundColor: '#FFFFFF' }}>
+        <div style={{ padding: '20px 24px', overflowY: 'auto', flex: 1, backgroundColor: 'var(--bg-panel, #101620)' }}>
           {/* Main Change Spotlight Callout */}
           <div
             style={{
@@ -225,7 +225,7 @@ export default function WhatChangedModal() {
               <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Primary Shift
               </span>
-              <span style={{ fontSize: '11px', backgroundColor: '#FFFFFF', color: 'var(--accent-primary)', padding: '2px 8px', borderRadius: '12px', fontWeight: 600, border: '1px solid rgba(37, 99, 235, 0.2)' }}>
+              <span style={{ fontSize: '11px', backgroundColor: 'var(--bg-elevated, #141B26)', color: 'var(--accent-primary, #60A5FA)', padding: '2px 8px', borderRadius: '12px', fontWeight: 600, border: '1px solid rgba(59, 130, 246, 0.3)' }}>
                 {meaningfulCount} significant shift(s)
               </span>
             </div>
@@ -242,15 +242,15 @@ export default function WhatChangedModal() {
               const isDown = item.direction === 'DOWN';
               const arrow = isUp ? '↑' : isDown ? '↓' : '→';
               const arrowColor = item.signal === 'traffic' || item.signal === 'aqi'
-                ? (isUp ? '#EF4444' : isDown ? '#10B981' : '#6B7280')
-                : (isUp ? '#2563EB' : isDown ? '#F59E0B' : '#6B7280');
+                ? (isUp ? '#F87171' : isDown ? '#4ADE80' : '#94A3B8')
+                : (isUp ? '#60A5FA' : isDown ? '#FBBF24' : '#94A3B8');
 
               return (
                 <div
                   key={idx}
                   style={{
-                    backgroundColor: 'var(--bg-app)',
-                    border: isMeaningful ? '1px solid rgba(37, 99, 235, 0.3)' : '1px solid var(--border-subtle)',
+                    backgroundColor: 'var(--bg-card, #111821)',
+                    border: isMeaningful ? '1px solid rgba(59, 130, 246, 0.35)' : '1px solid var(--border-subtle, #1B2531)',
                     borderRadius: '12px',
                     padding: '14px 16px',
                     display: 'flex',
@@ -270,7 +270,7 @@ export default function WhatChangedModal() {
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       {isMeaningful && (
-                        <span style={{ fontSize: '10px', backgroundColor: 'rgba(245, 158, 11, 0.15)', color: '#D97706', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>
+                        <span style={{ fontSize: '10px', backgroundColor: 'rgba(245, 158, 11, 0.15)', color: '#FBBF24', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>
                           SIGNIFICANT
                         </span>
                       )}
@@ -315,13 +315,13 @@ export default function WhatChangedModal() {
                         }
                       }}
                       style={{
-                        padding: '3px 8px',
+                        padding: '4px 10px',
                         borderRadius: '6px',
-                        border: '1px solid var(--border-subtle)',
-                        backgroundColor: '#FFFFFF',
+                        border: '1px solid var(--border, #263241)',
+                        backgroundColor: 'var(--bg-elevated, #141B26)',
                         fontSize: '11px',
                         fontWeight: 600,
-                        color: 'var(--accent-primary)',
+                        color: 'var(--accent-primary, #60A5FA)',
                         cursor: 'pointer',
                       }}
                     >
@@ -338,8 +338,8 @@ export default function WhatChangedModal() {
         <div
           style={{
             padding: '12px 24px',
-            borderTop: '1px solid var(--border-subtle)',
-            backgroundColor: 'var(--bg-app)',
+            borderTop: '1px solid var(--border-subtle, #1B2531)',
+            backgroundColor: 'var(--bg-header, #0C1119)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -351,15 +351,15 @@ export default function WhatChangedModal() {
           <button
             onClick={() => setShowChangesModal(false)}
             style={{
-              backgroundColor: '#FFFFFF',
+              backgroundColor: 'var(--bg-elevated, #141B26)',
               color: 'var(--text-primary)',
-              border: '1px solid var(--border-subtle)',
+              border: '1px solid var(--border, #263241)',
               padding: '6px 14px',
               borderRadius: '8px',
               cursor: 'pointer',
               fontSize: '12px',
               fontWeight: 600,
-              boxShadow: 'var(--shadow-xs)',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.4)',
             }}
           >
             Close

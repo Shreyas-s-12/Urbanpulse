@@ -273,3 +273,28 @@ export const RefreshIcon: React.FC<IconProps> = ({ size = 16, color = 'currentCo
   </svg>
 );
 
+export const SearchIcon: React.FC<IconProps> = ({ size = 16, color = 'currentColor', style }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
+
+export const SendIcon: React.FC<IconProps> = ({ size = 16, color = 'currentColor', style }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
+    <line x1="22" y1="2" x2="11" y2="13" />
+    <polygon points="22 2 15 22 11 13 2 9 22 2" fill={color} />
+  </svg>
+);
+
+export const CheckCircleIcon: React.FC<IconProps> = ({ size = 16, color = 'currentColor', style }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+    <polyline points="22 4 12 14.01 9 11.01" />
+  </svg>
+);
+
+export const CloudRainIcon: React.FC<IconProps> = WeatherRainIcon;
+export const ShieldIcon: React.FC<IconProps> = ShieldCheckIcon;
+
+

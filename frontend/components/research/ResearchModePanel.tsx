@@ -141,11 +141,11 @@ export default function ResearchModePanel() {
         right: '16px',
         width: 'min(760px, calc(100vw - 32px))',
         height: 'calc(100vh - 80px)',
-        backgroundColor: '#FFFFFF',
-        color: '#0F172A',
+        backgroundColor: 'var(--bg-panel, #101620)',
+        color: 'var(--text-primary)',
         borderRadius: '16px',
-        border: '1px solid #E2E8F0',
-        boxShadow: '0 20px 45px -10px rgba(15, 23, 42, 0.16), 0 0 1px rgba(15, 23, 42, 0.2)',
+        border: '1px solid var(--border-subtle, #1B2531)',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
         display: 'flex',
         flexDirection: 'column',
         zIndex: 45,
@@ -159,11 +159,11 @@ export default function ResearchModePanel() {
       <div
         style={{
           padding: '12px 18px',
-          borderBottom: '1px solid #E2E8F0',
+          borderBottom: '1px solid var(--border-subtle, #1B2531)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          backgroundColor: '#FFFFFF',
+          backgroundColor: 'var(--bg-header, #0C1119)',
           flexShrink: 0,
         }}
       >
@@ -173,8 +173,8 @@ export default function ResearchModePanel() {
               width: '32px',
               height: '32px',
               borderRadius: '8px',
-              backgroundColor: '#EFF6FF',
-              color: '#2563EB',
+              backgroundColor: 'rgba(59, 130, 246, 0.12)',
+              color: 'var(--accent-primary, #60A5FA)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -191,7 +191,7 @@ export default function ResearchModePanel() {
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.2px' }}>
+              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.2px' }}>
                 RESEARCH MODE
               </h2>
               <span
@@ -201,16 +201,16 @@ export default function ResearchModePanel() {
                   textTransform: 'uppercase',
                   padding: '2px 7px',
                   borderRadius: '12px',
-                  backgroundColor: '#EFF6FF',
-                  color: '#2563EB',
-                  border: '1px solid #BFDBFE',
+                  backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                  color: 'var(--accent-primary, #60A5FA)',
+                  border: '1px solid rgba(59, 130, 246, 0.3)',
                   letterSpacing: '0.4px',
                 }}
               >
                 Experimental
               </span>
             </div>
-            <p style={{ margin: '1px 0 0', fontSize: '11.5px', color: '#64748B', fontWeight: 500 }}>
+            <p style={{ margin: '1px 0 0', fontSize: '11.5px', color: 'var(--text-secondary)', fontWeight: 500 }}>
               Multimodal Spatial Fusion · Uncertainty · Explainability
             </p>
           </div>
@@ -222,10 +222,10 @@ export default function ResearchModePanel() {
             onClick={() => fetchResearchData(lat, lng, cityName)}
             disabled={isLoading}
             style={{
-              backgroundColor: '#F8FAFC',
-              border: '1px solid #E2E8F0',
+              backgroundColor: 'var(--bg-elevated, #141B26)',
+              border: '1px solid var(--border, #263241)',
               borderRadius: '6px',
-              color: '#334155',
+              color: 'var(--text-primary)',
               padding: '5px 10px',
               fontSize: '11.5px',
               fontWeight: 600,
@@ -245,7 +245,7 @@ export default function ResearchModePanel() {
             style={{
               background: 'transparent',
               border: 'none',
-              color: '#94A3B8',
+              color: 'var(--text-muted)',
               cursor: 'pointer',
               lineHeight: 1,
               padding: '6px',
@@ -270,9 +270,9 @@ export default function ResearchModePanel() {
         role="tablist"
         style={{
           display: 'flex',
-          borderBottom: '1px solid #E2E8F0',
+          borderBottom: '1px solid var(--border-subtle, #1B2531)',
           overflowX: 'auto',
-          backgroundColor: '#F8FAFC',
+          backgroundColor: 'var(--bg-header, #0C1119)',
           scrollbarWidth: 'none',
           flexShrink: 0,
           padding: '0 8px',
@@ -294,9 +294,9 @@ export default function ResearchModePanel() {
                 gap: '6px',
                 padding: '9px 13px',
                 border: 'none',
-                borderBottom: isActive ? '2px solid #2563EB' : '2px solid transparent',
-                backgroundColor: isActive ? '#FFFFFF' : 'transparent',
-                color: isActive ? '#2563EB' : '#64748B',
+                borderBottom: isActive ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                backgroundColor: isActive ? 'var(--bg-panel, #101620)' : 'transparent',
+                color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
                 fontSize: '12px',
                 fontWeight: isActive ? 700 : 500,
                 cursor: 'pointer',
@@ -322,7 +322,7 @@ export default function ResearchModePanel() {
           display: 'flex',
           flexDirection: 'column',
           gap: '16px',
-          backgroundColor: '#F8FAFC',
+          backgroundColor: 'var(--bg-panel, #101620)',
         }}
       >
         {error && (
@@ -357,10 +357,10 @@ export default function ResearchModePanel() {
             {/* Top Summary Banner */}
             <div
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--bg-card, #111821)',
                 borderRadius: '12px',
                 padding: '14px 18px',
-                border: '1px solid #E2E8F0',
+                border: '1px solid var(--border-subtle, #1B2531)',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -370,21 +370,21 @@ export default function ResearchModePanel() {
               }}
             >
               <div>
-                <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                <span style={{ fontSize: '10.5px', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                   Spatial Surveillance Focus
                 </span>
-                <div style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A', marginTop: '2px' }}>
-                  {cityName} <span style={{ fontSize: '12px', fontWeight: 500, color: '#64748B' }}>({lat.toFixed(3)}°N, {lng.toFixed(3)}°E)</span>
+                <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
+                  {cityName} <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)' }}>({lat.toFixed(3)}°N, {lng.toFixed(3)}°E)</span>
                 </div>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <div>
-                  <div style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Coverage</div>
+                  <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase' }}>Coverage</div>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: '#059669' }}>{dataCoverage}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>Confidence</div>
+                  <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase' }}>Confidence</div>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: '#2563EB' }}>{confidencePct}% ({qualityTier})</div>
                 </div>
               </div>
@@ -395,9 +395,9 @@ export default function ResearchModePanel() {
               {/* Decomposable Score Card */}
               <div
                 style={{
-                  backgroundColor: '#FFFFFF',
+                  backgroundColor: 'var(--bg-card, #111821)',
                   borderRadius: '12px',
-                  border: '1px solid #E2E8F0',
+                  border: '1px solid var(--border-subtle, #1B2531)',
                   boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                   padding: '16px',
                   display: 'flex',
@@ -410,9 +410,9 @@ export default function ResearchModePanel() {
                     <span style={{ fontSize: '11px', fontWeight: 700, color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
                       Decomposable Urban Index
                     </span>
-                    <div style={{ fontSize: '32px', fontWeight: 800, color: '#0F172A', marginTop: '2px', lineHeight: 1 }}>
+                    <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px', lineHeight: 1 }}>
                       {compositeScore}{' '}
-                      <span style={{ fontSize: '13px', fontWeight: 500, color: '#64748B' }}>/ 100 Baseline</span>
+                      <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)' }}>/ 100 Baseline</span>
                     </div>
                   </div>
                   <span
@@ -433,13 +433,13 @@ export default function ResearchModePanel() {
                 {/* Mathematical Formula Display */}
                 <div
                   style={{
-                    backgroundColor: '#F8FAFC',
+                    backgroundColor: 'var(--bg-elevated, #141B26)',
                     padding: '8px 12px',
                     borderRadius: '6px',
                     fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
                     fontSize: '11px',
                     color: '#334155',
-                    border: '1px solid #E2E8F0',
+                    border: '1px solid var(--border-subtle, #1B2531)',
                     lineHeight: 1.4,
                   }}
                 >
@@ -448,7 +448,7 @@ export default function ResearchModePanel() {
 
                 {/* Contributor Factor Deductions */}
                 <div>
-                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase' }}>
                     Deterministic Factor Deductions
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
@@ -460,7 +460,7 @@ export default function ResearchModePanel() {
                           justifyContent: 'space-between',
                           fontSize: '12px',
                           padding: '6px 10px',
-                          backgroundColor: '#F8FAFC',
+                          backgroundColor: 'var(--bg-elevated, #141B26)',
                           borderRadius: '6px',
                           border: '1px solid #F1F5F9',
                         }}
@@ -480,9 +480,9 @@ export default function ResearchModePanel() {
               {/* Deterministic Confidence Radar */}
               <div
                 style={{
-                  backgroundColor: '#FFFFFF',
+                  backgroundColor: 'var(--bg-card, #111821)',
                   borderRadius: '12px',
-                  border: '1px solid #E2E8F0',
+                  border: '1px solid var(--border-subtle, #1B2531)',
                   boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                   padding: '16px',
                   display: 'flex',
@@ -494,7 +494,7 @@ export default function ResearchModePanel() {
                   <span style={{ fontSize: '11px', fontWeight: 700, color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
                     Confidence Decomposition
                   </span>
-                  <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>
+                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 600 }}>
                     Target: City Core
                   </span>
                 </div>
@@ -532,7 +532,7 @@ export default function ResearchModePanel() {
                           }}
                         />
                       </div>
-                      <div style={{ fontSize: '10px', color: '#64748B', marginTop: '2px' }}>{item.note}</div>
+                      <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '2px' }}>{item.note}</div>
                     </div>
                   ))}
                 </div>
@@ -542,14 +542,14 @@ export default function ResearchModePanel() {
             {/* Fused Domain Components (Grid of 5 domains) */}
             <div
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--bg-card, #111821)',
                 borderRadius: '12px',
-                border: '1px solid #E2E8F0',
+                border: '1px solid var(--border-subtle, #1B2531)',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                 padding: '16px',
               }}
             >
-              <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A', margin: '0 0 12px 0' }}>
+              <h3 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 12px 0' }}>
                 Active Fused Domain Components
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '10px' }}>
@@ -598,14 +598,14 @@ export default function ResearchModePanel() {
                   <div
                     key={idx}
                     style={{
-                      backgroundColor: '#F8FAFC',
-                      border: '1px solid #E2E8F0',
+                      backgroundColor: 'var(--bg-elevated, #141B26)',
+                      border: '1px solid var(--border-subtle, #1B2531)',
                       borderRadius: '8px',
                       padding: '10px 12px',
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>{comp.name}</span>
+                      <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 600 }}>{comp.name}</span>
                       <span
                         style={{
                           fontSize: '9.5px',
@@ -619,10 +619,10 @@ export default function ResearchModePanel() {
                         {comp.concern}
                       </span>
                     </div>
-                    <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#0F172A', marginTop: '4px' }}>
+                    <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>
                       {comp.val}
                     </div>
-                    <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '3px' }}>
+                    <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)', marginTop: '3px' }}>
                       Source: {comp.source}
                     </div>
                   </div>
@@ -669,10 +669,10 @@ export default function ResearchModePanel() {
                 <div
                   key={anom.id || anom.title}
                   style={{
-                    backgroundColor: '#FFFFFF',
+                    backgroundColor: 'var(--bg-card, #111821)',
                     borderRadius: '10px',
                     padding: '14px',
-                    border: '1px solid #E2E8F0',
+                    border: '1px solid var(--border-subtle, #1B2531)',
                     boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                   }}
                 >
@@ -704,7 +704,7 @@ export default function ResearchModePanel() {
                     </span>
                   </div>
 
-                  <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#0F172A', marginTop: '8px' }}>
+                  <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '8px' }}>
                     {anom.domain || 'Mobility/Air Quality'} Departure: Observed {anom.observedValue || 'Elevated'} vs Expected Baseline {anom.expectedValue || 'Nominal'}
                   </div>
 
@@ -712,7 +712,7 @@ export default function ResearchModePanel() {
                     Deviation: <strong style={{ color: '#DC2626' }}>+{anom.deviation || 36}%</strong> above expected diurnal trend
                   </div>
 
-                  <div style={{ fontSize: '11px', color: '#64748B', marginTop: '6px' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '6px' }}>
                     Contributing channels: {anom.contributingSignals?.join(' + ') || 'Particulates + Velocity Delay'}
                   </div>
 
@@ -743,24 +743,24 @@ export default function ResearchModePanel() {
                 style={{
                   textAlign: 'center',
                   padding: '36px 20px',
-                  color: '#64748B',
-                  backgroundColor: '#FFFFFF',
+                  color: 'var(--text-secondary)',
+                  backgroundColor: 'var(--bg-card, #111821)',
                   borderRadius: '12px',
-                  border: '1px solid #E2E8F0',
+                  border: '1px solid var(--border-subtle, #1B2531)',
                   boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                     </svg>
                   </div>
                 </div>
-                <div style={{ fontSize: '14px', fontWeight: 700, color: '#0F172A' }}>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
                   No Active Cross-Domain Anomalies
                 </div>
-                <p style={{ fontSize: '12px', color: '#64748B', maxWidth: '420px', margin: '4px auto 0', lineHeight: 1.45 }}>
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', maxWidth: '420px', margin: '4px auto 0', lineHeight: 1.45 }}>
                   All multi-domain telemetry signals (ambient air quality, road transit velocity, and meteorological stress)
                   are currently within nominal diurnal bounds (z &lt; 1.8) in the {cityName} analytical grid.
                 </p>
@@ -863,9 +863,9 @@ export default function ResearchModePanel() {
                 style={{
                   padding: '24px',
                   textAlign: 'center',
-                  backgroundColor: '#FFFFFF',
+                  backgroundColor: 'var(--bg-card, #111821)',
                   borderRadius: '10px',
-                  border: '1px solid #E2E8F0',
+                  border: '1px solid var(--border-subtle, #1B2531)',
                   color: '#2563EB',
                   fontSize: '13px',
                   fontWeight: 600,
@@ -881,24 +881,24 @@ export default function ResearchModePanel() {
                 style={{
                   textAlign: 'center',
                   padding: '36px 20px',
-                  backgroundColor: '#FFFFFF',
+                  backgroundColor: 'var(--bg-card, #111821)',
                   borderRadius: '12px',
                   border: '1px dashed #CBD5E1',
-                  color: '#64748B',
+                  color: 'var(--text-secondary)',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="11" cy="11" r="8" />
                       <line x1="21" y1="21" x2="16.65" y2="16.65" />
                     </svg>
                   </div>
                 </div>
-                <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#0F172A' }}>
+                <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
                   SELECT AN INVESTIGATION
                 </div>
-                <p style={{ fontSize: '12px', color: '#64748B', maxWidth: '380px', margin: '4px auto 0', lineHeight: 1.4 }}>
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', maxWidth: '380px', margin: '4px auto 0', lineHeight: 1.4 }}>
                   Choose a question above to generate an evidence-backed explanation, signal provenance breakdown, and audit trace.
                 </p>
               </div>
@@ -908,10 +908,10 @@ export default function ResearchModePanel() {
             {explainWhyResult && !isExplaining && (
               <div
                 style={{
-                  backgroundColor: '#FFFFFF',
+                  backgroundColor: 'var(--bg-card, #111821)',
                   borderRadius: '12px',
                   padding: '18px',
-                  border: '1px solid #E2E8F0',
+                  border: '1px solid var(--border-subtle, #1B2531)',
                   boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
                   display: 'flex',
                   flexDirection: 'column',
@@ -941,7 +941,7 @@ export default function ResearchModePanel() {
                 {/* Primary Finding */}
                 <div
                   style={{
-                    backgroundColor: '#F8FAFC',
+                    backgroundColor: 'var(--bg-elevated, #141B26)',
                     borderLeft: '3px solid #2563EB',
                     padding: '10px 14px',
                     borderRadius: '0 8px 8px 0',
@@ -957,24 +957,24 @@ export default function ResearchModePanel() {
                 {/* Observations Grid */}
                 {explainWhyResult.observations && (
                   <div>
-                    <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
                       Signal Observations & Baseline
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
-                      <div style={{ backgroundColor: '#F8FAFC', padding: '8px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                        <div style={{ fontSize: '10px', color: '#64748B' }}>Observed Value</div>
-                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A', marginTop: '2px' }}>
+                      <div style={{ backgroundColor: 'var(--bg-elevated, #141B26)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border-subtle, #1B2531)' }}>
+                        <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Observed Value</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
                           {String(explainWhyResult.observations.value ?? '--')}
                         </div>
                       </div>
-                      <div style={{ backgroundColor: '#F8FAFC', padding: '8px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                        <div style={{ fontSize: '10px', color: '#64748B' }}>Baseline</div>
-                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A', marginTop: '2px' }}>
+                      <div style={{ backgroundColor: 'var(--bg-elevated, #141B26)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border-subtle, #1B2531)' }}>
+                        <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Baseline</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
                           {String(explainWhyResult.observations.baseline ?? '--')}
                         </div>
                       </div>
-                      <div style={{ backgroundColor: '#F8FAFC', padding: '8px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                        <div style={{ fontSize: '10px', color: '#64748B' }}>Deviation</div>
+                      <div style={{ backgroundColor: 'var(--bg-elevated, #141B26)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border-subtle, #1B2531)' }}>
+                        <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Deviation</div>
                         <div style={{ fontSize: '13px', fontWeight: 700, color: '#2563EB', marginTop: '2px' }}>
                           {String(explainWhyResult.observations.deviation ?? '--')}
                         </div>
@@ -988,13 +988,13 @@ export default function ResearchModePanel() {
                   <div
                     style={{
                       padding: '12px 14px',
-                      backgroundColor: '#F8FAFC',
+                      backgroundColor: 'var(--bg-elevated, #141B26)',
                       borderRadius: '8px',
-                      border: '1px solid #E2E8F0',
+                      border: '1px solid var(--border-subtle, #1B2531)',
                       fontSize: '11.5px',
                     }}
                   >
-                    <div style={{ fontWeight: 700, color: '#0F172A', marginBottom: '6px', textTransform: 'uppercase', fontSize: '10.5px' }}>
+                    <div style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px', textTransform: 'uppercase', fontSize: '10.5px' }}>
                       Evidence Chain Trace
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -1020,14 +1020,14 @@ export default function ResearchModePanel() {
 
                 {/* Spatial & Temporal Relationships */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px' }}>
-                  <div style={{ backgroundColor: '#F8FAFC', padding: '8px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                    <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Spatial Relationship</div>
+                  <div style={{ backgroundColor: 'var(--bg-elevated, #141B26)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border-subtle, #1B2531)' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase' }}>Spatial Relationship</div>
                     <div style={{ fontSize: '11.5px', color: '#334155', marginTop: '3px' }}>
                       {explainWhyResult.spatialRelationship || 'Spatially aligned across 30 km analytical grid cell.'}
                     </div>
                   </div>
-                  <div style={{ backgroundColor: '#F8FAFC', padding: '8px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                    <div style={{ fontSize: '10px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Temporal Relationship</div>
+                  <div style={{ backgroundColor: 'var(--bg-elevated, #141B26)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border-subtle, #1B2531)' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase' }}>Temporal Relationship</div>
                     <div style={{ fontSize: '11.5px', color: '#334155', marginTop: '3px' }}>
                       {explainWhyResult.temporalRelationship || 'Synchronized across rolling 15m observation window.'}
                     </div>
@@ -1036,7 +1036,7 @@ export default function ResearchModePanel() {
 
                 {/* Limitations & Provenance Source */}
                 <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                  <span style={{ fontSize: '11px', color: '#64748B' }}>
+                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
                     <strong>Limitation:</strong> {explainWhyResult.limitations || 'Regional numerical model resolution constraint.'}
                   </span>
                   <span style={{ fontSize: '11px', color: '#2563EB', fontWeight: 600 }}>
@@ -1079,10 +1079,10 @@ export default function ResearchModePanel() {
             {/* Scenario Configuration Controls */}
             <div
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--bg-card, #111821)',
                 borderRadius: '12px',
                 padding: '16px',
-                border: '1px solid #E2E8F0',
+                border: '1px solid var(--border-subtle, #1B2531)',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                 display: 'flex',
                 flexDirection: 'column',
@@ -1090,7 +1090,7 @@ export default function ResearchModePanel() {
               }}
             >
               <div>
-                <label style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
+                <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase' }}>
                   Scenario Archetype
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '6px', marginTop: '6px' }}>
@@ -1164,21 +1164,21 @@ export default function ResearchModePanel() {
                 style={{
                   textAlign: 'center',
                   padding: '32px 20px',
-                  backgroundColor: '#FFFFFF',
+                  backgroundColor: 'var(--bg-card, #111821)',
                   borderRadius: '12px',
                   border: '1px dashed #CBD5E1',
-                  color: '#64748B',
+                  color: 'var(--text-secondary)',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M10 2v7.31M14 2v7.31M8.5 2h7M14 9.3a6.5 6.5 0 1 1-4 0" />
                     </svg>
                   </div>
                 </div>
-                <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#0F172A' }}>SCENARIO READY</div>
-                <p style={{ fontSize: '12px', color: '#64748B', maxWidth: '380px', margin: '4px auto 0', lineHeight: 1.4 }}>
+                <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)' }}>SCENARIO READY</div>
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', maxWidth: '380px', margin: '4px auto 0', lineHeight: 1.4 }}>
                   Configure a perturbation above and run the simulation to generate bounded impacts and decision-support outputs.
                 </p>
               </div>
@@ -1188,10 +1188,10 @@ export default function ResearchModePanel() {
             {scenarioResult && !isSimulating && (
               <div
                 style={{
-                  backgroundColor: '#FFFFFF',
+                  backgroundColor: 'var(--bg-card, #111821)',
                   borderRadius: '12px',
                   padding: '18px',
-                  border: '1px solid #E2E8F0',
+                  border: '1px solid var(--border-subtle, #1B2531)',
                   boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
                   display: 'flex',
                   flexDirection: 'column',
@@ -1200,10 +1200,10 @@ export default function ResearchModePanel() {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
                   <div>
-                    <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>
+                    <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)' }}>
                       {scenarioResult.title}
                     </h4>
-                    <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '2px' }}>
+                    <div style={{ fontSize: '11.5px', color: 'var(--text-secondary)', marginTop: '2px' }}>
                       Model Confidence: <strong>{Math.round((scenarioResult.confidence || 0.78) * 100)}%</strong> · Provenance: {scenarioResult.modelProvenance || 'Hydrological & Kinematic Model v1.2'}
                     </div>
                   </div>
@@ -1224,34 +1224,34 @@ export default function ResearchModePanel() {
 
                 {/* Baseline vs Projected Comparison Grid */}
                 <div>
-                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
                     Simulated Kinematic & Environmental Effects
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
                     {scenarioResult.predictedEffects?.projectedAqi != null && (
-                      <div style={{ backgroundColor: '#F8FAFC', padding: '8px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                        <div style={{ fontSize: '10px', color: '#64748B' }}>Projected AQI</div>
+                      <div style={{ backgroundColor: 'var(--bg-elevated, #141B26)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border-subtle, #1B2531)' }}>
+                        <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Projected AQI</div>
                         <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#DC2626', marginTop: '2px' }}>
                           AQI {scenarioResult.predictedEffects.projectedAqi}
                         </div>
-                        <div style={{ fontSize: '10px', color: '#64748B', marginTop: '1px' }}>
+                        <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '1px' }}>
                           {scenarioResult.predictedEffects.projectedCategory || 'Elevated Stress'}
                         </div>
                       </div>
                     )}
                     {scenarioResult.predictedEffects?.projectedPrecipitationMm != null && parseFloat(String(scenarioResult.predictedEffects.projectedPrecipitationMm)) > 0 && (
-                      <div style={{ backgroundColor: '#F8FAFC', padding: '8px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                        <div style={{ fontSize: '10px', color: '#64748B' }}>Projected Rainfall</div>
+                      <div style={{ backgroundColor: 'var(--bg-elevated, #141B26)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border-subtle, #1B2531)' }}>
+                        <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Projected Rainfall</div>
                         <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#2563EB', marginTop: '2px' }}>
                           +{scenarioResult.predictedEffects.projectedPrecipitationMm} mm/h
                         </div>
-                        <div style={{ fontSize: '10px', color: '#64748B', marginTop: '1px' }}>Precipitation surge</div>
+                        <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '1px' }}>Precipitation surge</div>
                       </div>
                     )}
                     {scenarioResult.predictedEffects?.projectedAverageSpeedKmh != null && (
-                      <div style={{ backgroundColor: '#F8FAFC', padding: '8px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                        <div style={{ fontSize: '10px', color: '#64748B' }}>Average Speed</div>
-                        <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#0F172A', marginTop: '2px' }}>
+                      <div style={{ backgroundColor: 'var(--bg-elevated, #141B26)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border-subtle, #1B2531)' }}>
+                        <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Average Speed</div>
+                        <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
                           {scenarioResult.predictedEffects.projectedAverageSpeedKmh} km/h
                         </div>
                         <div style={{ fontSize: '10px', color: '#DC2626', marginTop: '1px' }}>
@@ -1260,20 +1260,20 @@ export default function ResearchModePanel() {
                       </div>
                     )}
                     {scenarioResult.predictedEffects?.projectedDelayMinutes != null && (
-                      <div style={{ backgroundColor: '#F8FAFC', padding: '8px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                        <div style={{ fontSize: '10px', color: '#64748B' }}>Projected Delay</div>
+                      <div style={{ backgroundColor: 'var(--bg-elevated, #141B26)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border-subtle, #1B2531)' }}>
+                        <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Projected Delay</div>
                         <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#DC2626', marginTop: '2px' }}>
                           +{scenarioResult.predictedEffects.projectedDelayMinutes} min
                         </div>
-                        <div style={{ fontSize: '10px', color: '#64748B', marginTop: '1px' }}>Bottleneck surge</div>
+                        <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '1px' }}>Bottleneck surge</div>
                       </div>
                     )}
-                    <div style={{ backgroundColor: '#F8FAFC', padding: '8px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                      <div style={{ fontSize: '10px', color: '#64748B' }}>Exposed Population</div>
-                      <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#0F172A', marginTop: '2px' }}>
+                    <div style={{ backgroundColor: 'var(--bg-elevated, #141B26)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border-subtle, #1B2531)' }}>
+                      <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Exposed Population</div>
+                      <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
                         {(scenarioResult.predictedEffects?.estimatedExposedPopulation ?? 12600).toLocaleString()}
                       </div>
-                      <div style={{ fontSize: '10px', color: '#64748B', marginTop: '1px' }}>In catchment ring</div>
+                      <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '1px' }}>In catchment ring</div>
                     </div>
                   </div>
                 </div>
@@ -1282,10 +1282,10 @@ export default function ResearchModePanel() {
                 {scenarioResult.uncertaintyRange && (
                   <div
                     style={{
-                      backgroundColor: '#F8FAFC',
+                      backgroundColor: 'var(--bg-elevated, #141B26)',
                       padding: '10px 12px',
                       borderRadius: '8px',
-                      border: '1px solid #E2E8F0',
+                      border: '1px solid var(--border-subtle, #1B2531)',
                       fontSize: '11.5px',
                     }}
                   >
@@ -1294,9 +1294,9 @@ export default function ResearchModePanel() {
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '6px' }}>
                       {Object.entries(scenarioResult.uncertaintyRange).map(([param, range]: any) => (
-                        <div key={param} style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: '#FFFFFF', padding: '5px 8px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
+                        <div key={param} style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: 'var(--bg-card, #111821)', padding: '5px 8px', borderRadius: '4px', border: '1px solid var(--border-subtle, #1B2531)' }}>
                           <span style={{ color: '#475569', textTransform: 'capitalize' }}>{param.replace(/([A-Z])/g, ' $1')}:</span>
-                          <span style={{ fontFamily: 'ui-monospace, monospace', fontWeight: 700, color: '#0F172A' }}>
+                          <span style={{ fontFamily: 'ui-monospace, monospace', fontWeight: 700, color: 'var(--text-primary)' }}>
                             [{Array.isArray(range) ? `${range[0]}, ${range[1]}` : String(range)}]
                           </span>
                         </div>
@@ -1307,7 +1307,7 @@ export default function ResearchModePanel() {
 
                 {/* Prioritized Decision Support Actions */}
                 <div>
-                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
                     Prioritized Decision Support Interventions
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -1315,10 +1315,10 @@ export default function ResearchModePanel() {
                       <div
                         key={i}
                         style={{
-                          backgroundColor: '#F8FAFC',
+                          backgroundColor: 'var(--bg-elevated, #141B26)',
                           padding: '8px 12px',
                           borderRadius: '6px',
-                          border: '1px solid #E2E8F0',
+                          border: '1px solid var(--border-subtle, #1B2531)',
                           fontSize: '11.5px',
                         }}
                       >
@@ -1336,7 +1336,7 @@ export default function ResearchModePanel() {
 
                 {/* Assumptions */}
                 {scenarioResult.assumptions && (
-                  <div style={{ fontSize: '11px', color: '#64748B', borderTop: '1px solid #F1F5F9', paddingTop: '8px' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', borderTop: '1px solid #F1F5F9', paddingTop: '8px' }}>
                     <strong>Assumptions:</strong> {Array.isArray(scenarioResult.assumptions) ? scenarioResult.assumptions.join(' · ') : String(scenarioResult.assumptions)}
                   </div>
                 )}
@@ -1352,7 +1352,7 @@ export default function ResearchModePanel() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {/* Geography Selector */}
             <div>
-              <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
                 Benchmark Validation Geographies (7 Global Archetypes)
               </div>
               <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px', scrollbarWidth: 'none' }}>
@@ -1377,7 +1377,7 @@ export default function ResearchModePanel() {
                       transition: 'all 0.15s ease',
                     }}
                   >
-                    {c.name} <span style={{ fontSize: '9.5px', color: '#64748B' }}>({c.type})</span>
+                    {c.name} <span style={{ fontSize: '9.5px', color: 'var(--text-secondary)' }}>({c.type})</span>
                   </button>
                 ))}
               </div>
@@ -1386,20 +1386,20 @@ export default function ResearchModePanel() {
             {/* Empirical Model Comparison Table */}
             <div
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--bg-card, #111821)',
                 borderRadius: '12px',
                 padding: '16px',
-                border: '1px solid #E2E8F0',
+                border: '1px solid var(--border-subtle, #1B2531)',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                 overflowX: 'auto',
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 700, color: '#0F172A' }}>
+                  <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
                     Empirical Ablation Benchmark: {selectedCity}
                   </h4>
-                  <p style={{ margin: '1px 0 0', fontSize: '11px', color: '#64748B' }}>
+                  <p style={{ margin: '1px 0 0', fontSize: '11px', color: 'var(--text-secondary)' }}>
                     Comparing single-domain baseline vs unweighted multimodal vs confidence-weighted UrbanPulse
                   </p>
                 </div>
@@ -1424,7 +1424,7 @@ export default function ResearchModePanel() {
 
               <table style={{ width: '100%', fontSize: '11.5px', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid #E2E8F0', color: '#64748B' }}>
+                  <tr style={{ borderBottom: '1px solid var(--border-subtle, #1B2531)', color: 'var(--text-secondary)' }}>
                     <th style={{ padding: '6px 8px', fontWeight: 600 }}>Model</th>
                     <th style={{ padding: '6px 8px', fontWeight: 600 }}>Features / Modalities</th>
                     <th style={{ textAlign: 'center', padding: '6px 8px', fontWeight: 600 }}>Precision</th>
@@ -1481,12 +1481,12 @@ export default function ResearchModePanel() {
                       }}
                     >
                       <td style={{ padding: '8px 8px' }}>{row.name}</td>
-                      <td style={{ padding: '8px 8px', color: '#64748B', fontSize: '11px' }}>{row.features}</td>
+                      <td style={{ padding: '8px 8px', color: 'var(--text-secondary)', fontSize: '11px' }}>{row.features}</td>
                       <td style={{ textAlign: 'center', padding: '8px 8px' }}>{row.prec}</td>
                       <td style={{ textAlign: 'center', padding: '8px 8px' }}>{row.rec}</td>
                       <td style={{ textAlign: 'center', padding: '8px 8px' }}>{row.f1}</td>
                       <td style={{ textAlign: 'center', padding: '8px 8px' }}>{row.mae}</td>
-                      <td style={{ textAlign: 'center', padding: '8px 8px', color: '#64748B' }}>{row.lat}</td>
+                      <td style={{ textAlign: 'center', padding: '8px 8px', color: 'var(--text-secondary)' }}>{row.lat}</td>
                       <td style={{ textAlign: 'center', padding: '8px 8px' }}>
                         <span
                           style={{
@@ -1508,14 +1508,14 @@ export default function ResearchModePanel() {
 
               {/* Differential KPI Badges */}
               <div style={{ display: 'flex', gap: '10px', marginTop: '12px', flexWrap: 'wrap' }}>
-                <div style={{ backgroundColor: '#F8FAFC', padding: '6px 12px', borderRadius: '6px', border: '1px solid #E2E8F0', fontSize: '11.5px' }}>
-                  <span style={{ color: '#64748B' }}>Precision Gain:</span> <strong style={{ color: '#059669' }}>+28.8%</strong> vs Model A
+                <div style={{ backgroundColor: 'var(--bg-elevated, #141B26)', padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--border-subtle, #1B2531)', fontSize: '11.5px' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Precision Gain:</span> <strong style={{ color: '#059669' }}>+28.8%</strong> vs Model A
                 </div>
-                <div style={{ backgroundColor: '#F8FAFC', padding: '6px 12px', borderRadius: '6px', border: '1px solid #E2E8F0', fontSize: '11.5px' }}>
-                  <span style={{ color: '#64748B' }}>False Positive Rate:</span> <strong style={{ color: '#059669' }}>-19.5%</strong> reduction
+                <div style={{ backgroundColor: 'var(--bg-elevated, #141B26)', padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--border-subtle, #1B2531)', fontSize: '11.5px' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>False Positive Rate:</span> <strong style={{ color: '#059669' }}>-19.5%</strong> reduction
                 </div>
-                <div style={{ backgroundColor: '#F8FAFC', padding: '6px 12px', borderRadius: '6px', border: '1px solid #E2E8F0', fontSize: '11.5px' }}>
-                  <span style={{ color: '#64748B' }}>Mean Absolute Error:</span> <strong style={{ color: '#059669' }}>-28.0%</strong> error reduction
+                <div style={{ backgroundColor: 'var(--bg-elevated, #141B26)', padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--border-subtle, #1B2531)', fontSize: '11.5px' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Mean Absolute Error:</span> <strong style={{ color: '#059669' }}>-28.0%</strong> error reduction
                 </div>
               </div>
             </div>
@@ -1523,17 +1523,17 @@ export default function ResearchModePanel() {
             {/* Core Research Questions (RQ1–RQ5) */}
             <div
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--bg-card, #111821)',
                 borderRadius: '12px',
                 padding: '16px',
-                border: '1px solid #E2E8F0',
+                border: '1px solid var(--border-subtle, #1B2531)',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '8px',
               }}
             >
-              <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
+              <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>
                 Core Research Questions (RQ1–RQ5) Empirical Evidence
               </h4>
               {[
@@ -1566,11 +1566,11 @@ export default function ResearchModePanel() {
                 <div
                   key={rq.id}
                   style={{
-                    backgroundColor: '#F8FAFC',
+                    backgroundColor: 'var(--bg-elevated, #141B26)',
                     padding: '8px 12px',
                     borderRadius: '6px',
                     fontSize: '11.5px',
-                    border: '1px solid #E2E8F0',
+                    border: '1px solid var(--border-subtle, #1B2531)',
                   }}
                 >
                   <div style={{ fontWeight: 700, color: '#1D4ED8' }}>
@@ -1589,9 +1589,9 @@ export default function ResearchModePanel() {
         <div
           style={{
             marginTop: 'auto',
-            border: '1px solid #E2E8F0',
+            border: '1px solid var(--border-subtle, #1B2531)',
             borderRadius: '8px',
-            backgroundColor: '#FFFFFF',
+            backgroundColor: 'var(--bg-card, #111821)',
             overflow: 'hidden',
           }}
         >
@@ -1601,14 +1601,14 @@ export default function ResearchModePanel() {
             style={{
               width: '100%',
               padding: '8px 12px',
-              backgroundColor: '#F8FAFC',
+              backgroundColor: 'var(--bg-elevated, #141B26)',
               border: 'none',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               fontSize: '11px',
               fontWeight: 600,
-              color: '#64748B',
+              color: 'var(--text-secondary)',
               cursor: 'pointer',
               textAlign: 'left',
             }}
@@ -1631,12 +1631,12 @@ export default function ResearchModePanel() {
               style={{
                 padding: '10px 14px',
                 fontSize: '11px',
-                color: '#475569',
+                color: 'var(--text-secondary)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '4px',
-                backgroundColor: '#FFFFFF',
-                borderTop: '1px solid #E2E8F0',
+                backgroundColor: 'var(--bg-card, #111821)',
+                borderTop: '1px solid var(--border-subtle, #1B2531)',
               }}
             >
               <div><strong>Architecture Version:</strong> v2.0-research-multimodal</div>

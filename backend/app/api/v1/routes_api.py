@@ -27,6 +27,8 @@ from app.core.security import get_current_user
 from app.db.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.services.persisted_monitoring import PersistedMonitoringService
+from app.schemas.news_schema import PulseWireResponse
+from app.services.news_service import NewsService
 router = APIRouter(prefix="/api/v1", tags=["UrbanPulse Intelligence"])
 class RouteAnalyzeRequest(BaseModel):
     origin: Optional[Dict[str, Any]] = None  # {"lat": ..., "lng": ...}
@@ -195,6 +197,32 @@ async def event_stream(
             }
             yield f"data: {json.dumps(pulse)}\n\n"
     return StreamingResponse(sse_generator(), media_type="text/event-stream")
+# ==============================================================================
+# 3b. PulseWire / News Endpoints (Live Multi-Scope World Intelligence Wire)
+# ==============================================================================
+@router.get("/pulsewire", response_model=PulseWireResponse)
+@router.get("/news", response_model=PulseWireResponse)
+async def get_pulsewire_news(
+    scope: str = Query("CITY"),
+    query: Optional[str] = Query(None),
+    city: Optional[str] = Query(None),
+    state: Optional[str] = Query(None),
+    country: Optional[str] = Query(None),
+    country_code: Optional[str] = Query(None),
+    category: Optional[str] = Query(None),
+    limit: int = Query(25, ge=1, le=100),
+):
+    """Retrieve real-time validated news articles for target scope and location."""
+    return await NewsService.get_pulsewire(
+        scope=scope,
+        query=query,
+        city=city,
+        state=state,
+        country=country,
+        country_code=country_code,
+        category=category,
+        limit=limit,
+    )
 # ==============================================================================
 # 4. Traffic Endpoint (Google Routes API v2 Real-Time Conditions)
 # ==============================================================================

@@ -95,15 +95,15 @@ export default function RiskRadarModal() {
   const getLevelBadge = (level: string) => {
     switch (level) {
       case 'SEVERE':
-        return { bg: '#FEE2E2', border: '#EF4444', text: '#991B1B' };
+        return { bg: 'rgba(239, 68, 68, 0.15)', border: 'rgba(239, 68, 68, 0.40)', text: '#F87171' };
       case 'HIGH':
-        return { bg: '#FFEDD5', border: '#F97316', text: '#9A3412' };
+        return { bg: 'rgba(249, 115, 22, 0.15)', border: 'rgba(249, 115, 22, 0.40)', text: '#FB923C' };
       case 'MODERATE':
-        return { bg: '#FEF3C7', border: '#F59E0B', text: '#92400E' };
+        return { bg: 'rgba(245, 158, 11, 0.15)', border: 'rgba(245, 158, 11, 0.40)', text: '#FBBF24' };
       case 'LOW':
-        return { bg: '#DCFCE7', border: '#22C55E', text: '#166534' };
+        return { bg: 'rgba(34, 197, 94, 0.15)', border: 'rgba(34, 197, 94, 0.40)', text: '#4ADE80' };
       default:
-        return { bg: '#F1F5F9', border: '#94A3B8', text: '#475569' };
+        return { bg: 'rgba(148, 163, 184, 0.15)', border: 'rgba(148, 163, 184, 0.35)', text: '#94A3B8' };
     }
   };
 
@@ -117,7 +117,7 @@ export default function RiskRadarModal() {
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(17, 24, 39, 0.45)',
+        backgroundColor: 'rgba(0, 0, 0, 0.65)',
         backdropFilter: 'blur(6px)',
         zIndex: 2000,
         display: 'flex',
@@ -129,15 +129,15 @@ export default function RiskRadarModal() {
     >
       <div
         style={{
-          backgroundColor: '#FFFFFF',
-          border: '1px solid var(--border-subtle)',
+          backgroundColor: 'var(--bg-panel, #101620)',
+          border: '1px solid var(--border-subtle, #1B2531)',
           borderRadius: '16px',
           width: '100%',
           maxWidth: '780px',
           maxHeight: '88vh',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: 'var(--shadow-panel)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
           color: 'var(--text-primary)',
           overflow: 'hidden',
         }}
@@ -147,11 +147,11 @@ export default function RiskRadarModal() {
         <div
           style={{
             padding: '16px 20px',
-            borderBottom: '1px solid var(--border-subtle)',
+            borderBottom: '1px solid var(--border-subtle, #1B2531)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: 'var(--bg-subtle)',
+            backgroundColor: 'var(--bg-header, #0C1119)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -173,8 +173,8 @@ export default function RiskRadarModal() {
               width: '28px',
               height: '28px',
               borderRadius: '6px',
-              border: '1px solid var(--border-subtle)',
-              backgroundColor: '#FFFFFF',
+              border: '1px solid var(--border, #263241)',
+              backgroundColor: 'var(--bg-elevated, #141B26)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -187,7 +187,7 @@ export default function RiskRadarModal() {
         </div>
 
         {/* Modal Body */}
-        <div style={{ padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: 'var(--bg-panel, #101620)' }}>
           {/* Top Summary Banner */}
           <div
             style={{
@@ -230,8 +230,8 @@ export default function RiskRadarModal() {
               style={{
                 padding: '6px 12px',
                 borderRadius: '6px',
-                border: '1px solid var(--border-subtle)',
-                backgroundColor: '#FFFFFF',
+                border: '1px solid var(--border, #263241)',
+                backgroundColor: 'var(--bg-elevated, #141B26)',
                 fontSize: '11.5px',
                 fontWeight: 600,
                 color: 'var(--text-primary)',
@@ -260,8 +260,8 @@ export default function RiskRadarModal() {
                     fontWeight: 700,
                     whiteSpace: 'nowrap',
                     cursor: 'pointer',
-                    border: selectedHorizon === h.id ? '1px solid var(--accent-primary)' : '1px solid var(--border-subtle)',
-                    backgroundColor: selectedHorizon === h.id ? 'var(--accent-primary)' : 'var(--bg-surface)',
+                    border: selectedHorizon === h.id ? '1px solid var(--accent-primary)' : '1px solid var(--border-subtle, #1B2531)',
+                    backgroundColor: selectedHorizon === h.id ? 'var(--accent-primary)' : 'var(--bg-elevated, #141B26)',
                     color: selectedHorizon === h.id ? '#FFFFFF' : 'var(--text-secondary)',
                     boxShadow: selectedHorizon === h.id ? 'var(--shadow-xs)' : 'none',
                     transition: 'all 0.15s ease',
@@ -277,12 +277,12 @@ export default function RiskRadarModal() {
           {selectedHorizon !== 'NOW' && (
             <div
               style={{
-                backgroundColor: 'rgba(59, 130, 246, 0.08)',
-                border: '1px solid rgba(59, 130, 246, 0.25)',
+                backgroundColor: 'rgba(59, 130, 246, 0.10)',
+                border: '1px solid rgba(59, 130, 246, 0.30)',
                 borderRadius: '8px',
                 padding: '8px 12px',
                 fontSize: '11px',
-                color: '#1E40AF',
+                color: 'var(--accent-primary, #60A5FA)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
@@ -311,8 +311,8 @@ export default function RiskRadarModal() {
                   fontWeight: 600,
                   whiteSpace: 'nowrap',
                   cursor: 'pointer',
-                  border: selectedDomain === k ? '1px solid var(--accent-primary)' : '1px solid var(--border-subtle)',
-                  backgroundColor: selectedDomain === k ? 'var(--accent-primary-light)' : 'var(--bg-surface)',
+                  border: selectedDomain === k ? '1px solid var(--accent-primary)' : '1px solid var(--border-subtle, #1B2531)',
+                  backgroundColor: selectedDomain === k ? 'rgba(59, 130, 246, 0.15)' : 'var(--bg-elevated, #141B26)',
                   color: selectedDomain === k ? 'var(--accent-primary)' : 'var(--text-secondary)',
                 }}
               >
@@ -331,8 +331,8 @@ export default function RiskRadarModal() {
                   style={{
                     padding: '14px',
                     borderRadius: '10px',
-                    backgroundColor: 'var(--bg-surface)',
-                    border: '1px solid var(--border-subtle)',
+                    backgroundColor: 'var(--bg-card, #111821)',
+                    border: '1px solid var(--border-subtle, #1B2531)',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '8px',
@@ -379,7 +379,7 @@ export default function RiskRadarModal() {
                             justifyContent: 'space-between',
                             color: 'var(--text-muted)',
                             padding: '2px 0',
-                            borderTop: idx > 0 ? '1px dashed var(--border-subtle)' : 'none',
+                            borderTop: idx > 0 ? '1px dashed var(--border-subtle, #1B2531)' : 'none',
                           }}
                         >
                           <span>{sig.name}</span>
@@ -405,8 +405,8 @@ export default function RiskRadarModal() {
               style={{
                 padding: '14px',
                 borderRadius: '10px',
-                backgroundColor: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
+                backgroundColor: 'var(--bg-card, #111821)',
+                border: '1px solid var(--border-subtle, #1B2531)',
               }}
             >
               <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>

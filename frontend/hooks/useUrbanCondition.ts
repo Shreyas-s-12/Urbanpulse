@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { UrbanConditionBreakdown } from '@shared/types';
 import { urbanConditionService } from '@/services/urbanConditionService';
 
@@ -10,6 +10,7 @@ export function useUrbanCondition(
   const [condition, setCondition] = useState<UrbanConditionBreakdown | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const requestSeqRef = useRef<number>(0);
 
   useEffect(() => {
     // Reset immediately to avoid stale condition score when switching locations
@@ -21,26 +22,26 @@ export function useUrbanCondition(
       return;
     }
 
-    let isMounted = true;
+    const currentSeq = ++requestSeqRef.current;
     setLoading(true);
 
     urbanConditionService
       .getUrbanCondition(latitude, longitude, radiusKm)
       .then((data) => {
-        if (isMounted) {
+        if (currentSeq === requestSeqRef.current) {
           setCondition(data);
           setLoading(false);
         }
       })
       .catch((err) => {
-        if (isMounted) {
+        if (currentSeq === requestSeqRef.current) {
           setError(err?.message || 'Failed to fetch urban condition index');
           setLoading(false);
         }
       });
 
     return () => {
-      isMounted = false;
+      // Incremented sequence protects against delayed asynchronous responses
     };
   }, [latitude, longitude, radiusKm]);
 

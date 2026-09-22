@@ -10,6 +10,8 @@ import MarkdownRenderer from '@/components/common/MarkdownRenderer';
 import UrbanPulseLogo from '@/components/common/UrbanPulseLogo';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { PinIcon } from '@/components/common/Icons';
+import VoiceControl from '@/features/multimodal/voice/VoiceControl';
+import { useLanguage } from '@/context/LanguageContext';
 
 const NexusHoloOrb = dynamic(() => import('@/components/3d/NexusHoloOrb'), {
   ssr: false,
@@ -27,6 +29,7 @@ const NexusHoloOrb = dynamic(() => import('@/components/3d/NexusHoloOrb'), {
 });
 
 export default function CopilotView() {
+  const { t } = useLanguage();
   const { currentLocation, selectedRadiusKm } = useLocationStore();
 
   const centerLat = currentLocation ? currentLocation.latitude : null;
@@ -114,21 +117,17 @@ export default function CopilotView() {
           boxSizing: 'border-box',
         }}
       >
-        {/* Responsive 9:16 Portrait Chat Shell */}
+        {/* Responsive Centered Chat Shell */}
         <div
           className="chat-shell"
           style={{
-            width: 'clamp(360px, calc((100vh - 58px) * 9 / 16), 540px)',
+            width: 'clamp(360px, 90vw, 640px)',
             height: '100%',
-            maxHeight: 'calc(100vh - 58px)',
-            backgroundColor: 'var(--bg-surface)',
-            backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.90)), url("/images/Chat Background.png")',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
+            maxHeight: 'calc(100vh - 80px)',
+            backgroundColor: 'var(--bg-panel, #FFFFFF)',
             borderRadius: 'var(--radius-lg, 12px)',
-            border: '1px solid var(--border-subtle)',
-            boxShadow: 'var(--shadow-panel)',
+            border: '1px solid var(--border, #E2E7EF)',
+            boxShadow: 'var(--card-shadow, 0 10px 25px -5px rgba(0, 0, 0, 0.08))',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
@@ -138,24 +137,23 @@ export default function CopilotView() {
           {/* Header */}
           <div
             style={{
-              height: '56px',
-              padding: '0 var(--space-4)',
-              borderBottom: '1px solid var(--border-subtle)',
+              height: '60px',
+              padding: '0 var(--space-4, 16px)',
+              borderBottom: '1px solid var(--border, #E2E7EF)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              backdropFilter: 'blur(8px)',
+              backgroundColor: 'var(--bg-header, #FFFFFF)',
               flexShrink: 0,
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <NexusHoloOrb size={32} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <NexusHoloOrb size={34} />
               <div>
-                <h1 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1.2 }}>
+                <h1 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary, #172033)', margin: 0, lineHeight: 1.2 }}>
                   UrbanPulse Nexus
                 </h1>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1 }}>
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary, #566174)', margin: 0, lineHeight: 1 }}>
                   Spatial Intelligence & Decision Layer
                 </p>
               </div>
@@ -163,23 +161,24 @@ export default function CopilotView() {
 
             <span
               style={{
-                fontSize: '11px',
-                padding: '3px 8px',
-                borderRadius: 'var(--radius-full)',
-                backgroundColor: 'var(--accent-primary-light)',
-                color: 'var(--accent-primary)',
+                fontSize: '11.5px',
+                padding: '4px 10px',
+                borderRadius: 'var(--radius-full, 9999px)',
+                backgroundColor: 'var(--accent-primary-light, #EFF6FF)',
+                color: 'var(--accent-primary, #2563EB)',
+                border: '1px solid var(--accent-primary-soft, #BFDBFE)',
                 fontWeight: 700,
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '4px',
-                maxWidth: '150px',
+                gap: '5px',
+                maxWidth: '180px',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
               }}
               title={cityName}
             >
-              <PinIcon size={11} color="var(--accent-primary)" />
+              <PinIcon size={12} color="var(--accent-primary, #2563EB)" />
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{cityName}</span>
             </span>
           </div>
@@ -189,11 +188,13 @@ export default function CopilotView() {
             style={{
               flex: 1,
               minHeight: 0,
-              padding: 'var(--space-4)',
+              padding: '16px',
               overflowY: 'auto',
+              backgroundColor: 'var(--conversation-bg, #F8FAFC)',
               display: 'flex',
               flexDirection: 'column',
-              gap: 'var(--space-3)',
+              gap: '14px',
+              boxSizing: 'border-box',
             }}
           >
             {messages.map((msg) => {
@@ -207,19 +208,22 @@ export default function CopilotView() {
                     flexDirection: 'column',
                     alignItems: isUser ? 'flex-end' : 'flex-start',
                     gap: '4px',
+                    width: '100%',
                   }}
                 >
                   <div
                     style={{
-                      maxWidth: isUser ? '85%' : '90%',
-                      backgroundColor: isUser ? 'var(--accent-primary)' : 'rgba(255, 255, 255, 0.92)',
-                      color: isUser ? '#FFFFFF' : 'var(--text-primary)',
+                      maxWidth: isUser ? '88%' : '100%',
+                      width: isUser ? 'fit-content' : '100%',
+                      backgroundColor: isUser ? '#2563EB' : 'var(--assistant-card-bg, #FFFFFF)',
+                      color: isUser ? '#FFFFFF' : 'var(--text-primary, #172033)',
                       padding: isUser ? '10px 14px' : '12px 14px',
-                      borderRadius: isUser ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
+                      borderRadius: isUser ? '14px 14px 4px 14px' : '12px',
                       fontSize: '13px',
-                      lineHeight: 1.5,
-                      border: isUser ? 'none' : '1px solid var(--border-subtle)',
-                      boxShadow: 'var(--shadow-xs)',
+                      lineHeight: 1.45,
+                      border: isUser ? 'none' : '1px solid var(--assistant-card-border, #E2E7EF)',
+                      boxShadow: isUser ? 'none' : 'var(--card-shadow, 0 2px 8px rgba(15, 23, 42, 0.05))',
+                      boxSizing: 'border-box',
                     }}
                   >
                     <MarkdownRenderer content={msg.content} isUser={isUser} />
@@ -230,13 +234,13 @@ export default function CopilotView() {
                         style={{
                           marginTop: '10px',
                           paddingTop: '8px',
-                          borderTop: isUser ? '1px solid rgba(255,255,255,0.2)' : '1px solid var(--border-subtle)',
+                          borderTop: isUser ? '1px solid rgba(255,255,255,0.2)' : '1px solid var(--border-subtle, #EDF0F4)',
                           display: 'flex',
                           flexDirection: 'column',
                           gap: '4px',
                         }}
                       >
-                        <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: isUser ? 'rgba(255,255,255,0.8)' : 'var(--text-muted)' }}>
+                        <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: isUser ? 'rgba(255,255,255,0.8)' : 'var(--text-muted, #7B8798)' }}>
                           PROVENANCE:
                         </span>
                         {msg.citedLiveSignals.map((cite, idx) => (
@@ -244,13 +248,13 @@ export default function CopilotView() {
                             key={idx}
                             style={{
                               fontSize: '11px',
-                              color: isUser ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)',
+                              color: isUser ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary, #566174)',
                               display: 'flex',
                               gap: '6px',
                               alignItems: 'center',
                             }}
                           >
-                            <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: isUser ? '#FFFFFF' : 'var(--accent-primary)' }} />
+                            <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: isUser ? '#FFFFFF' : 'var(--accent-primary, #2563EB)' }} />
                             <span><strong>[{cite.type}]</strong> {cite.detail} ({cite.source})</span>
                           </div>
                         ))}
@@ -260,29 +264,32 @@ export default function CopilotView() {
 
                   {/* Suggested Action Chips */}
                   {msg.suggestedActions && msg.suggestedActions.length > 0 && (
-                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '4px' }}>
                       {msg.suggestedActions.map((action, idx) => (
                         <button
                           key={idx}
                           onClick={() => handleSend(action)}
                           style={{
-                            fontSize: '11px',
-                            padding: '4px 10px',
-                            borderRadius: 'var(--radius-full)',
-                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                            border: '1px solid var(--border-subtle)',
-                            color: 'var(--accent-primary)',
-                            fontWeight: 600,
+                            fontSize: '11.5px',
+                            height: '32px',
+                            padding: '0 12px',
+                            borderRadius: '16px',
+                            backgroundColor: 'var(--assistant-card-bg, #FFFFFF)',
+                            border: '1px solid var(--assistant-card-border, #E2E7EF)',
+                            color: 'var(--text-secondary, #566174)',
+                            fontWeight: 500,
                             cursor: 'pointer',
                             transition: 'all 0.15s ease',
                           }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = 'var(--accent-primary)';
-                            e.currentTarget.style.backgroundColor = 'var(--accent-primary-light)';
+                            e.currentTarget.style.borderColor = 'var(--accent-primary, #2563EB)';
+                            e.currentTarget.style.backgroundColor = 'var(--accent-primary-light, #EFF6FF)';
+                            e.currentTarget.style.color = 'var(--accent-primary, #2563EB)';
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = 'var(--border-subtle)';
-                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                            e.currentTarget.style.borderColor = 'var(--assistant-card-border, #E2E7EF)';
+                            e.currentTarget.style.backgroundColor = 'var(--assistant-card-bg, #FFFFFF)';
+                            e.currentTarget.style.color = 'var(--text-secondary, #566174)';
                           }}
                         >
                           {action}
@@ -299,18 +306,18 @@ export default function CopilotView() {
           {/* Fixed Bottom Input Composer */}
           <div
             style={{
-              padding: 'var(--space-3) var(--space-4)',
-              borderTop: '1px solid var(--border-subtle)',
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              backdropFilter: 'blur(8px)',
+              padding: '12px 16px',
+              borderTop: '1px solid var(--border, #E2E7EF)',
+              backgroundColor: 'var(--bg-panel, #FFFFFF)',
               display: 'flex',
-              gap: 'var(--space-2)',
+              alignItems: 'center',
+              gap: '10px',
               flexShrink: 0,
             }}
           >
             <input
               type="text"
-              placeholder="Ask Nexus about route hazards, 24h events, weather, or earthquakes..."
+              placeholder={t('nexus.placeholder', 'Ask about traffic, weather, air quality, or a city...')}
               value={inputQuery}
               onChange={(e) => setInputQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -318,27 +325,43 @@ export default function CopilotView() {
               }}
               style={{
                 flex: 1,
-                height: '40px',
-                padding: '0 14px',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border-subtle)',
-                backgroundColor: 'var(--bg-app)',
-                fontSize: '13px',
-                color: 'var(--text-primary)',
+                height: '46px',
+                padding: '0 16px',
+                borderRadius: 'var(--radius-md, 8px)',
+                border: '1px solid var(--border-strong, #CBD5E1)',
+                backgroundColor: 'var(--bg-input, #F9FAFC)',
+                fontSize: '13.5px',
+                color: 'var(--text-primary, #172033)',
                 outline: 'none',
-                transition: 'border-color 0.15s ease',
+                transition: 'all 0.15s ease',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
               }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = 'var(--accent-primary, #2563EB)';
+                e.currentTarget.style.backgroundColor = 'var(--bg-card, #FFFFFF)';
+                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(37, 99, 235, 0.12)';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border-strong, #CBD5E1)';
+                e.currentTarget.style.backgroundColor = 'var(--bg-input, #F9FAFC)';
+                e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.02)';
+              }}
+            />
+            <VoiceControl
+              onTranscript={(text) => setInputQuery(text)}
+              onSendQuery={(text) => handleSend(text)}
+              disabled={isSending}
             />
             <button
               onClick={() => handleSend(inputQuery)}
               disabled={isSending || !inputQuery.trim()}
               style={{
-                height: '40px',
-                padding: '0 18px',
-                borderRadius: 'var(--radius-md)',
-                backgroundColor: isSending ? 'var(--text-muted)' : 'var(--accent-primary)',
+                height: '46px',
+                padding: '0 20px',
+                borderRadius: 'var(--radius-md, 8px)',
+                backgroundColor: isSending || !inputQuery.trim() ? 'var(--text-disabled, #A7B0BE)' : 'var(--accent-primary, #2563EB)',
                 color: '#FFFFFF',
-                fontSize: '13px',
+                fontSize: '13.5px',
                 fontWeight: 600,
                 cursor: isSending || !inputQuery.trim() ? 'not-allowed' : 'pointer',
                 border: 'none',
@@ -346,7 +369,7 @@ export default function CopilotView() {
                 flexShrink: 0,
               }}
             >
-              {isSending ? 'Thinking...' : 'Send'}
+              {isSending ? t('nexus.thinking', 'Thinking...') : t('nexus.send', 'Send')}
             </button>
           </div>
         </div>

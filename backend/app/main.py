@@ -17,7 +17,7 @@ scheduler = AsyncIOScheduler()
 @app.on_event("startup")
 async def start_scheduler():
     from app.db.database import engine, Base
-    from app.models import Monitor, Alert, UrbanMemory  # noqa: F401
+    from app.models import Monitor, Alert, UrbanMemory, User  # noqa: F401
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     # Run evaluation every 5 minutes
@@ -37,8 +37,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Register API v1 Router
+# Register API v1 Router and Auth Router
 app.include_router(v1_router)
+
+from app.api.auth import router as auth_router
+app.include_router(auth_router)
 
 @app.get("/health", tags=["System"])
 async def health_check():

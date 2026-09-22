@@ -91,8 +91,12 @@ export class LocationSearchService {
     }
 
     try {
+      const mapStatus = googleMapsLoader.getStatus();
+      const hasKey = googleMapsLoader.hasApiKey();
+
+      // Only attempt Google Places if API key is present and map is not in a terminal failure state
       let placesLib = (window as any).google?.maps?.places;
-      if (!placesLib) {
+      if (!placesLib && hasKey && mapStatus !== 'ERROR' && mapStatus !== 'TIMEOUT' && mapStatus !== 'UNAVAILABLE') {
         placesLib = await googleMapsLoader.importLibrary('places');
       }
 
@@ -114,9 +118,14 @@ export class LocationSearchService {
         }
 
         return new Promise((resolve) => {
+          const timeout = setTimeout(() => {
+            resolve(this.fallbackSearch(q));
+          }, 2500);
+
           this.autocompleteService.getPlacePredictions(
             req,
             (predictions: any[], status: any) => {
+              clearTimeout(timeout);
               if (status !== placesLib.PlacesServiceStatus.OK || !predictions) {
                 // If country restriction caused zero results, retry without restriction
                 if (req.componentRestrictions) {
@@ -213,8 +222,11 @@ export class LocationSearchService {
     }
 
     try {
+      const mapStatus = googleMapsLoader.getStatus();
+      const hasKey = googleMapsLoader.hasApiKey();
+
       let placesLib = (window as any).google?.maps?.places;
-      if (!placesLib) {
+      if (!placesLib && hasKey && mapStatus !== 'ERROR' && mapStatus !== 'TIMEOUT' && mapStatus !== 'UNAVAILABLE') {
         placesLib = await googleMapsLoader.importLibrary('places');
       }
 
@@ -225,6 +237,10 @@ export class LocationSearchService {
         }
 
         return new Promise((resolve) => {
+          const timeout = setTimeout(() => {
+            resolve(this.fallbackGeocode(placeId, fallbackCoords));
+          }, 3000);
+
           this.placesService.getDetails(
             {
               placeId,
@@ -238,6 +254,7 @@ export class LocationSearchService {
               ],
             },
             (place: any, status: any) => {
+              clearTimeout(timeout);
               if (status === placesLib.PlacesServiceStatus.OK && place?.geometry?.location) {
                 const lat = place.geometry.location.lat();
                 const lng = place.geometry.location.lng();
