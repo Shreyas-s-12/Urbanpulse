@@ -103,10 +103,6 @@
     "voiceLang": "వాయిస్ గుర్తింపు భాష",
     "speechOutput": "వాయిస్ అవుట్‌పుట్",
     "speechOutputDesc": "సారాంశాలను బిగ్గరగా చదవండి.",
-    "handControl": "చేతి సంకేతాల నియంత్రణ",
-    "handControlDesc": "కెమెరా సైగలతో నియంత్రించండి.",
-    "cameraStatus": "కెమెరా స్థితి",
-    "gestureSensitivity": "సైగ సున్నితత్వం",
     "low": "తక్కువ",
     "medium": "మధ్యస్థం",
     "high": "ఎక్కువ",
@@ -130,11 +126,7 @@
     "voiceControl": "వాయిస్ కంట్రోల్"
   },
   "multimodal": {
-    "handControl": "చేతి నియంత్రణ",
-    "handControlOn": "చేతి నియంత్రణ ఆన్",
-    "handControlOff": "చేతి నియంత్రణ ఆఫ్",
     "cameraUnavailable": "కెమెరా అందుబాటులో లేదు.",
-    "gestureDetected": "సైగ గుర్తించబడింది",
     "pinch": "పించ్ (ఎంచుకోండి)",
     "swipeLeft": "ఎడమకు స్వైప్",
     "swipeRight": "కుడికి స్వైప్",

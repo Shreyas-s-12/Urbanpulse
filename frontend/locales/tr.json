@@ -103,10 +103,6 @@
     "voiceLang": "Ses Tanıma Dili",
     "speechOutput": "Sesli Yanıt",
     "speechOutputDesc": "Nexus özetlerini sesli okur.",
-    "handControl": "El ve Hareket Kontrolü",
-    "handControlDesc": "Kamera hareketleriyle kontrol sağlayın.",
-    "cameraStatus": "Kamera Durumu",
-    "gestureSensitivity": "Hareket Hassasiyeti",
     "low": "Düşük",
     "medium": "Orta",
     "high": "Yüksek",
@@ -130,11 +126,7 @@
     "voiceControl": "Sesli Kontrol"
   },
   "multimodal": {
-    "handControl": "El Kontrolü",
-    "handControlOn": "EL KONTROLÜ AÇIK",
-    "handControlOff": "EL KONTROLÜ KAPALI",
     "cameraUnavailable": "Kamera erişimi sağlanamadı.",
-    "gestureDetected": "Hareket algılandı",
     "pinch": "Kıstırma (Seç)",
     "swipeLeft": "Sola Kaydır",
     "swipeRight": "Sağa Kaydır",

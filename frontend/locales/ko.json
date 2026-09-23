@@ -103,10 +103,6 @@
     "voiceLang": "음성 인식 언어",
     "speechOutput": "음성 출력",
     "speechOutputDesc": "Nexus 요약을 음성으로 읽어줍니다.",
-    "handControl": "손동작 제스처 컨트롤",
-    "handControlDesc": "카메라 제스처로 화면을 제어합니다.",
-    "cameraStatus": "카메라 상태",
-    "gestureSensitivity": "제스처 감도",
     "low": "낮음",
     "medium": "보통",
     "high": "높음",
@@ -130,11 +126,7 @@
     "voiceControl": "음성 제어"
   },
   "multimodal": {
-    "handControl": "핸드 컨트롤",
-    "handControlOn": "핸드 컨트롤 켜짐",
-    "handControlOff": "핸드 컨트롤 꺼짐",
     "cameraUnavailable": "카메라에 접근할 수 없습니다.",
-    "gestureDetected": "제스처 감지됨",
     "pinch": "핀치 (선택)",
     "swipeLeft": "왼쪽 스와이프",
     "swipeRight": "오른쪽 스와이프",

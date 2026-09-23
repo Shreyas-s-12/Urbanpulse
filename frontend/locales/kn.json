@@ -103,10 +103,6 @@
     "voiceLang": "ಧ್ವನಿ ಗುರುತಿಸುವಿಕೆ ಭಾಷೆ",
     "speechOutput": "ಧ್ವನಿ ಔಟ್‌ಪುಟ್",
     "speechOutputDesc": "ನೆಕ್ಸಸ್ ಸಾರಾಂಶವನ್ನು ಗಟ್ಟಿಯಾಗಿ ಓದಿ.",
-    "handControl": "ಕೈ ಮತ್ತು ಗೆಸ್ಚರ್ ನಿಯಂತ್ರಣ",
-    "handControlDesc": "ಕ್ಯಾಮೆರಾ ಸನ್ನೆಗಳಿಂದ ನಿಯಂತ್ರಿಸಿ.",
-    "cameraStatus": "ಕ್ಯಾಮೆರಾ ಸ್ಥಿತಿ",
-    "gestureSensitivity": "ಗೆಸ್ಚರ್ ಸಂವೇದನೆ",
     "low": "ಕಡಿಮೆ",
     "medium": "ಮಧ್ಯಮ",
     "high": "ಹೆಚ್ಚು",
@@ -130,11 +126,7 @@
     "voiceControl": "ಧ್ವನಿ ನಿಯಂತ್ರಣ"
   },
   "multimodal": {
-    "handControl": "ಕೈ ನಿಯಂತ್ರಣ",
-    "handControlOn": "ಕೈ ನಿಯಂತ್ರಣ ಆನ್ ಆಗಿದೆ",
-    "handControlOff": "ಕೈ ನಿಯಂತ್ರಣ ಆಫ್ ಆಗಿದೆ",
     "cameraUnavailable": "ಕ್ಯಾಮೆರಾ ಪ್ರವೇಶ ಲಭ್ಯವಿಲ್ಲ.",
-    "gestureDetected": "ಗೆಸ್ಚರ್ ಪತ್ತೆಯಾಗಿದೆ",
     "pinch": "ಪಿಂಚ್ (ಆಯ್ಕೆಮಾಡಿ)",
     "swipeLeft": "ಎಡಕ್ಕೆ ಸ್ವೈಪ್",
     "swipeRight": "ಬಲಕ್ಕೆ ಸ್ವೈಪ್",

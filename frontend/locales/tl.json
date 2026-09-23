@@ -103,10 +103,6 @@
     "voiceLang": "Wika ng Pagkilala sa Boses",
     "speechOutput": "Output ng Pagsasalita",
     "speechOutputDesc": "Basahin nang malakas ang buod ng Nexus.",
-    "handControl": "Kontrol ng Kamay at Kumpas",
-    "handControlDesc": "Kontrolin ang mapa gamit ang mga kumpas ng kamay.",
-    "cameraStatus": "Katayuan ng Camera",
-    "gestureSensitivity": "Sensitibo ng Kumpas",
     "low": "Mababa",
     "medium": "Katamtaman",
     "high": "Mataas",
@@ -130,11 +126,7 @@
     "voiceControl": "Kontrol sa Boses"
   },
   "multimodal": {
-    "handControl": "Kontrol sa Kamay",
-    "handControlOn": "BUKAS ANG KONTROL SA KAMAY",
-    "handControlOff": "SARADO ANG KONTROL SA KAMAY",
     "cameraUnavailable": "Hindi ma-access ang camera.",
-    "gestureDetected": "May nakitang kumpas",
     "pinch": "Pinch (Piliin)",
     "swipeLeft": "Swipe Pakaliwa",
     "swipeRight": "Swipe Pakanan",

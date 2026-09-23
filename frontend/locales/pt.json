@@ -103,10 +103,6 @@
     "voiceLang": "Idioma de Reconhecimento de Voz",
     "speechOutput": "Saída de Voz",
     "speechOutputDesc": "Leitura em voz alta dos resumos do Nexus.",
-    "handControl": "Controle por Gestos Manuais",
-    "handControlDesc": "Controle via gestos captados pela câmera.",
-    "cameraStatus": "Status da Câmera",
-    "gestureSensitivity": "Sensibilidade dos Gestos",
     "low": "Baixa",
     "medium": "Média",
     "high": "Alta",
@@ -130,11 +126,7 @@
     "voiceControl": "Controle de Voz"
   },
   "multimodal": {
-    "handControl": "Controle Manual",
-    "handControlOn": "CONTROLE MANUAL LIGADO",
-    "handControlOff": "CONTROLE MANUAL DESLIGADO",
     "cameraUnavailable": "Câmera indisponível.",
-    "gestureDetected": "Gesto detectado",
     "pinch": "Pinça (Selecionar)",
     "swipeLeft": "Deslizar para Esquerda",
     "swipeRight": "Deslizar para Direita",

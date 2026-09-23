@@ -237,7 +237,7 @@ export default function ResearchModePanel() {
             }}
             title="Refresh Research Intelligence Telemetry"
           >
-            {isLoading ? 'Syncing…' : '↻ Refresh'}
+            {isLoading ? 'Syncing...' : 'Refresh'}
           </button>
           <button
             type="button"
@@ -1624,7 +1624,7 @@ export default function ResearchModePanel() {
               </svg>
               Research Lineage & Reproducibility Metadata
             </span>
-            <span>{isMetadataExpanded ? '▲ Hide' : '▼ View'}</span>
+            <span>{isMetadataExpanded ? 'Hide' : 'View'}</span>
           </button>
 
           {isMetadataExpanded && (

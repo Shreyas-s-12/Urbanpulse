@@ -103,10 +103,6 @@
     "voiceLang": "语音识别语言",
     "speechOutput": "语音播报",
     "speechOutputDesc": "朗读 Nexus 智能分析总结。",
-    "handControl": "手势隔空控制",
-    "handControlDesc": "通过摄像头手势识别隔空控制地图与导航。",
-    "cameraStatus": "摄像头状态",
-    "gestureSensitivity": "手势灵敏度",
     "low": "低",
     "medium": "中",
     "high": "高",
@@ -130,11 +126,7 @@
     "voiceControl": "语音控制"
   },
   "multimodal": {
-    "handControl": "手势控制",
-    "handControlOn": "手势控制已开启",
-    "handControlOff": "手势控制已关闭",
     "cameraUnavailable": "摄像头不可用。",
-    "gestureDetected": "识别到手势",
     "pinch": "捏合（选择/点击）",
     "swipeLeft": "向左挥手（上一页）",
     "swipeRight": "向右挥手（下一页）",

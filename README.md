@@ -10,17 +10,51 @@
 > Global, location-agnostic geospatial intelligence, multimodal environmental vitals, deep site suitability assessment, and autonomous civic agents.
 
 ---
+## Demo Video
 
-<!-- DEMO SCREENSHOT PLACEHOLDER -->
-<p align="center">
-  <img src="docs/assets/dashboard-demo.png" alt="UrbanPulse AI Site & Urban Decision Intelligence Platform" width="100%" />
-</p>
-
----
+[Watch the UrbanPulse Demo Video](https://drive.google.com/file/d/13l3yl2tzEpRuPIabG1XyHCgYPzZYw29_/view?usp=sharing)
 
 ## 1. Overview
 
 UrbanPulse is a global, location-agnostic AI decision intelligence platform designed to monitor, analyze, simulate, and optimize urban environments and site selections anywhere in the world. Rather than hardcoding fixed metropolitan boundaries, UrbanPulse dynamically binds to any selected city, town, coordinate pair, property, or administrative region (with initial benchmark telemetry in **Mysuru** and **Bengaluru**).
+
+## Demo Video
+
+**End-to-end UrbanPulse demonstration:**
+
+[Watch the UrbanPulse Demo Video](https://drive.google.com/file/d/13l3yl2tzEpRuPIabG1XyHCgYPzZYw29_/view?usp=sharing)
+
+> This demo demonstrates UrbanPulse as an agentic location-intelligence system, including location analysis, Nexus AI, live geospatial intelligence, GeoRAG, CrisisRAG, AquaRAG, explainable intelligence, and What-If scenario analysis.
+
+### Agentic Workflow Demonstrated
+
+```text
+INPUT
+Location + Natural-Language Question
+        ↓
+UNDERSTAND
+Nexus interprets intent and location context
+        ↓
+PLAN
+Select relevant intelligence sources and tools
+        ↓
+USE TOOLS
+Maps + Live Data + GeoRAG + CrisisRAG + AquaRAG
+        ↓
+ANALYZE
+Risk Analysis + Forecasting + What-If Scenarios
+        ↓
+VERIFY
+Evidence + Freshness + Coverage + Confidence
+        ↓
+RECOVER / ESCALATE
+Surface missing data, uncertainty, or provider failures
+        ↓
+DECISION
+Explainable Location Intelligence
+```
+
+---
 
 ### Core Capabilities
 

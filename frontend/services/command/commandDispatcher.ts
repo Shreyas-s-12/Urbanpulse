@@ -1,6 +1,6 @@
 /**
  * UrbanPulse Shared Command & Action Layer
- * Normalizes input from Text, Voice, and Hand Gestures into canonical application actions.
+ * Normalizes input from Text and Voice into canonical application actions.
  */
 
 export type UrbanPulseActionType =

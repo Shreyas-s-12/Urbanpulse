@@ -10,7 +10,6 @@ import { locationService } from '@/services/locationService';
 import LocationSearchDrawer from '@/components/location/LocationSearchDrawer';
 import { useResearchStore } from '@/stores/useResearchStore';
 import { ROUTES } from '@/lib/routes';
-import GestureControl from '@/features/multimodal/GestureControl';
 import LanguageSelector from '@/components/common/LanguageSelector';
 import UserProfileMenu from '@/components/common/UserProfileMenu';
 import { useLanguage } from '@/context/LanguageContext';
@@ -484,9 +483,6 @@ export default function TopBar() {
             />
           )}
         </button>
-
-        {/* [ Hand Control ] Multimodal Gesture Toggle */}
-        <GestureControl />
 
         {/* [ Language Selector ] Internationalization (EN / HI / KN) */}
         <LanguageSelector />

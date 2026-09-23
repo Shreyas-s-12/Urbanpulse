@@ -103,10 +103,6 @@
     "voiceLang": "Idioma de Reconocimiento de Voz",
     "speechOutput": "Salida de Voz",
     "speechOutputDesc": "Lectura en voz alta de resúmenes de inteligencia.",
-    "handControl": "Control por Gestos Manuales",
-    "handControlDesc": "Controla navegación con gestos de cámara.",
-    "cameraStatus": "Estado de la Cámara",
-    "gestureSensitivity": "Sensibilidad de Gestos",
     "low": "Baja",
     "medium": "Media",
     "high": "Alta",
@@ -130,11 +126,7 @@
     "voiceControl": "Control por Voz"
   },
   "multimodal": {
-    "handControl": "Control Manual",
-    "handControlOn": "CONTROL MANUAL ACTIVADO",
-    "handControlOff": "CONTROL MANUAL DESACTIVADO",
     "cameraUnavailable": "Cámara no disponible.",
-    "gestureDetected": "Gesto detectado",
     "pinch": "Pellizco (Seleccionar)",
     "swipeLeft": "Deslizar Izquierda",
     "swipeRight": "Deslizar Derecha",

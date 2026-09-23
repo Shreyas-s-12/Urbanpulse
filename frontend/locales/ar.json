@@ -103,10 +103,6 @@
     "voiceLang": "لغة التعرف على الصوت",
     "speechOutput": "إخراج الصوت",
     "speechOutputDesc": "قراءة ملخصات الذكاء بصوت مسموع.",
-    "handControl": "التحكم بإيماءات اليد",
-    "handControlDesc": "تحكم في الخريطة والتنقل بحركات اليد عبر الكاميرا.",
-    "cameraStatus": "حالة الكاميرا",
-    "gestureSensitivity": "حساسية الإيماءات",
     "low": "منخفضة",
     "medium": "متوسطة",
     "high": "عالية",
@@ -130,11 +126,7 @@
     "voiceControl": "التحكم الصوتي"
   },
   "multimodal": {
-    "handControl": "التحكم باليد",
-    "handControlOn": "تم تشغيل التحكم باليد",
-    "handControlOff": "تم إيقاف التحكم باليد",
     "cameraUnavailable": "الكاميرا غير متوفرة.",
-    "gestureDetected": "تم رصد إيماءة",
     "pinch": "قرص (تحديد)",
     "swipeLeft": "تمرير لليسار",
     "swipeRight": "تمرير لليمين",

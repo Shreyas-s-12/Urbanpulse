@@ -103,10 +103,6 @@
     "voiceLang": "आवाज ओळख भाषा",
     "speechOutput": "व्हॉइस आउटपुट",
     "speechOutputDesc": "नेक्सस सारांश मोठ्याने वाचा.",
-    "handControl": "हात आणि हावभाव नियंत्रण",
-    "handControlDesc": "कॅमेरा हावभावांसह नियंत्रण करा.",
-    "cameraStatus": "कॅमेरा स्थिती",
-    "gestureSensitivity": "हावभाव संवेदनशीलता",
     "low": "कमी",
     "medium": "मध्यम",
     "high": "उच्च",
@@ -130,11 +126,7 @@
     "voiceControl": "आवाज नियंत्रण"
   },
   "multimodal": {
-    "handControl": "हात नियंत्रण",
-    "handControlOn": "हात नियंत्रण चालू",
-    "handControlOff": "हात नियंत्रण बंद",
     "cameraUnavailable": "कॅमेरा अनुपलब्ध आहे.",
-    "gestureDetected": "हावभाव आढळला",
     "pinch": "पिंच (निवडा)",
     "swipeLeft": "डावीकडे स्वाइप",
     "swipeRight": "उजवीकडे स्वाइप",

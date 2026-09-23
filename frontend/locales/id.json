@@ -103,10 +103,6 @@
     "voiceLang": "Bahasa Pengenalan Suara",
     "speechOutput": "Keluaran Suara",
     "speechOutputDesc": "Bacakan ringkasan Nexus dengan suara.",
-    "handControl": "Kontrol Gerakan Tangan",
-    "handControlDesc": "Kontrol navigasi dengan gestur kamera.",
-    "cameraStatus": "Status Kamera",
-    "gestureSensitivity": "Sensitivitas Gestur",
     "low": "Rendah",
     "medium": "Sedang",
     "high": "Tinggi",
@@ -130,11 +126,7 @@
     "voiceControl": "Kontrol Suara"
   },
   "multimodal": {
-    "handControl": "Kontrol Tangan",
-    "handControlOn": "KONTROL TANGAN AKTIF",
-    "handControlOff": "KONTROL TANGAN NONAKTIF",
     "cameraUnavailable": "Kamera tidak tersedia.",
-    "gestureDetected": "Gestur terdeteksi",
     "pinch": "Jepit (Pilih)",
     "swipeLeft": "Geser ke Kiri",
     "swipeRight": "Geser ke Kanan",

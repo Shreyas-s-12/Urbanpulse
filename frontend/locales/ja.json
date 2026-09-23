@@ -103,10 +103,6 @@
     "voiceLang": "音声認識言語",
     "speechOutput": "音声読み上げ",
     "speechOutputDesc": "Nexusの回答要約を音声で読み上げます。",
-    "handControl": "ハンドジェスチャー操作",
-    "handControlDesc": "カメラジェスチャーで画面を操作します。",
-    "cameraStatus": "カメラ状態",
-    "gestureSensitivity": "ジェスチャー感度",
     "low": "低",
     "medium": "中",
     "high": "高",
@@ -130,11 +126,7 @@
     "voiceControl": "音声コントロール"
   },
   "multimodal": {
-    "handControl": "ハンド操作",
-    "handControlOn": "ハンド操作 有効",
-    "handControlOff": "ハンド操作 無効",
     "cameraUnavailable": "カメラにアクセスできません。",
-    "gestureDetected": "ジェスチャー検出",
     "pinch": "ピンチ（選択）",
     "swipeLeft": "左スワイプ",
     "swipeRight": "右スワイプ",

@@ -103,10 +103,6 @@
     "voiceLang": "വോയ്‌സ് തിരിച്ചറിയൽ ഭാഷ",
     "speechOutput": "വോയ്‌സ് ഔട്ട്‌പുട്ട്",
     "speechOutputDesc": "സംഗ്രഹങ്ങൾ ഉറക്കെ വായിക്കുക.",
-    "handControl": "കൈ ആംഗ്യ നിയന്ത്രണം",
-    "handControlDesc": "ക്യാമറ ആംഗ്യങ്ങളിലൂടെ നിയന്ത്രിക്കുക.",
-    "cameraStatus": "ക്യാമറ നില",
-    "gestureSensitivity": "ആംഗ്യ സംവേദനക്ഷമത",
     "low": "കുറഞ്ഞത്",
     "medium": "ഇടത്തരം",
     "high": "ഉയർന്നത്",
@@ -130,11 +126,7 @@
     "voiceControl": "വോയ്‌സ് കൺട്രോൾ"
   },
   "multimodal": {
-    "handControl": "കൈ നിയന്ത്രണം",
-    "handControlOn": "കൈ നിയന്ത്രണം ഓൺ",
-    "handControlOff": "കൈ നിയന്ത്രണം ഓഫ്",
     "cameraUnavailable": "ക്യാമറ ലഭ്യമല്ല.",
-    "gestureDetected": "ആംഗ്യം കണ്ടെത്തി",
     "pinch": "പിഞ്ച് (തിരഞ്ഞെടുക്കുക)",
     "swipeLeft": "ഇടത്തേക്ക് സ്വൈപ്പ്",
     "swipeRight": "വലത്തേക്ക് സ്വൈപ്പ്",

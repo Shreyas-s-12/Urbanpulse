@@ -103,10 +103,6 @@
     "voiceLang": "Spracherkennungssprache",
     "speechOutput": "Sprachausgabe",
     "speechOutputDesc": "Liest Nexus-Zusammenfassungen laut vor.",
-    "handControl": "Handgestensteuerung",
-    "handControlDesc": "Steuerung über Kameragesten.",
-    "cameraStatus": "Kamerastatus",
-    "gestureSensitivity": "Gestenempfindlichkeit",
     "low": "Niedrig",
     "medium": "Mittel",
     "high": "Hoch",
@@ -130,11 +126,7 @@
     "voiceControl": "Sprachsteuerung"
   },
   "multimodal": {
-    "handControl": "Handsteuerung",
-    "handControlOn": "HANDSTEUERUNG AN",
-    "handControlOff": "HANDSTEUERUNG AUS",
     "cameraUnavailable": "Kamera nicht verfügbar.",
-    "gestureDetected": "Geste erkannt",
     "pinch": "Zusammenziehen (Auswählen)",
     "swipeLeft": "Wischen nach links",
     "swipeRight": "Wischen nach rechts",

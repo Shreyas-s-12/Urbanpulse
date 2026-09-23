@@ -103,10 +103,6 @@
     "voiceLang": "குரல் அறிதல் மொழி",
     "speechOutput": "குரல் வெளியீடு",
     "speechOutputDesc": "Nexus சுருக்கங்களை சத்தமாக வாசிக்கவும்.",
-    "handControl": "கை சைகை கட்டுப்பாடு",
-    "handControlDesc": "கேமரா சைகைகள் மூலம் கட்டுப்படுத்தவும்.",
-    "cameraStatus": "கேமரா நிலை",
-    "gestureSensitivity": "சைகை உணர்திறன்",
     "low": "குறைவு",
     "medium": "நடுத்தரம்",
     "high": "அதிகம்",
@@ -130,11 +126,7 @@
     "voiceControl": "குரல் கட்டுப்பாடு"
   },
   "multimodal": {
-    "handControl": "கை கட்டுப்பாடு",
-    "handControlOn": "கை கட்டுப்பாடு இயக்கப்பட்டது",
-    "handControlOff": "கை கட்டுப்பாடு அணைக்கப்பட்டது",
     "cameraUnavailable": "கேமரா கிடைக்கவில்லை.",
-    "gestureDetected": "சைகை கண்டறியப்பட்டது",
     "pinch": "கிள்ளுதல் (தேர்ந்தெடு)",
     "swipeLeft": "இடதுபுறம் ஸ்வைப்",
     "swipeRight": "வலதுபுறம் ஸ்வைப்",

@@ -103,10 +103,6 @@
     "voiceLang": "Voice Recognition Language",
     "speechOutput": "Speech Output",
     "speechOutputDesc": "Read aloud Nexus intelligence summaries.",
-    "handControl": "Hand & Gesture Control",
-    "handControlDesc": "Control navigation and map with optical camera hand gestures.",
-    "cameraStatus": "Camera Status",
-    "gestureSensitivity": "Gesture Sensitivity",
     "low": "Low",
     "medium": "Medium",
     "high": "High",
@@ -130,11 +126,7 @@
     "voiceControl": "Voice Input"
   },
   "multimodal": {
-    "handControl": "Hand Control",
-    "handControlOn": "HAND CONTROL ON",
-    "handControlOff": "HAND CONTROL OFF",
     "cameraUnavailable": "Camera access is unavailable. Hand control has been disabled.",
-    "gestureDetected": "Gesture detected",
     "pinch": "Pinch (Select)",
     "swipeLeft": "Swipe Left",
     "swipeRight": "Swipe Right",

@@ -103,10 +103,6 @@
     "voiceLang": "आवाज पहचान भाषा",
     "speechOutput": "ध्वनि आउटपुट",
     "speechOutputDesc": "नेक्सस सारांश जोर से पढ़ें।",
-    "handControl": "हाथ और जेस्चर नियंत्रण",
-    "handControlDesc": "कैमरा जेस्चर से नेविगेशन नियंत्रित करें।",
-    "cameraStatus": "कैमरा स्थिति",
-    "gestureSensitivity": "जेस्चर संवेदनशीलता",
     "low": "कम",
     "medium": "मध्यम",
     "high": "उच्च",
@@ -130,11 +126,7 @@
     "voiceControl": "ध्वनि नियंत्रण"
   },
   "multimodal": {
-    "handControl": "हाथ नियंत्रण",
-    "handControlOn": "हाथ नियंत्रण चालू",
-    "handControlOff": "हाथ नियंत्रण बंद",
     "cameraUnavailable": "कैमरा अनुपलब्ध है।",
-    "gestureDetected": "जेस्चर पहचाना गया",
     "pinch": "पिंच (चुनें)",
     "swipeLeft": "बाएं स्वाइप",
     "swipeRight": "दाएं स्वाइप",

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { useSettingsStore, AppTheme, FontSize, GestureSensitivity, DefaultMapMode } from '@/stores/useSettingsStore';
+import { useSettingsStore, AppTheme, FontSize, DefaultMapMode } from '@/stores/useSettingsStore';
 import { LANGUAGES } from '@/components/common/LanguageSelector';
 import { useMapContext } from '@/context/MapContext';
 
@@ -30,48 +30,17 @@ export default function SettingsPage() {
     setVoiceLanguage,
     speechOutput,
     setSpeechOutput,
-    handControlEnabled,
-    setHandControlEnabled,
-    gestureSensitivity,
-    setGestureSensitivity,
-    cameraPermissionStatus,
-    setCameraPermissionStatus,
     defaultMapMode,
     setDefaultMapMode,
     defaultRadiusKm,
     setDefaultRadiusKm,
   } = useSettingsStore();
 
-  const [testCameraLoading, setTestCameraLoading] = useState(false);
   const [saveBanner, setSaveBanner] = useState<string | null>(null);
 
   const showSaved = (msg: string) => {
     setSaveBanner(msg);
     setTimeout(() => setSaveBanner(null), 2500);
-  };
-
-  // Test camera permission safely without keeping stream open
-  const handleTestCamera = async () => {
-    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
-      setCameraPermissionStatus('unsupported');
-      return;
-    }
-    try {
-      setTestCameraLoading(true);
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
-      setCameraPermissionStatus('granted');
-      // Immediately release tracks
-      stream.getTracks().forEach((track) => track.stop());
-      showSaved('Camera access granted and verified.');
-    } catch (err: any) {
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        setCameraPermissionStatus('denied');
-      } else {
-        setCameraPermissionStatus('unsupported');
-      }
-    } finally {
-      setTestCameraLoading(false);
-    }
   };
 
   return (
@@ -300,9 +269,43 @@ export default function SettingsPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
             {[
-              { id: 'light' as AppTheme, label: t('settings.lightMode', 'Light'), icon: '☀️' },
-              { id: 'dark' as AppTheme, label: t('settings.darkMode', 'Dark'), icon: '🌙' },
-              { id: 'system' as AppTheme, label: t('settings.systemMode', 'System'), icon: '💻' },
+              {
+                id: 'light' as AppTheme,
+                label: t('settings.lightMode', 'Light'),
+                icon: (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="4" />
+                    <path d="M12 2v2" />
+                    <path d="M12 20v2" />
+                    <path d="m4.93 4.93 1.41 1.41" />
+                    <path d="m17.66 17.66 1.41 1.41" />
+                    <path d="M2 12h2" />
+                    <path d="M20 12h2" />
+                    <path d="m6.34 17.66-1.41 1.41" />
+                    <path d="m19.07 4.93-1.41 1.41" />
+                  </svg>
+                ),
+              },
+              {
+                id: 'dark' as AppTheme,
+                label: t('settings.darkMode', 'Dark'),
+                icon: (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                  </svg>
+                ),
+              },
+              {
+                id: 'system' as AppTheme,
+                label: t('settings.systemMode', 'System'),
+                icon: (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="20" height="14" x="2" y="3" rx="2" />
+                    <line x1="8" x2="16" y1="21" y2="21" />
+                    <line x1="12" x2="12" y1="17" y2="21" />
+                  </svg>
+                ),
+              },
             ].map((opt) => {
               const isSelected = theme === opt.id;
               return (
@@ -327,7 +330,7 @@ export default function SettingsPage() {
                     transition: 'all 0.15s ease',
                   }}
                 >
-                  <span style={{ fontSize: '24px' }}>{opt.icon}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{opt.icon}</span>
                   <span style={{ fontSize: '14px', fontWeight: 700 }}>{opt.label}</span>
                 </button>
               );
@@ -729,163 +732,7 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* SECTION 6: HAND CONTROL */}
-        <section
-          style={{
-            backgroundColor: 'var(--bg-surface)',
-            borderRadius: '14px',
-            border: '1px solid var(--border-subtle)',
-            padding: '24px',
-            boxShadow: 'var(--shadow-xs)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-            <div
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '8px',
-                backgroundColor: 'var(--accent-primary-light)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--accent-primary)',
-              }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
-                <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2" />
-                <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
-                <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
-              </svg>
-            </div>
-            <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>
-              {t('settings.handControl', 'Hand & Gesture Control')}
-            </h2>
-          </div>
-          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '0 0 16px 0' }}>
-            {t('settings.handControlDesc', 'Control navigation and map with optical camera hand gestures.')}
-          </p>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: 600 }}>Enable Hand Control</div>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                  Default is OFF. Camera is only activated when explicitly toggled.
-                </div>
-              </div>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={handControlEnabled}
-                onClick={() => {
-                  setHandControlEnabled(!handControlEnabled);
-                  showSaved(`Hand control ${!handControlEnabled ? 'enabled' : 'disabled'}`);
-                }}
-                style={{
-                  width: '46px',
-                  height: '26px',
-                  borderRadius: '13px',
-                  backgroundColor: handControlEnabled ? 'var(--accent-primary)' : 'var(--border-strong)',
-                  position: 'relative',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s ease',
-                  border: 'none',
-                }}
-              >
-                <div
-                  style={{
-                    width: '20px',
-                    height: '20px',
-                    borderRadius: '50%',
-                    backgroundColor: '#FFFFFF',
-                    position: 'absolute',
-                    top: '3px',
-                    left: handControlEnabled ? '23px' : '3px',
-                    transition: 'left 0.2s ease',
-                  }}
-                />
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: 600 }}>{t('settings.cameraStatus', 'Camera Status')}</div>
-                <div style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>
-                  {cameraPermissionStatus === 'granted'
-                    ? 'Verified / Ready'
-                    : cameraPermissionStatus === 'denied'
-                    ? 'Blocked by browser'
-                    : 'Prompt on request'}
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={handleTestCamera}
-                disabled={testCameraLoading}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '6px',
-                  backgroundColor: 'var(--bg-surface-secondary)',
-                  border: '1px solid var(--border-light)',
-                  color: 'var(--text-primary)',
-                  fontSize: '12.5px',
-                  fontWeight: 600,
-                  cursor: testCameraLoading ? 'wait' : 'pointer',
-                }}
-              >
-                {testCameraLoading ? 'Testing...' : 'Test Camera Access'}
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: 600 }}>{t('settings.gestureSensitivity', 'Gesture Sensitivity')}</div>
-              </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                {(['low', 'medium', 'high'] as GestureSensitivity[]).map((sens) => (
-                  <button
-                    key={sens}
-                    type="button"
-                    onClick={() => {
-                      setGestureSensitivity(sens);
-                      showSaved(`Gesture sensitivity set to ${sens}`);
-                    }}
-                    style={{
-                      padding: '6px 14px',
-                      borderRadius: '6px',
-                      fontSize: '13px',
-                      fontWeight: 700,
-                      border: gestureSensitivity === sens ? '2px solid var(--accent-primary)' : '1px solid var(--border-subtle)',
-                      backgroundColor: gestureSensitivity === sens ? 'var(--accent-primary-light)' : 'var(--bg-surface-secondary)',
-                      color: gestureSensitivity === sens ? 'var(--accent-primary)' : 'var(--text-primary)',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {sens === 'low' ? t('settings.low', 'Low') : sens === 'medium' ? t('settings.medium', 'Medium') : t('settings.high', 'High')}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Privacy note */}
-            <div
-              style={{
-                padding: '10px 14px',
-                borderRadius: '8px',
-                backgroundColor: 'var(--bg-app)',
-                fontSize: '12px',
-                color: 'var(--text-muted)',
-                lineHeight: 1.45,
-              }}
-            >
-              🔒 <strong>Privacy Assurance:</strong> All hand gesture analysis executes strictly on your local browser engine. Camera video is never recorded, saved, or uploaded to any server.
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION 7: MAP & SPATIAL */}
+        {/* SECTION 6: MAP & SPATIAL */}
         <section
           style={{
             backgroundColor: 'var(--bg-surface)',

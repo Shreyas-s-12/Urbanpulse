@@ -190,14 +190,6 @@ html[data-theme='light'],
   --badge-info-border: #BFDBFE;
   --badge-info-text: #2563EB;
 
-  /* Hand Control Tokens (Light Theme) */
-  --hand-control-off-bg: #F1F5F9;
-  --hand-control-off-border: #D9E2EC;
-  --hand-control-off-text: #475569;
-  --hand-control-on-bg: #ECFEFF;
-  --hand-control-on-border: #A5F3FC;
-  --hand-control-on-text: #0891B2;
-
   /* Card & Control Shadows (Light Theme) */
   --card-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
   --card-shadow-hover: 0 4px 12px rgba(15, 23, 42, 0.08);
@@ -412,14 +404,6 @@ html[data-theme='dark'],
   --badge-info-bg: #083344;
   --badge-info-border: rgba(34, 211, 238, 0.35);
   --badge-info-text: #22D3EE;
-
-  /* Hand Control Tokens (Dark Theme) */
-  --hand-control-off-bg: #101D31;
-  --hand-control-off-border: #1E3A5F;
-  --hand-control-off-text: #CBD5E1;
-  --hand-control-on-bg: #083344;
-  --hand-control-on-border: rgba(34, 211, 238, 0.4);
-  --hand-control-on-text: #22D3EE;
 
   /* Card & Control Shadows (Dark Theme) */
   --card-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);

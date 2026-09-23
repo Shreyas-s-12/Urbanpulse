@@ -103,10 +103,6 @@
     "voiceLang": "ভয়েস শনাক্তকরণ ভাষা",
     "speechOutput": "ভয়েস আউটপুট",
     "speechOutputDesc": "সারাংশ জোরে জোরে শুনুন।",
-    "handControl": "হাত ও অঙ্গভঙ্গি নিয়ন্ত্রণ",
-    "handControlDesc": "ক্যামেরা ইশারায় নিয়ন্ত্রণ করুন।",
-    "cameraStatus": "ক্যামেরার অবস্থা",
-    "gestureSensitivity": "ইশারার সংবেদনশীলতা",
     "low": "কম",
     "medium": "মাঝারি",
     "high": "উচ্চ",
@@ -130,11 +126,7 @@
     "voiceControl": "ভয়েস নিয়ন্ত্রণ"
   },
   "multimodal": {
-    "handControl": "হাত নিয়ন্ত্রণ",
-    "handControlOn": "হাত নিয়ন্ত্রণ চালু",
-    "handControlOff": "হাত নিয়ন্ত্রণ বন্ধ",
     "cameraUnavailable": "ক্যামেরা অনুপলব্ধ।",
-    "gestureDetected": "ইশারা শনাক্ত হয়েছে",
     "pinch": "পিঞ্চ (নির্বাচন)",
     "swipeLeft": "বামে সোয়াইপ",
     "swipeRight": "ডানে সোয়াইপ",

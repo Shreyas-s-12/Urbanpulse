@@ -4,7 +4,6 @@
  */
 
 export function setupAccessibilityShortcuts(callbacks: {
-  onToggleHandControl?: () => void;
   onFocusNexusInput?: () => void;
   onCloseModals?: () => void;
 }): () => void {
@@ -14,12 +13,6 @@ export function setupAccessibilityShortcuts(callbacks: {
     // Escape key closes modals and popups
     if (e.key === 'Escape') {
       callbacks.onCloseModals?.();
-    }
-
-    // Alt + H toggles hand control
-    if (e.altKey && (e.key === 'h' || e.key === 'H')) {
-      e.preventDefault();
-      callbacks.onToggleHandControl?.();
     }
 
     // '/' focuses search or chat input if not currently inside an input

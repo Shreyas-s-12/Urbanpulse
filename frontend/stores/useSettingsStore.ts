@@ -2,8 +2,6 @@ import { create } from 'zustand';
 
 export type AppTheme = 'light' | 'dark' | 'system';
 export type FontSize = 'sm' | 'md' | 'lg';
-export type GestureSensitivity = 'low' | 'medium' | 'high';
-export type CameraPermissionStatus = 'prompt' | 'granted' | 'denied' | 'unsupported';
 export type DefaultMapMode = 'roadmap' | 'satellite' | 'terrain';
 
 export interface SettingsState {
@@ -28,14 +26,6 @@ export interface SettingsState {
   setVoiceLanguage: (lang: string) => void;
   speechOutput: boolean;
   setSpeechOutput: (val: boolean) => void;
-
-  // Hand Control
-  handControlEnabled: boolean;
-  setHandControlEnabled: (val: boolean) => void;
-  gestureSensitivity: GestureSensitivity;
-  setGestureSensitivity: (sens: GestureSensitivity) => void;
-  cameraPermissionStatus: CameraPermissionStatus;
-  setCameraPermissionStatus: (status: CameraPermissionStatus) => void;
 
   // Map
   defaultMapMode: DefaultMapMode;
@@ -85,9 +75,6 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   voiceEnabled: true,
   voiceLanguage: 'en-IN',
   speechOutput: false,
-  handControlEnabled: false,
-  gestureSensitivity: 'medium',
-  cameraPermissionStatus: 'prompt',
   defaultMapMode: 'roadmap',
   defaultRadiusKm: 25,
 
@@ -159,26 +146,6 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     } catch {}
   },
 
-  setHandControlEnabled: (handControlEnabled: boolean) => {
-    set({ handControlEnabled });
-    try {
-      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...stored, handControlEnabled }));
-    } catch {}
-  },
-
-  setGestureSensitivity: (gestureSensitivity: GestureSensitivity) => {
-    set({ gestureSensitivity });
-    try {
-      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...stored, gestureSensitivity }));
-    } catch {}
-  },
-
-  setCameraPermissionStatus: (cameraPermissionStatus: CameraPermissionStatus) => {
-    set({ cameraPermissionStatus });
-  },
-
   setDefaultMapMode: (defaultMapMode: DefaultMapMode) => {
     set({ defaultMapMode });
     try {
@@ -211,8 +178,6 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
           voiceEnabled: data.voiceEnabled ?? state.voiceEnabled,
           voiceLanguage: data.voiceLanguage || state.voiceLanguage,
           speechOutput: data.speechOutput ?? state.speechOutput,
-          handControlEnabled: data.handControlEnabled ?? state.handControlEnabled,
-          gestureSensitivity: data.gestureSensitivity || state.gestureSensitivity,
           defaultMapMode: data.defaultMapMode || state.defaultMapMode,
           defaultRadiusKm: data.defaultRadiusKm || state.defaultRadiusKm,
         }));

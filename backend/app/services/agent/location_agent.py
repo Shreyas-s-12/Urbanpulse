@@ -1706,7 +1706,7 @@ class LocationAgentService:
             if places_res.get("status") == "AVAILABLE" and act_list:
                 lines = [f"### Verified Activities & Attractions around **{city_display}**:\n"]
                 for p in act_list:
-                    rating_str = f" ★ {p['rating']:.1f} ({p['userRatingsTotal']:,} reviews)" if p.get("rating") else ""
+                    rating_str = f" | Rating: {p['rating']:.1f}/5 ({p['userRatingsTotal']:,} reviews)" if p.get("rating") else ""
                     types_str = f" • {', '.join(p['types'])}" if p.get("types") else ""
                     vicinity_str = f" — {p['vicinity']}" if p.get("vicinity") else ""
                     lines.append(f"• **{p['name']}**{types_str}{rating_str}{vicinity_str}")
