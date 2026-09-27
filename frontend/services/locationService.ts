@@ -37,15 +37,19 @@ export const locationService = {
     // Section 2: Check browser geolocation support
     if (typeof window === 'undefined' || !navigator.geolocation) {
       console.warn('Location is not supported by this browser.');
+      const fallbackLoc = useLocationStore.getState().currentLocation;
+      const fallbackCity = fallbackLoc?.city || fallbackLoc?.displayName || 'Mysuru';
+      const notice = `Location access unavailable. Using ${fallbackCity}.`;
       useLocationStore.getState().setLocationAccuracyState('UNAVAILABLE');
       useLocationStore.getState().setPermissionStatus('unsupported');
+      useLocationStore.getState().setLocationStatusNotice(notice);
       options?.onProgress?.('UNAVAILABLE');
       return {
-        latitude: 0,
-        longitude: 0,
-        displayName: 'Location is not supported by this browser.',
+        latitude: fallbackLoc?.latitude ?? 12.2958,
+        longitude: fallbackLoc?.longitude ?? 76.6394,
+        displayName: notice,
         isUserLocation: false,
-        source: 'DEVICE',
+        source: fallbackLoc?.source || 'DEVICE',
         status: 'UNAVAILABLE',
       };
     }
@@ -69,15 +73,19 @@ export const locationService = {
     console.log('LOCATION_PERMISSION:', permissionReport);
 
     if (permissionReport === 'denied') {
+      const fallbackLoc = useLocationStore.getState().currentLocation;
+      const fallbackCity = fallbackLoc?.city || fallbackLoc?.displayName || 'Mysuru';
+      const notice = `Location access unavailable. Using ${fallbackCity}.`;
       useLocationStore.getState().setLocationAccuracyState('DENIED');
       useLocationStore.getState().setPermissionStatus('denied');
+      useLocationStore.getState().setLocationStatusNotice(notice);
       options?.onProgress?.('DENIED');
       return {
-        latitude: 0,
-        longitude: 0,
-        displayName: 'Location access is blocked in your browser.',
+        latitude: fallbackLoc?.latitude ?? 12.2958,
+        longitude: fallbackLoc?.longitude ?? 76.6394,
+        displayName: notice,
         isUserLocation: false,
-        source: 'DEVICE',
+        source: fallbackLoc?.source || 'DEVICE',
         status: 'DENIED',
       };
     }
@@ -117,6 +125,7 @@ export const locationService = {
           const finalState: LocationAccuracyState = accuracy <= 25 ? 'READY' : accuracy <= 75 ? 'READY' : 'APPROXIMATE';
 
           // Section 10 & 11: Immediately update store, map center, and marker
+          useLocationStore.getState().setLocationStatusNotice(null);
           useLocationStore.getState().validateAndSetDeviceLocation(rawDev, finalState, reqId);
           useLocationStore.getState().switchToDeviceLocation();
           useLocationStore.getState().setPermissionStatus('granted');
@@ -210,41 +219,44 @@ export const locationService = {
           // Section 5: Log all geolocation errors
           console.log('LOCATION_ERROR', error.code, error.message);
 
+          const fallbackLoc = useLocationStore.getState().currentLocation;
+          const fallbackCity = fallbackLoc?.city || fallbackLoc?.displayName || 'Mysuru';
           let errState: LocationAccuracyState = 'UNAVAILABLE';
-          let userMsg = "Your device couldn't provide a location right now.";
+          let userMsg = `Location access unavailable. Using ${fallbackCity}.`;
 
           if (error.code === 1) {
             // PERMISSION_DENIED
             errState = 'DENIED';
-            userMsg = 'Location access is blocked in your browser.';
+            userMsg = `Location access unavailable. Using ${fallbackCity}.`;
             useLocationStore.getState().setPermissionStatus('denied');
           } else if (error.code === 2) {
             // POSITION_UNAVAILABLE
             errState = 'UNAVAILABLE';
-            userMsg = "Your device couldn't provide a location right now.";
+            userMsg = `Location access unavailable. Using ${fallbackCity}.`;
           } else if (error.code === 3) {
             // TIMEOUT
             errState = 'TIMEOUT';
-            userMsg = 'Location timed out.';
+            userMsg = `Location timed out. Using ${fallbackCity}.`;
           } else {
             errState = 'ERROR';
-            userMsg = error.message || 'Location error';
+            userMsg = `Location access unavailable. Using ${fallbackCity}.`;
           }
 
+          useLocationStore.getState().setLocationStatusNotice(userMsg);
           useLocationStore.getState().setLocationAccuracyState(errState);
           useLocationStore.getState().setIsResolvingLocation(false);
           options?.onProgress?.(errState);
 
           resolve({
-            latitude: 0,
-            longitude: 0,
-            rawLatitude: 0,
-            rawLongitude: 0,
+            latitude: fallbackLoc?.latitude ?? 12.2958,
+            longitude: fallbackLoc?.longitude ?? 76.6394,
+            rawLatitude: fallbackLoc?.latitude ?? 12.2958,
+            rawLongitude: fallbackLoc?.longitude ?? 76.6394,
             accuracy: 0,
             accuracyMeters: 0,
             accuracyTier: 'LOW',
             timestamp: Date.now(),
-            source: 'DEVICE',
+            source: fallbackLoc?.source || 'DEVICE',
             status: errState,
             isUserLocation: false,
             displayName: userMsg,

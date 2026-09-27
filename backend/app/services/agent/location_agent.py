@@ -145,16 +145,46 @@ class LocationAgentService:
             intent = "RECOMMEND_PLACE"
         elif any(w in q_lower for w in ["cascade", "cascading", "domino effect", "next impact", "contributing chain"]):
             intent = "CASCADE"
+        elif any(
+            w in q_lower
+            for w in [
+                "simulate",
+                "scenario",
+                "hypothetical",
+                "assume ",
+                "what happens if",
+                "what could happen if",
+                "what would happen if",
+                "what could happen",
+                "what would happen",
+                "what if",
+                "what areas could be affected if",
+                "what roads could be disrupted if",
+                "how could extreme heat affect",
+                "how could a major storm affect",
+                "if river levels rise",
+                "if rainfall reaches",
+                "if heavy rainfall occurs",
+                "if a cyclone passes",
+                "predict the impact of",
+                "predict this scenario",
+                "predict next year's",
+                "predict next year",
+                "analyze 100 mm",
+                "analyze landslide",
+                "landslide risk",
+                "flood vulnerability",
+            ]
+        ) or re.search(r"\b(?:analyze|simulate|predict)\b.*\b(?:mm|°c|°f|km/h|storm|landslide|flood|drought|cyclone|earthquake|heat|rainfall)\b", q_lower):
+            intent = "SIMULATE"
         elif any(w in q_lower for w in ["risk forecast", "future risk", "upcoming risk", "threat forecast"]):
             intent = "RISK_FORECAST"
         elif any(w in q_lower for w in ["what is likely to happen", "what will happen", "what is going to happen", "what's likely to happen", "predict", "likelihood of"]):
             intent = "PREDICT"
         elif any(w in q_lower for w in ["risk", "risk radar", "threats", "threat", "danger radar", "safety radar", "what are the risks", "risks here", "is it risky"]):
             intent = "RISK_RADAR"
-        elif any(w in q_lower for w in ["what changed", "what's changed", "what has changed", "different from yesterday", "changes in", "changed in", "last 6 hours", "last 24 hours", "today vs yesterday", "changed today", "changed here", "what's different"]):
+        elif any(w in q_lower for w in ["what changed", "what's changed", "what has changed", "different from yesterday", "changes in", "changed in", "last 6 hours", "last 24 hours", "today vs yesterday", "changed today", "changed here", "what's different", "what happened in"]):
             intent = "WHAT_CHANGED"
-        elif any(w in q_lower for w in ["simulate", "what happens if", "what if", "scenario", "what would happen"]):
-            intent = "SIMULATE"
         elif any(w in q_lower for w in ["unusual", "anything unusual", "anomaly", "anomalies", "abnormal", "is anything strange", "something strange"]):
             intent = "ANOMALY"
         elif any(w in q_lower for w in ["monitor", "keep an eye on", "watch this location", "watch this area", "stop monitoring", "track this area"]):
@@ -188,7 +218,28 @@ class LocationAgentService:
         elif any(w in q_lower for w in ["heatmap", "heat map", "intelligence layer", "hotspot", "hotspots", "highlighted area", "why is this area red", "why is it red", "why is this red", "why red", "severe hotspots", "top hotspots"]):
             intent = "HEATMAP"
 
-        # 3. Location extraction
+        # Check if this is a scenario follow-up ("What about Bengaluru?", "What about 100 mm?")
+        from app.services.scenario import ScenarioParser
+        if intent == "GENERAL_INTELLIGENCE" and ScenarioParser.is_scenario_follow_up(q):
+            intent = "SIMULATE"
+
+        # If intent is SIMULATE, use ScenarioParser.extract_clean_location_phrase so we NEVER extract "3 hours in Mysuru" or raw questions
+        if intent == "SIMULATE":
+            scen_loc, is_ctx_ref = ScenarioParser.extract_clean_location_phrase(q)
+            return ParsedAgentIntent(
+                intent="SIMULATE",
+                location_query="here" if is_ctx_ref else scen_loc,
+                is_follow_up=ScenarioParser.is_scenario_follow_up(q) or (scen_loc is None),
+            )
+
+        # 3. Location extraction for non-scenario queries (strip duration phrases first so "in 24 hours" is never matched as a place)
+        q_for_loc = re.sub(
+            r"\b(?:in|within|over|for|during)\s+(?:the\s+last\s+)?\d+(?:\.\d+)?\s*(?:minute|minutes|min|hour|hours|hr|hrs|h|day|days|week|weeks|month|months)\b",
+            "",
+            q,
+            flags=re.IGNORECASE,
+        ).strip()
+
         loc_patterns = [
             r"^(?:show(?!\s+me\b)|take me to|navigate to|go to|view|explore)\s+([a-zA-Z0-9\s.,'-]+?)(?:\?|\.|\!|$)",
             r"(?:show me|tell me|what is|how is|what's|give me|what are)\s+(?:the\s+)?(?:current\s+)?(?:traffic|weather|air quality|aqi|rating|overall rating|forecast|outlook|updates|live updates|road conditions|road hazards|road surface|roads|potholes|public safety alerts|safety alerts|safety incidents|civil safety|hazards|events|risk)\s+\b(?:in|for|at|around|near|of)\s+([a-zA-Z0-9\s.,'-]+?)(?:\?|\.|\!|$)",
@@ -208,7 +259,7 @@ class LocationAgentService:
         }
 
         for pat in loc_patterns:
-            m = re.search(pat, q, re.IGNORECASE)
+            m = re.search(pat, q_for_loc, re.IGNORECASE)
             if m:
                 candidate = m.group(1).strip()
                 # Ensure candidate is not a question fragment or domain word
@@ -254,7 +305,7 @@ class LocationAgentService:
         heuristic_res = cls._parse_intent_heuristics(query, current_loc)
 
         # Deterministic domain intents skip LLM completely
-        if heuristic_res.intent in ("RANKING", "COMPARISON", "WHERE_AM_I"):
+        if heuristic_res.intent in ("RANKING", "COMPARISON", "WHERE_AM_I", "SIMULATE"):
             return heuristic_res
 
         # If LLM API key exists, attempt structured extraction; otherwise return heuristic
@@ -312,32 +363,60 @@ class LocationAgentService:
         """
         activities: List[AgentToolActivity] = []
 
-        # Check if caller passed a selectedMapEntity in current_loc (5-tier priority)
-        selected_entity = current_loc.get("selectedMapEntity") if current_loc else None
-        if selected_entity and isinstance(selected_entity, dict) and selected_entity.get("type") in ("POI", "EVENT", "COORDINATE"):
-            entity_coords = selected_entity.get("coordinates") or {}
-            entity_name = selected_entity.get("name") or selected_entity.get("title") or "Selected Feature"
-            if entity_coords.get("latitude") and entity_coords.get("longitude"):
-                activities.append(
-                    AgentToolActivity(
-                        step=f"Grounding to selected {selected_entity.get('type')}: {entity_name}",
-                        status="COMPLETED",
-                        detail=f"{entity_name} ({entity_coords['latitude']:.4f}, {entity_coords['longitude']:.4f})",
-                    )
-                )
-                return {
-                    "latitude": entity_coords["latitude"],
-                    "longitude": entity_coords["longitude"],
-                    "displayName": entity_name,
-                    "name": entity_name,
-                    "city": current_loc.get("city") or entity_name,
-                    "country": current_loc.get("country"),
-                    "countryCode": current_loc.get("countryCode"),
-                    "type": selected_entity.get("type"),
-                    "isUserLocation": False,
-                }, activities
+        is_context_word = bool(
+            location_query
+            and location_query.lower().strip() in (
+                "here",
+                "near me",
+                "around me",
+                "my location",
+                "me",
+                "there",
+                "that place",
+                "the location i selected",
+                "selected location",
+                "this location",
+                "this city",
+                "this region",
+                "this area",
+            )
+        )
 
-        if not location_query:
+        # PRIORITY 2 & 3 when NO explicit place name is in the current query (or when user said "here" / "this location"):
+        if not location_query or is_context_word:
+            # PRIORITY 2: Selected map/POI location on Google Maps (e.g., Mysore Palace)
+            selected_entity = current_loc.get("selectedMapEntity") if current_loc else None
+            if selected_entity and isinstance(selected_entity, dict) and selected_entity.get("type") in ("POI", "EVENT", "COORDINATE"):
+                entity_coords = selected_entity.get("coordinates") or {}
+                entity_name = selected_entity.get("name") or selected_entity.get("title") or "Selected Feature"
+                if entity_coords.get("latitude") and entity_coords.get("longitude"):
+                    activities.append(
+                        AgentToolActivity(
+                            step=f"Grounding to selected {selected_entity.get('type')}: {entity_name}",
+                            status="COMPLETED",
+                            detail=f"{entity_name} ({entity_coords['latitude']:.4f}, {entity_coords['longitude']:.4f})",
+                        )
+                    )
+                    return {
+                        "latitude": entity_coords["latitude"],
+                        "longitude": entity_coords["longitude"],
+                        "displayName": entity_name,
+                        "name": entity_name,
+                        "city": current_loc.get("city") or entity_name,
+                        "country": current_loc.get("country"),
+                        "countryCode": current_loc.get("countryCode"),
+                        "type": selected_entity.get("type"),
+                        "isUserLocation": False,
+                    }, activities
+
+            # Explicit "here" / "near me" device location fallback
+            if location_query and location_query.lower() in ["here", "near me", "around me", "my location", "me"]:
+                if current_loc and current_loc.get("deviceLocation"):
+                    dev = current_loc["deviceLocation"]
+                    activities.append(AgentToolActivity(step="Grounding to user's device coordinates", status="COMPLETED"))
+                    return dev, activities
+
+            # PRIORITY 3A: Active location context (e.g. activeLocation = Mysuru)
             if current_loc and current_loc.get("latitude") and current_loc.get("longitude"):
                 activities.append(
                     AgentToolActivity(
@@ -347,23 +426,27 @@ class LocationAgentService:
                     )
                 )
                 return current_loc, activities
+
+            # PRIORITY 3B: ScenarioContext location from previous scenario turn (e.g., follow-up "What about 100 mm?")
+            from app.services.scenario import ScenarioParser
+            scen_ctx = ScenarioParser.get_scenario_context()
+            if scen_ctx and scen_ctx.latitude is not None and scen_ctx.longitude is not None:
+                activities.append(
+                    AgentToolActivity(
+                        step=f"Inheriting scenario context location: {scen_ctx.location}",
+                        status="COMPLETED",
+                        detail=f"{scen_ctx.location} ({scen_ctx.latitude:.4f}, {scen_ctx.longitude:.4f})",
+                    )
+                )
+                return {
+                    "latitude": scen_ctx.latitude,
+                    "longitude": scen_ctx.longitude,
+                    "displayName": scen_ctx.location or "Scenario Context Location",
+                    "name": scen_ctx.location or "Scenario Context Location",
+                    "city": scen_ctx.location,
+                }, activities
+
             return None, activities
-
-        # Explicit "here" / "near me" semantics -> ground to device location
-        if location_query.lower() in ["here", "near me", "around me", "my location", "me"]:
-            if current_loc and current_loc.get("deviceLocation"):
-                dev = current_loc["deviceLocation"]
-                activities.append(AgentToolActivity(step="Grounding to user's device coordinates", status="COMPLETED"))
-                return dev, activities
-            if current_loc:
-                activities.append(AgentToolActivity(step="Retaining device location", status="COMPLETED"))
-                return {**current_loc, "isUserLocation": True}, activities
-
-        # Explicit "there" / "that place" semantics -> ground to selected context location
-        if location_query.lower() in ["there", "that place", "the location i selected", "selected location"]:
-            if current_loc:
-                activities.append(AgentToolActivity(step="Retaining selected context location", status="COMPLETED"))
-                return current_loc, activities
 
         # Check if the location query matches the active place or city context
         if current_loc and current_loc.get("latitude") and current_loc.get("longitude"):
@@ -1405,64 +1488,75 @@ class LocationAgentService:
             )
 
         elif intent == "SIMULATE":
-            all_activities.append(AgentToolActivity(step=f"Running deterministic scenario simulation for {city_display}", status="IN_PROGRESS"))
-            s_type = "heavy_rainfall"
-            if any(w in query_lower for w in ["road closure", "closure", "closed"]):
-                s_type = "major_road_closure"
-            elif any(w in query_lower for w in ["traffic", "congestion", "surge"]):
-                s_type = "traffic_increase"
-            elif any(w in query_lower for w in ["pollution", "aqi", "smog", "air"]):
-                s_type = "aqi_deterioration"
-            elif any(w in query_lower for w in ["flood", "inundation"]):
-                s_type = "flood_scenario"
-
-            sim_res = await ScenarioEngineService.simulate_scenario(lat, lon, scenario_type=s_type, radius_km=radius_km, location_meta=target_loc)
+            all_activities.append(AgentToolActivity(step=f"Running Generalized Scenario Intelligence Engine for {city_display}", status="IN_PROGRESS"))
+            sim_res = await ScenarioEngineService.simulate_scenario(
+                latitude=lat,
+                longitude=lon,
+                query=query,
+                radius_km=radius_km,
+                location_meta=target_loc,
+            )
             data_payload["scenario"] = sim_res
 
-            assump_txt = "\n".join(f"- {a}" for a in sim_res.get("assumptions", []))
-            limit_txt = "\n".join(f"- {l}" for l in sim_res.get("limitations", []))
-
             message = (
-                f"### **[SIMULATION]** {sim_res.get('scenarioTitle')} for {city_display}\n\n"
-                f"> **Important**: This output is a **SIMULATION** model projection, NOT a live observation or guaranteed prediction.\n\n"
-                f"• **Baseline UrbanPulse Score**: {sim_res.get('baselineScore')} / 100\n"
-                f"• **Projected Score Range**: **{sim_res['projectedScoreRange'][0]} – {sim_res['projectedScoreRange'][1]} / 100**\n"
-                f"• **Projected Mobility Impact**: {sim_res.get('projectedTrafficImpact')}\n"
-                f"• **Projected Flood Risk**: {sim_res.get('projectedFloodRisk')}\n\n"
-                f"**Key Model Assumptions**:\n{assump_txt}\n\n"
-                f"**Model Limitations**:\n{limit_txt}\n\n"
-                f"*Confidence: {int(sim_res.get('confidence', 0.65) * 100)}%*"
+                f"### **[SIMULATION — EVIDENCE-GROUNDED SCENARIO INTELLIGENCE]** {sim_res.get('scenarioTitle')} — {city_display}\n\n"
+                f"{sim_res.get('formattedReport', '')}"
             )
 
             actions.append(AgentMapAction(type="SHOW_SCENARIO", payload={"scenario": sim_res}))
-            sources.append({"type": "Simulation", "source": "UrbanPulse Deterministic Scenario Engine", "detail": sim_res.get("scenarioTitle")})
-            all_activities.append(AgentToolActivity(step="Deterministic simulation model completed", status="COMPLETED"))
+            for src_item in sim_res.get("dataSources", []):
+                sources.append({
+                    "type": src_item.get("type", "Simulation"),
+                    "source": src_item.get("name", "UrbanPulse Scenario Intelligence Engine"),
+                    "detail": sim_res.get("scenarioTitle"),
+                })
+            if not sources:
+                sources.append({"type": "Simulation", "source": "UrbanPulse Scenario Intelligence Engine", "detail": sim_res.get("scenarioTitle")})
+
+            all_activities.append(AgentToolActivity(step="Evidence-grounded scenario analysis completed", status="COMPLETED"))
             confidence = sim_res.get("confidence", 0.68)
+
+            four_factor_items = [
+                f"{f.get('factorName')}: {f.get('status')} ({f.get('evidenceType')}) — {f.get('explanation')}"
+                for f in sim_res.get("fourKeyFactors", [])
+            ]
 
             structured_resp = NexusStructuredResponse(
                 type="SCENARIO",
                 title=f"[SIMULATION] {sim_res.get('scenarioTitle')} for {city_display}",
-                summary=f"Projected Urban Score: {sim_res['projectedScoreRange'][0]} – {sim_res['projectedScoreRange'][1]} / 100 (Baseline: {sim_res.get('baselineScore')}/100).",
+                summary=f"Confidence: {sim_res.get('confidenceLevel', 'MEDIUM')} ({int(confidence * 100)}%) | Projected Score: {sim_res['projectedScoreRange'][0]}–{sim_res['projectedScoreRange'][1]}/100",
                 sections=[
                     NexusStructuredSection(
-                        title="Projected Physical Impacts",
+                        title="Projected Physical Impacts (MODEL-DERIVED PREDICTION)",
                         type="key_values",
                         key_values={
+                            "Scenario Category": sim_res.get("canonicalScenarioCategory", "RAINFALL"),
                             "Baseline Score": f"{sim_res.get('baselineScore')} / 100",
                             "Projected Score Range": f"{sim_res['projectedScoreRange'][0]} – {sim_res['projectedScoreRange'][1]} / 100",
-                            "Mobility Impact": sim_res.get("projectedTrafficImpact", "Moderate"),
-                            "Flood Risk": sim_res.get("projectedFloodRisk", "Nominal"),
+                            "Mobility / Road Impact": sim_res.get("projectedTrafficImpact", "Moderate"),
+                            "Hydrological / Hazard Status": sim_res.get("projectedFloodRisk", "Nominal"),
+                            "Confidence Level": f"{sim_res.get('confidenceLevel', 'MEDIUM')} ({int(confidence * 100)}%)",
                         },
                     ),
                     NexusStructuredSection(
-                        title="Model Assumptions",
+                        title=f"Four Key Impact Factors ({sim_res.get('canonicalScenarioCategory')})",
+                        type="bullets",
+                        items=four_factor_items,
+                    ),
+                    NexusStructuredSection(
+                        title="Explicit Model Assumptions (ASSUMPTION)",
                         type="bullets",
                         items=sim_res.get("assumptions", []),
                     ),
                     NexusStructuredSection(
-                        title="Model Limitations",
+                        title="Uncertainty & Limitations",
                         type="bullets",
                         items=sim_res.get("limitations", []),
+                    ),
+                    NexusStructuredSection(
+                        title="Recommended Real-Time Telemetry Inputs",
+                        type="bullets",
+                        items=sim_res.get("recommendedRealtimeInputs", []),
                     ),
                 ],
                 metadata=sim_res,

@@ -37,7 +37,9 @@ export default function NexusComposer({
         backgroundColor: 'var(--bg-header)',
         display: 'flex',
         alignItems: 'center',
-        gap: '10px',
+        gap: '8px',
+        minWidth: 0,
+        maxWidth: '100%',
         flexShrink: 0,
         boxSizing: 'border-box',
       }}
@@ -51,6 +53,7 @@ export default function NexusComposer({
         disabled={isProcessing}
         style={{
           flex: 1,
+          minWidth: 0,
           height: '44px',
           padding: '0 14px',
           borderRadius: '10px',
@@ -73,11 +76,13 @@ export default function NexusComposer({
         }}
       />
 
-      <VoiceControl
-        onTranscript={(text) => setInputQuery(text)}
-        onSendQuery={(text) => onSend(text)}
-        disabled={isProcessing}
-      />
+      <div style={{ flex: '0 0 auto', display: 'inline-flex', alignItems: 'center' }}>
+        <VoiceControl
+          onTranscript={(text) => setInputQuery(text)}
+          onSendQuery={(text) => onSend(text)}
+          disabled={isProcessing}
+        />
+      </div>
 
       <button
         type="button"
@@ -100,7 +105,7 @@ export default function NexusComposer({
           alignItems: 'center',
           justifyContent: 'center',
           transition: 'background-color 0.15s ease',
-          flexShrink: 0,
+          flex: '0 0 auto',
         }}
         onMouseEnter={(e) => {
           if (!isProcessing && inputQuery.trim()) {

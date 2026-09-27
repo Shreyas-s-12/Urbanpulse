@@ -421,7 +421,7 @@ type SortOption = 'LATEST' | 'SEVERITY' | 'OLDEST';
 
 export default function UpdatesView() {
   const { currentLocation } = useLocationStore();
-  const cityName = currentLocation?.city || 'Bengaluru';
+  const cityName = currentLocation?.city || currentLocation?.displayName || 'Mysuru';
   const { articles, status, fetchNews } = usePulseWireStore();
 
   useEffect(() => {
@@ -467,8 +467,8 @@ export default function UpdatesView() {
           headline: a.headline || a.title,
           description: a.summary || a.description || `Verified reporting by ${a.sourceName || a.source} in ${cityName}.`,
           location: a.location || cityName,
-          latitude: currentLocation?.latitude || 12.9716,
-          longitude: currentLocation?.longitude || 77.5946,
+          latitude: currentLocation?.latitude || 12.2958,
+          longitude: currentLocation?.longitude || 76.6394,
           timestamp: a.publishedAt ? new Date(a.publishedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent',
           timeAgo: a.freshness || 'Within 24h',
           severity: sev,

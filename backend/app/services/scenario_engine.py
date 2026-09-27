@@ -1,22 +1,84 @@
 """
-UrbanPulse Deterministic Scenario Simulation Engine
-Simulates "what-if" urban disruptions (rainfall +X%, traffic +X%, road closure, temperature +5°C)
-using deterministic physical and heuristic models grounded in current baseline observations.
-Strictly labeled as SIMULATION — NOT OBSERVED REALITY, with difference metrics, affected areas,
-assumptions, confidence, and map visualization layers.
+UrbanPulse Generalized Scenario Intelligence Engine (Orchestrator)
+Orchestrates the full evidence-grounded pipeline:
+User Query / Request
+     ↓
+ScenarioParser
+     ↓
+ScenarioDefinition
+     ↓
+ScenarioRegistry
+     ↓
+EvidenceRetriever (Relevant Data Sources)
+     ↓
+HistoricalComparator (Multi-Year Archive & Analog Events)
+     ↓
+FeatureBuilder & GeoSpatialAnalyzer (DEM, Slope, Drainage, Road Network, Population)
+     ↓
+PredictionEngine (Deterministic Model + Dynamic 4-Factor Impact Model)
+     ↓
+UncertaintyEngine (Confidence HIGH/MEDIUM/LOW + Limitations + Real-Time Data Needed)
+     ↓
+EvidenceEngine & MapFeatureGenerator (Visually Distinct Layers)
+     ↓
+ScenarioResponseGenerator (14-Section Structured Report + Map + Chat Output)
 """
 
 from typing import Any, Dict, List, Optional
-from datetime import datetime, timezone
 import logging
 
 from app.services.urban_intel import UrbanIntelService
-from app.services.providers.geocoding_provider import GeocodingProvider
+from app.services.scenario import (
+    EvidenceEngine,
+    EvidenceRetriever,
+    FeatureBuilder,
+    GeoSpatialAnalyzer,
+    HistoricalComparator,
+    MapFeatureGenerator,
+    PredictionEngine,
+    ScenarioCategory,
+    ScenarioDefinition,
+    ScenarioParser,
+    ScenarioRegistry,
+    ScenarioResponseGenerator,
+    UncertaintyEngine,
+)
 
 logger = logging.getLogger("urbanpulse.scenario")
 
 
 class ScenarioEngineService:
+    """
+    Entry point for the Generalized UrbanPulse Scenario Intelligence Engine.
+    Supports both free-form natural language queries (e.g. "Assume 10 mm rainfall occurs in 1 hour in Malleswaram")
+    and structured API payloads for any location, hazard category, intensity, duration, and requested year.
+    """
+
+    @classmethod
+    async def analyze_scenario(
+        cls,
+        query: Optional[str] = None,
+        latitude: Optional[float] = None,
+        longitude: Optional[float] = None,
+        scenario_type: Optional[str] = None,
+        parameters: Optional[Dict[str, Any]] = None,
+        radius_km: float = 5.0,
+        location_name: Optional[str] = None,
+        location_meta: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        return await cls.simulate_scenario(
+            latitude=latitude,
+            longitude=longitude,
+            scenario_type=scenario_type,
+            parameters=parameters,
+            radius_km=radius_km,
+            location_meta=location_meta,
+            query=query,
+            location_name=location_name,
+            **kwargs,
+        )
+
     @classmethod
     async def simulate_scenario(
         cls,
@@ -24,249 +86,123 @@ class ScenarioEngineService:
         longitude: Optional[float] = None,
         scenario_type: Optional[str] = None,
         parameters: Optional[Dict[str, Any]] = None,
-        radius_km: float = 50.0,
+        radius_km: float = 5.0,
         location_meta: Optional[Dict[str, Any]] = None,
+        query: Optional[str] = None,
+        location_name: Optional[str] = None,
         **kwargs: Any,
     ) -> Dict[str, Any]:
         """
-        Executes a deterministic urban disruption scenario against current baselines.
-        Accepts either a single request dictionary or individual positional/keyword arguments.
+        Executes an evidence-grounded scenario intelligence analysis across any supported
+        location, condition, intensity, duration, and target year.
         """
-        # Unpack if dict passed as first argument
+        # 1. Unpack if dictionary passed as first argument
         if isinstance(latitude, dict):
             req = latitude
-            lat_val = float(req.get("latitude") or 0.0)
-            lon_val = float(req.get("longitude") or 0.0)
-            s_type_raw = str(req.get("scenarioType") or req.get("scenario_type") or "heavy_rainfall")
-            parameters = req.get("parameters") or {}
-            radius_km = float(req.get("radiusKm") or req.get("radius_km") or 50.0)
-            location_meta = req.get("location_meta") or req.get("locationMeta")
+            query = req.get("query") or req.get("prompt") or query
+            lat_raw = req.get("latitude")
+            lon_raw = req.get("longitude")
+            if isinstance(req.get("location"), dict):
+                loc_obj = req["location"]
+                location_meta = loc_obj
+                lat_raw = lat_raw if lat_raw is not None else loc_obj.get("latitude")
+                lon_raw = lon_raw if lon_raw is not None else loc_obj.get("longitude")
+                location_name = location_name or loc_obj.get("city") or loc_obj.get("displayName")
+            elif isinstance(req.get("location"), str):
+                location_name = location_name or req["location"]
+
+            location_name = location_name or req.get("locationName") or req.get("city")
+            s_type_raw = req.get("scenarioType") or req.get("scenario_type") or req.get("scenario") or scenario_type
+            parameters = dict(req.get("parameters") or parameters or {})
+            for extra_k in ("intensity", "unit", "duration", "duration_hours", "targetYear", "requestedYear", "year"):
+                if extra_k in req and extra_k not in parameters:
+                    parameters[extra_k] = req[extra_k]
+            radius_val = float(req.get("radiusKm") or req.get("radius_km") or req.get("radius") or radius_km or 5.0)
+            location_meta = location_meta or req.get("location_meta") or req.get("locationMeta")
         else:
-            lat_val = float(latitude or 0.0)
-            lon_val = float(longitude or 0.0)
-            s_type_raw = str(scenario_type or "heavy_rainfall")
-            parameters = parameters or {}
+            lat_raw = latitude
+            lon_raw = longitude
+            s_type_raw = scenario_type
+            parameters = dict(parameters or {})
+            radius_val = float(radius_km or 5.0)
 
-        now_utc = datetime.now(timezone.utc)
-        now_iso = now_utc.isoformat()
+        lat_f = float(lat_raw) if lat_raw is not None else None
+        lon_f = float(lon_raw) if lon_raw is not None else None
 
-        # 1. Resolve Location
-        if not location_meta:
-            location_meta = await GeocodingProvider.reverse_geocode(lat_val, lon_val)
-        city_name = location_meta.get("city") or location_meta.get("displayName") or "Selected Location"
+        # 2. Parse & Normalize into ScenarioDefinition + Resolve Dynamic Location
+        scenario_def: ScenarioDefinition = await ScenarioParser.parse_and_resolve(
+            query=query,
+            latitude=lat_f,
+            longitude=lon_f,
+            scenario_type=s_type_raw,
+            parameters=parameters,
+            radius_km=radius_val,
+            location_name=location_name,
+            location_meta=location_meta,
+        )
 
-        # 2. Retrieve Current Baseline Conditions
-        intel = await UrbanIntelService.get_full_intelligence(lat_val, lon_val, radius_km)
-        cond = intel.get("condition", {})
-        baseline_score = cond.get("overallScore") or 76
+        # 3. Retrieve Baseline Score from UrbanIntelService if coordinates are resolved
+        baseline_score = 76
+        if scenario_def.latitude is not None and scenario_def.longitude is not None:
+            try:
+                intel = await UrbanIntelService.get_full_intelligence(
+                    scenario_def.latitude,
+                    scenario_def.longitude,
+                    min(scenario_def.radius, 50.0),
+                )
+                cond = intel.get("condition", {})
+                baseline_score = int(cond.get("overallScore") or 76)
+            except Exception:
+                pass
 
-        s_type = s_type_raw.lower().strip()
+        # 4. Retrieve Scenario-Relevant Evidence Sources (EvidenceRetriever)
+        evidence = await EvidenceRetriever.retrieve_evidence(scenario_def)
 
-        # Defaults for scenario visualization
-        closed_road_pts: Optional[List[Dict[str, float]]] = None
-        alternate_route_pts: Optional[List[Dict[str, float]]] = None
-        affected_domains: List[str] = []
-        affected_area_km2: float = 3.5
+        # 5. Historical Comparison (HistoricalComparator)
+        historical = HistoricalComparator.compare(scenario_def, evidence)
 
-        # 3. Model Simulation Effects Deterministically
-        if s_type in ["heavy_rainfall", "heavy_rain", "rain", "rainfall_increase", "rainfall"]:
-            pct_increase = float(parameters.get("percent_increase", parameters.get("intensity_percent", 40.0)))
-            duration_hrs = float(parameters.get("duration_hours", parameters.get("duration_hrs", 3.0)))
-            total_rain_est = round(25.0 * (1.0 + pct_increase / 100.0) * duration_hrs, 1)
+        # 6. Build Geospatial & Environmental Feature Vector (FeatureBuilder & GeoSpatialAnalyzer)
+        features = FeatureBuilder.build_features(scenario_def, evidence, historical)
+        geospatial = GeoSpatialAnalyzer.analyze(scenario_def, evidence, features)
 
-            # Projected impacts
-            traffic_delay_pct = min(65.0, round(15.0 + (pct_increase * 0.45)))
-            speed_reduction_pct = min(40.0, round(12.0 + (pct_increase * 0.35)))
-            inundation_depth = round(0.15 + (pct_increase * 0.005), 2)
-            score_drop = min(30, max(8, round(10 + pct_increase * 0.22)))
+        # 7. Deterministic Model Prediction & Dynamic 4-Factor Impact Evaluation (PredictionEngine)
+        prediction = PredictionEngine.predict(
+            scenario=scenario_def,
+            evidence=evidence,
+            historical=historical,
+            geospatial=geospatial,
+            features=features,
+            baseline_score=baseline_score,
+        )
 
-            flood_risk_sim = "HIGH (Arterial drainage overflow & underpass inundation risk)" if pct_increase >= 35 else "MODERATE"
-            traffic_sim = "HEAVY (+25-45% corridor delay)" if pct_increase >= 30 else "MODERATE"
+        # 8. Evaluate Confidence & Limitations (UncertaintyEngine)
+        uncertainty = UncertaintyEngine.evaluate(
+            scenario=scenario_def,
+            evidence=evidence,
+            historical=historical,
+            geospatial=geospatial,
+            prediction=prediction,
+        )
 
-            title = f"Rainfall +{int(pct_increase)}% Scenario"
-            summary_diff = (
-                f"Rainfall increase of +{int(pct_increase)}% over {duration_hrs:.0f}h increases flood risk to High "
-                f"and causes a projected +{int(traffic_delay_pct)}% traffic delay across low-lying arterials."
-            )
-            affected_domains = ["FLOOD", "TRAFFIC", "ROADS", "WEATHER"]
-            affected_area_km2 = round(4.2 * (1.0 + pct_increase / 100.0), 1)
-            confidence = 0.72
-            assumptions = [
-                f"Simulated precipitation: +{pct_increase:.0f}% increase sustained over {duration_hrs:.0f} hours (Total modeled: ~{total_rain_est:.0f} mm).",
-                "Municipal storm drainage assumed operating at 80% nominal clearance.",
-                "Surface road friction reduction modeled at 0.45 friction coefficient.",
-            ]
-            limitations = [
-                "Micro-topographical stormwater pooling requires sub-meter LIDAR elevation maps.",
-                "Real-time stormwater pump station activation state is unobserved.",
-            ]
+        # 9. Generate Visually Distinct Map Layers & Features (MapFeatureGenerator)
+        map_features = MapFeatureGenerator.generate_map_features(
+            scenario=scenario_def,
+            evidence=evidence,
+            historical=historical,
+            geospatial=geospatial,
+            prediction=prediction,
+            uncertainty=uncertainty,
+        )
 
-        elif s_type in ["traffic_surge", "traffic_increase", "volume_surge", "traffic"]:
-            surge_pct = float(parameters.get("surge_percent", parameters.get("percent_increase", 30.0)))
-            traffic_delay_pct = round(surge_pct * 1.15)
-            speed_reduction_pct = round(surge_pct * 0.65)
-            score_drop = min(25, max(6, round(surge_pct * 0.35)))
-            inundation_depth = 0.0
+        # 10. Generate Complete 14-Section Response (ScenarioResponseGenerator & EvidenceEngine)
+        response = ScenarioResponseGenerator.generate(
+            scenario=scenario_def,
+            evidence=evidence,
+            historical=historical,
+            geospatial=geospatial,
+            prediction=prediction,
+            uncertainty=uncertainty,
+            map_features=map_features,
+        )
 
-            flood_risk_sim = "LOW (No meteorological precipitation change)"
-            traffic_sim = "SEVERE (+40-60% peak transit delay)" if surge_pct >= 40 else "HEAVY"
-
-            title = f"Traffic +{int(surge_pct)}% Surge Scenario"
-            summary_diff = (
-                f"A +{int(surge_pct)}% vehicular surge triggers network bottlenecks, projecting a "
-                f"+{int(traffic_delay_pct)}% travel time increase and dropping overall score by -{score_drop} pts."
-            )
-            affected_domains = ["TRAFFIC", "ROADS"]
-            affected_area_km2 = 6.8
-            confidence = 0.78
-            assumptions = [
-                f"Simulated {surge_pct:.0f}% uniform vehicular volume increase entering arterial corridor network.",
-                "Traffic signal timings assumed unchanged from normal diurnal schedules.",
-            ]
-            limitations = [
-                "Dynamic driver diversion behavior through residential side streets is not fully observed.",
-            ]
-
-        elif s_type in ["road_closure", "major_road_closure", "closure"]:
-            corridor_name = parameters.get("corridor_name") or parameters.get("road_name") or "Primary Radial Corridor"
-            traffic_delay_pct = 35.0
-            speed_reduction_pct = 28.0
-            score_drop = 14
-            inundation_depth = 0.0
-
-            flood_risk_sim = "LOW"
-            traffic_sim = "HEAVY (+35% detour transit delay on adjoining collectors)"
-
-            title = f"Road Closure Simulation: {corridor_name}"
-            summary_diff = (
-                f"Simulating complete closure of '{corridor_name}'. Traffic diverted onto parallel collectors, "
-                f"incurring an estimated +35% delay across surrounding 3.2 km² grid."
-            )
-            affected_domains = ["ROADS", "TRAFFIC"]
-            affected_area_km2 = 3.2
-            confidence = 0.81
-            assumptions = [
-                f"Complete bidirectional vehicular closure of corridor segment: '{corridor_name}'.",
-                "Traffic reroutes along nearest secondary arterial bypass corridors.",
-            ]
-            limitations = [
-                "Real-time turn restriction compliance and temporary police diversion signage are unobserved.",
-            ]
-
-            # Generate synthetic spatial polylines around target coordinates for Google Maps scenario layer
-            closed_road_pts = [
-                {"latitude": lat_val - 0.006, "longitude": lon_val - 0.008},
-                {"latitude": lat_val, "longitude": lon_val},
-                {"latitude": lat_val + 0.006, "longitude": lon_val + 0.008},
-            ]
-            alternate_route_pts = [
-                {"latitude": lat_val - 0.006, "longitude": lon_val - 0.008},
-                {"latitude": lat_val - 0.003, "longitude": lon_val + 0.012},
-                {"latitude": lat_val + 0.006, "longitude": lon_val + 0.008},
-            ]
-
-        elif s_type in ["extreme_heat", "temperature_increase", "temperature", "heat_wave"]:
-            temp_delta = float(parameters.get("temperature_delta_c", parameters.get("degrees_c", 5.0)))
-            traffic_delay_pct = 8.0
-            speed_reduction_pct = 5.0
-            score_drop = min(20, max(5, round(temp_delta * 2.2)))
-            inundation_depth = 0.0
-
-            flood_risk_sim = "LOW"
-            traffic_sim = "MODERATE (Localized transit HVAC load and vehicle breakdown increase)"
-
-            title = f"Temperature +{temp_delta:.1f}°C Heat Stress Scenario"
-            summary_diff = (
-                f"Simulating a +{temp_delta:.1f}°C ambient heat wave. Urban heat island effect intensifies, "
-                f"increasing surface ozone formation and power grid stress, reducing overall score by -{score_drop} pts."
-            )
-            affected_domains = ["WEATHER", "AQI", "SAFETY"]
-            affected_area_km2 = 12.5
-            confidence = 0.74
-            assumptions = [
-                f"Uniform ambient air temperature elevation of +{temp_delta:.1f}°C above current diurnal reading.",
-                "Surface ozone and photochemical smog rates accelerated according to standard Arrhenius kinetics.",
-            ]
-            limitations = [
-                "Microclimate shading variation from tree canopies and building heights requires 3D urban canopy model.",
-            ]
-
-        else:
-            traffic_delay_pct = 18.0
-            speed_reduction_pct = 12.0
-            score_drop = 8
-            inundation_depth = 0.0
-            flood_risk_sim = "LOW"
-            traffic_sim = "MODERATE"
-
-            title = f"{s_type.replace('_', ' ').title()} Scenario"
-            summary_diff = f"Simulated {s_type.replace('_', ' ')}: baseline condition degraded by -{score_drop} points."
-            affected_domains = ["TRAFFIC", "WEATHER"]
-            affected_area_km2 = 4.0
-            confidence = 0.65
-            assumptions = ["Applied proportional stress factor to current municipal baseline."]
-            limitations = ["Limited historical precedent for this exact parameter combination at coordinates."]
-
-        simulated_score = max(15, baseline_score - score_drop)
-
-        return {
-            "scenarioId": f"sim-{int(now_utc.timestamp())}",
-            "scenario": s_type,
-            "scenarioType": s_type,
-            "scenarioTitle": title,
-            "location": location_meta,
-            "isSimulation": True,
-            "label": "SIMULATION",
-            "notObservedReality": True,
-            "baseline": {
-                "overallScore": baseline_score,
-                "trafficStatus": cond.get("trafficStatus", "MODERATE"),
-                "floodRisk": "LOW",
-                "roadCondition": "NOMINAL",
-            },
-            "scenario": {
-                "overallScore": simulated_score,
-                "trafficStatus": traffic_sim,
-                "floodRisk": flood_risk_sim,
-                "roadCondition": "RESTRICTED" if s_type in ["road_closure", "closure"] else "WET_SLIPPERY" if s_type in ["heavy_rainfall", "rain"] else "NOMINAL",
-            },
-            "difference": {
-                "scoreDelta": -score_drop,
-                "trafficDelayIncreasePercent": traffic_delay_pct,
-                "speedReductionPercent": speed_reduction_pct,
-                "inundationDepthMeters": inundation_depth,
-                "summary": summary_diff,
-            },
-            "affectedDomains": affected_domains,
-            "affectedAreaKm2": affected_area_km2,
-            "confidence": confidence,
-            "assumptions": assumptions,
-            "limitations": limitations,
-            "closedRoadPolyline": closed_road_pts,
-            "alternateRoutePolyline": alternate_route_pts,
-            "simulatedAt": now_iso,
-            "timestamp": now_iso,
-            # Backward-compatible fields expected by test_master_intelligence & frontend
-            "impacts": {
-                "traffic": {
-                    "delayIncreasePercent": traffic_delay_pct,
-                    "roadSpeedReductionPercent": speed_reduction_pct,
-                    "status": traffic_sim,
-                },
-                "floodRisk": flood_risk_sim,
-                "inundationDepthMeters": inundation_depth,
-            },
-            "uncertaintyInterval": {
-                "scoreLow": max(10, simulated_score - 4),
-                "scoreHigh": min(100, simulated_score + 4),
-                "confidence": confidence,
-            },
-            "urbanPulseScoreImpact": {
-                "baselineScore": baseline_score,
-                "projectedScore": simulated_score,
-                "delta": -score_drop,
-            },
-            "projectedScoreRange": [max(10, simulated_score - 4), min(100, simulated_score + 4)],
-            "projectedTrafficImpact": traffic_sim,
-            "projectedFloodRisk": flood_risk_sim,
-        }
+        return response

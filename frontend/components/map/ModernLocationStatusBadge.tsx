@@ -10,6 +10,8 @@ export default function ModernLocationStatusBadge() {
     activeSource,
     conflictStatus,
     activeLocationContext,
+    currentLocation,
+    locationStatusNotice,
   } = useLocationStore();
 
   const isSelectingMapLocation = useLocationStore((s) => s.isSelectingMapLocation || s.isChoosingOnMap);
@@ -71,16 +73,16 @@ export default function ModernLocationStatusBadge() {
     subtitle = gpsAccuracyMeters ? `±${Math.round(gpsAccuracyMeters)}m uncertainty` : 'Honest device accuracy reported';
     badgeColor = '#F59E0B';
   } else if (isDenied) {
-    title = 'LOCATION ACCESS BLOCKED';
-    subtitle = 'Location permission is disabled in browser settings';
+    title = 'LOCATION ACCESS UNAVAILABLE';
+    subtitle = locationStatusNotice || `Location access unavailable. Using ${currentLocation?.city || currentLocation?.displayName || 'Mysuru'}.`;
     badgeColor = '#EF4444';
   } else if (isTimeout) {
     title = 'LOCATION TIMED OUT';
-    subtitle = 'Device GPS took too long to respond';
+    subtitle = locationStatusNotice || `Location access unavailable. Using ${currentLocation?.city || currentLocation?.displayName || 'Mysuru'}.`;
     badgeColor = '#EF4444';
   } else if (isUnavailable || isError) {
     title = 'LOCATION CURRENTLY UNAVAILABLE';
-    subtitle = "Your device couldn't provide a location right now";
+    subtitle = locationStatusNotice || `Location access unavailable. Using ${currentLocation?.city || currentLocation?.displayName || 'Mysuru'}.`;
     badgeColor = '#EF4444';
   } else if (isStale) {
     title = 'PREVIOUS DEVICE LOCATION';

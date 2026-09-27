@@ -131,9 +131,11 @@ interface AgentState {
 }
 
 
-export const useAgentStore = create<AgentState>((set, get) => ({
+export const useAgentStore = create<AgentState>((set, get) => {
+  const initialCanonical = useLocationStore.getState().currentLocation;
+  return {
   messages: [],
-  activeLocation: null,
+  activeLocation: initialCanonical,
   activeLayers: {
     traffic: true,
     aqi: false,
@@ -143,7 +145,7 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   aqiOverlayData: null,
   toolActivities: [],
   isProcessing: false,
-  mapCenter: null,
+  mapCenter: initialCanonical ? { lat: initialCanonical.latitude, lng: initialCanonical.longitude } : null,
   mapZoom: 12,
 
   activeForecast: null,
@@ -264,10 +266,14 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   setActiveLocation: (loc) => {
     set((state) => ({
       activeLocation: loc,
+      mapCenter: loc ? { lat: loc.latitude, lng: loc.longitude } : state.mapCenter,
       nexusContextVersion: state.nexusContextVersion + 1,
     }));
     if (loc) {
-      useLocationStore.getState().setCurrentLocation(loc);
+      const curr = useLocationStore.getState().currentLocation;
+      if (!curr || curr.latitude !== loc.latitude || curr.longitude !== loc.longitude || curr.city !== loc.city) {
+        useLocationStore.getState().setCurrentLocation(loc);
+      }
     }
   },
 
@@ -282,16 +288,19 @@ export const useAgentStore = create<AgentState>((set, get) => ({
 
   clearMessages: () => set({ messages: [], toolActivities: [] }),
 
-  resetContext: () =>
+  resetContext: () => {
+    const canonical = useLocationStore.getState().currentLocation;
     set({
       messages: [],
-      activeLocation: null,
+      activeLocation: canonical,
+      mapCenter: canonical ? { lat: canonical.latitude, lng: canonical.longitude } : null,
       toolActivities: [],
       aqiOverlayData: null,
       activeRanking: null,
       showRankedMarkers: false,
       activeLayers: { traffic: true, aqi: false, events: true, boundary: true },
-    }),
+    });
+  },
 
   sendMessage: async (query: string) => {
     const q = query.trim();
@@ -484,7 +493,10 @@ export const useAgentStore = create<AgentState>((set, get) => ({
 
       // Update location context if new location was resolved
       if (res.location) {
-        set({ activeLocation: res.location });
+        set({
+          activeLocation: res.location,
+          mapCenter: { lat: res.location.latitude, lng: res.location.longitude },
+        });
         useLocationStore.getState().setCurrentLocation(res.location);
       }
 
@@ -523,4 +535,33 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       set({ isProcessing: false });
     }
   },
-}));
+  };
+});
+
+// Synchronize useAgentStore (activeLocation + mapCenter) whenever useLocationStore.currentLocation changes
+if (typeof window !== 'undefined') {
+  window.addEventListener('up:canonical-location-changed', (evt: Event) => {
+    const nextLoc = (evt as CustomEvent<ResolvedLocation>).detail;
+    if (!nextLoc || (nextLoc.latitude === 0 && nextLoc.longitude === 0)) return;
+    const agentState = useAgentStore.getState();
+    const cur = agentState.activeLocation;
+    const curCenter = agentState.mapCenter;
+    const coordsChanged =
+      !cur ||
+      cur.latitude !== nextLoc.latitude ||
+      cur.longitude !== nextLoc.longitude ||
+      cur.city !== nextLoc.city ||
+      !curCenter ||
+      curCenter.lat !== nextLoc.latitude ||
+      curCenter.lng !== nextLoc.longitude;
+
+    if (coordsChanged) {
+      useAgentStore.setState((state) => ({
+        activeLocation: nextLoc,
+        mapCenter: { lat: nextLoc.latitude, lng: nextLoc.longitude },
+        nexusContextVersion: state.nexusContextVersion + 1,
+      }));
+    }
+  });
+}
+

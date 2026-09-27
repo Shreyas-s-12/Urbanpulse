@@ -23,11 +23,14 @@ export default function NexusSuggestedPrompts({
       className="nexus-scrollbar-hidden"
       style={{
         display: 'flex',
+        flexWrap: 'nowrap',
         alignItems: 'center',
         gap: '8px',
         padding: '8px 16px',
         overflowX: 'auto',
         overflowY: 'hidden',
+        minWidth: 0,
+        maxWidth: '100%',
         whiteSpace: 'nowrap',
         borderTop: '1px solid var(--border)',
         backgroundColor: 'var(--bg-header)',
@@ -52,7 +55,7 @@ export default function NexusSuggestedPrompts({
             fontSize: '11.5px',
             fontWeight: 500,
             cursor: disabled ? 'not-allowed' : 'pointer',
-            flexShrink: 0,
+            flex: '0 0 auto',
             whiteSpace: 'nowrap',
             display: 'inline-flex',
             alignItems: 'center',

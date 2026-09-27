@@ -337,22 +337,22 @@ function GoogleMapViewInner({
     onMapClickRef.current = onMapClick;
   }, [onMapClick]);
 
-  // Compute map center (Never hardcode a city default)
+  // Compute map center strictly from active canonical location
   const mapCenter = useMemo(() => {
     if (center && (center.latitude !== 0 || center.longitude !== 0)) {
       return { lat: center.latitude, lng: center.longitude };
     }
-    // Neutral global overview fallback when no location is selected yet
-    return { lat: 20.0, lng: 0.0 };
+    const storeLoc = useLocationStore.getState().currentLocation;
+    if (storeLoc && (storeLoc.latitude !== 0 || storeLoc.longitude !== 0)) {
+      return { lat: storeLoc.latitude, lng: storeLoc.longitude };
+    }
+    return { lat: 12.2958, lng: 76.6394 };
   }, [center]);
 
   const zoom = useMemo(() => {
     if (zoomOverride !== undefined) return zoomOverride;
-    if (!center || (center.latitude === 0 && center.longitude === 0)) {
-      return 2; // Wide global view
-    }
     return Math.max(5, Math.min(15, 12 - Math.log2(Math.max(radiusKm, 1) / 10)));
-  }, [radiusKm, center, zoomOverride]);
+  }, [radiusKm, zoomOverride]);
 
   // Dedicated Watchdog Timer (12s, cleanly inside 10-15s requirement)
   // Operates independently of container node presence - guarantees map can NEVER be trapped in 'loading' forever!
@@ -639,6 +639,14 @@ function GoogleMapViewInner({
                         };
 
                         setSelectedPoi(detail);
+                        useLocationStore.getState().setSelectedPOI({
+                          displayName: detail.name,
+                          latitude: detail.latitude,
+                          longitude: detail.longitude,
+                          formattedAddress: detail.address,
+                          placeId: detail.placeId,
+                          source: 'POI',
+                        });
                         onSelectPoiRef.current?.(detail);
                         return;
                       }
@@ -730,8 +738,25 @@ function GoogleMapViewInner({
     const map = mapInstanceRef.current;
     if (!map || !mapReady) return;
 
-    map.setCenter(mapCenter);
-    map.setZoom(zoom);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[UrbanPulse Map]', {
+        initialCenter: mapCenter,
+        currentActiveLocation: {
+          label: center?.displayName || center?.city || useLocationStore.getState().currentLocation?.displayName || 'Mysuru',
+          latitude: mapCenter.lat,
+          longitude: mapCenter.lng,
+          city: center?.city || useLocationStore.getState().currentLocation?.city || 'Mysuru',
+        },
+      });
+    }
+
+    try {
+      if (typeof map.panTo === 'function') {
+        map.panTo(mapCenter);
+      }
+      map.setCenter(mapCenter);
+      map.setZoom(zoom);
+    } catch (_) {}
 
     const typeMapping: Record<string, string> = {
       '2D': 'roadmap',
@@ -751,7 +776,7 @@ function GoogleMapViewInner({
         map.setHeading?.(0);
       }
     } catch (e) {}
-  }, [mapCenter, zoom, currentMode, mapReady, heading]);
+  }, [mapCenter, zoom, currentMode, mapReady, heading, center]);
 
   // Dynamically update map styles when effectiveTheme or currentMode changes
   useEffect(() => {

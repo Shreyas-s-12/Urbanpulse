@@ -388,7 +388,7 @@ class NewsService:
                 target_state,
             )
         # Default: CITY or SPECIFIC LOCATION
-        target_city = city or query or "Bengaluru"
+        target_city = city or query or "Mysuru"
         is_indian = (
             country_code == "IN"
             or country.lower() == "india"

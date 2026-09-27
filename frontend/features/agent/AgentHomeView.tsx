@@ -127,7 +127,7 @@ export default function AgentHomeView() {
   const [inputQuery, setInputQuery] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const displayLoc = activeLocation || currentLocation;
+  const displayLoc = currentLocation || activeLocation;
 
 
   // Nearby events for the active agent location
@@ -298,7 +298,17 @@ export default function AgentHomeView() {
       country: displayLoc?.country || null,
       countryCode: displayLoc?.countryCode || null,
       isUserLocation: false,
+      source: 'POI',
     };
+    useLocationStore.getState().setSelectedPOI({
+      placeId: place.placeId,
+      displayName: place.name,
+      formattedAddress: place.address || place.name,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      types: place.types || [],
+      source: 'POI',
+    });
     setActiveLocation(newLoc);
     useAgentStore.getState().setSelectedMapEntity({
       type: 'POI',
@@ -426,8 +436,12 @@ export default function AgentHomeView() {
         <div
           className="quick-action-viewport"
           style={{
-            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '0 6px',
             minWidth: 0,
+            maxWidth: '100%',
             width: '100%',
             backgroundColor: 'var(--bg-subtle)',
             borderBottom: '1px solid var(--border-subtle)',
@@ -435,119 +449,47 @@ export default function AgentHomeView() {
             boxSizing: 'border-box',
           }}
         >
-          {/* Left Scroll Control Overlay */}
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              left: 0,
-              width: '36px',
-              background: 'linear-gradient(to right, var(--scroller-gradient-start) 50%, var(--scroller-gradient-end))',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-start',
-              paddingLeft: '4px',
-              zIndex: 5,
-              pointerEvents: 'none',
-              opacity: canScrollLeft ? 1 : 0,
-              transition: 'opacity 0.2s ease',
-            }}
-          >
-            {canScrollLeft && (
-              <button
-                type="button"
-                onClick={() => scrollQuickActions('left')}
-                aria-label="Scroll actions left"
-                style={{
-                  pointerEvents: 'auto',
-                  width: '24px',
-                  height: '24px',
-                  borderRadius: '50%',
-                  backgroundColor: 'var(--bg-elevated)',
-                  border: '1px solid var(--border)',
-                  boxShadow: 'var(--shadow-xs)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'var(--text-primary)',
-                  cursor: 'pointer',
-                  padding: 0,
-                  transition: 'border-color 0.15s ease, background-color 0.15s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--accent-primary)';
-                  e.currentTarget.style.backgroundColor = 'var(--bg-card-hover)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border)';
-                  e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
-                }}
-              >
-                <ChevronLeftIcon size={14} color="var(--text-primary)" />
-              </button>
-            )}
-          </div>
-
-          {/* Right Scroll Control Overlay */}
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              right: 0,
-              width: '36px',
-              background: 'linear-gradient(to left, var(--scroller-gradient-start) 50%, var(--scroller-gradient-end))',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-end',
-              paddingRight: '4px',
-              zIndex: 5,
-              pointerEvents: 'none',
-              opacity: canScrollRight ? 1 : 0,
-              transition: 'opacity 0.2s ease',
-            }}
-          >
-            {canScrollRight && (
-              <button
-                type="button"
-                onClick={() => scrollQuickActions('right')}
-                aria-label="Scroll actions right"
-                style={{
-                  pointerEvents: 'auto',
-                  width: '24px',
-                  height: '24px',
-                  borderRadius: '50%',
-                  backgroundColor: 'var(--bg-elevated)',
-                  border: '1px solid var(--border)',
-                  boxShadow: 'var(--shadow-xs)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'var(--text-primary)',
-                  cursor: 'pointer',
-                  padding: 0,
-                  transition: 'border-color 0.15s ease, background-color 0.15s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--accent-primary)';
-                  e.currentTarget.style.backgroundColor = 'var(--bg-card-hover)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border)';
-                  e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
-                }}
-              >
-                <ChevronRightIcon size={14} color="var(--text-primary)" />
-              </button>
-            )}
-          </div>
+          {/* Left Scroll Control (non-overlapping so it never covers buttons) */}
+          {canScrollLeft && (
+            <button
+              type="button"
+              onClick={() => scrollQuickActions('left')}
+              aria-label="Scroll actions left"
+              style={{
+                flex: '0 0 auto',
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--bg-elevated)',
+                border: '1px solid var(--border)',
+                boxShadow: 'var(--shadow-xs)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                padding: 0,
+                transition: 'border-color 0.15s ease, background-color 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                e.currentTarget.style.backgroundColor = 'var(--bg-card-hover)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border)';
+                e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
+              }}
+            >
+              <ChevronLeftIcon size={14} color="var(--text-primary)" />
+            </button>
+          )}
 
           {/* QuickActionScroller */}
           <div
             ref={quickActionScrollerRef}
-            className="quick-action-scroller"
+            className="quickActions quick-action-scroller"
             style={{
+              flex: 1,
               display: 'flex',
               flexDirection: 'row',
               flexWrap: 'nowrap',
@@ -555,10 +497,8 @@ export default function AgentHomeView() {
               overflowX: 'auto',
               overflowY: 'hidden',
               minWidth: 0,
-              paddingLeft: '10px',
-              paddingRight: '10px',
-              paddingTop: '8px',
-              paddingBottom: '8px',
+              maxWidth: '100%',
+              padding: '8px 6px',
               scrollbarWidth: 'none',
               boxSizing: 'border-box',
             }}
@@ -760,23 +700,64 @@ export default function AgentHomeView() {
               <span>Mission</span>
             </button>
           </div>
+
+          {/* Right Scroll Control (non-overlapping so it never covers Compare) */}
+          {canScrollRight && (
+            <button
+              type="button"
+              onClick={() => scrollQuickActions('right')}
+              aria-label="Scroll actions right"
+              style={{
+                flex: '0 0 auto',
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--bg-elevated)',
+                border: '1px solid var(--border)',
+                boxShadow: 'var(--shadow-xs)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                padding: 0,
+                transition: 'border-color 0.15s ease, background-color 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                e.currentTarget.style.backgroundColor = 'var(--bg-card-hover)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border)';
+                e.currentTarget.style.backgroundColor = 'var(--bg-elevated)';
+              }}
+            >
+              <ChevronRightIcon size={14} color="var(--text-primary)" />
+            </button>
+          )}
         </div>
 
         {/* Nexus Event Filter Bar */}
         <div
+          className="filterRow"
           style={{
             padding: '8px 12px',
             backgroundColor: 'var(--bg-subtle)',
             borderBottom: '1px solid var(--border)',
             display: 'flex',
+            flexWrap: 'nowrap',
             alignItems: 'center',
             gap: '6px',
             overflowX: 'auto',
+            overflowY: 'hidden',
+            minWidth: 0,
+            maxWidth: '100%',
             scrollbarWidth: 'none',
             flexShrink: 0,
+            boxSizing: 'border-box',
           }}
         >
-          <span style={{ fontSize: '10.5px', fontWeight: 750, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', flexShrink: 0 }}>
+          <span style={{ fontSize: '10.5px', fontWeight: 750, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', flex: '0 0 auto', whiteSpace: 'nowrap' }}>
             FILTER:
           </span>
           {(['ALL', 'CRIME', 'WEATHER', 'TRAFFIC', 'HAZARD', 'MUNICIPAL', 'LIVE', 'RECENT', 'FORECAST', 'ALERTS'] as const).map((filterOpt) => {
@@ -801,7 +782,7 @@ export default function AgentHomeView() {
                   backgroundColor: isSelected ? 'var(--button)' : 'var(--bg-card)',
                   color: isSelected ? 'var(--button-foreground)' : 'var(--text-secondary)',
                   cursor: 'pointer',
-                  flexShrink: 0,
+                  flex: '0 0 auto',
                   whiteSpace: 'nowrap',
                   transition: 'all 0.15s ease',
                 }}
@@ -973,18 +954,7 @@ export default function AgentHomeView() {
           )}
 
           <GoogleMapView
-            center={
-              mapCenter
-                ? {
-                    latitude: mapCenter.lat,
-                    longitude: mapCenter.lng,
-                    city: displayLoc?.city || null,
-                    country: displayLoc?.country || null,
-                    displayName: displayLoc?.displayName || '',
-                    isUserLocation: false,
-                  }
-                : displayLoc
-            }
+            center={displayLoc}
             radiusKm={selectedRadiusKm}
             events={activeLayers.events ? events : []}
             layers={{

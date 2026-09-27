@@ -751,11 +751,31 @@ async def get_anomalies(
     return await AnomalyDetectionService.detect_anomalies(
         coords.latitude, coords.longitude, city=city
     )
+@router.get("/intelligence/scenario-categories")
+async def get_scenario_categories():
+    """
+    Returns all registered scenario categories in the Generalized Scenario Intelligence Engine,
+    including their 4-factor impact models, comparison dimensions, evidence sources, and recommended live feeds.
+    """
+    from app.services.scenario import ScenarioRegistry
+    return {"categories": ScenarioRegistry.list_categories()}
+
+
+@router.post("/intelligence/scenario-analyze")
+async def analyze_generalized_scenario(req: Dict[str, Any]):
+    """
+    Executes the Generalized UrbanPulse Scenario Intelligence Engine for any natural language
+    or structured scenario request across all 16 supported categories.
+    """
+    from app.services.scenario_engine import ScenarioEngineService
+    return await ScenarioEngineService.analyze_scenario(**req) if "query" in req and "latitude" not in req else await ScenarioEngineService.simulate_scenario(req)
+
+
 @router.post("/intelligence/simulate")
 async def simulate_scenario(req: Dict[str, Any]):
     """
-    Runs deterministic urban scenario simulations (heavy rain, closures, surges).
-    Explicitly labeled as SIMULATION with assumptions and uncertainty intervals.
+    Runs deterministic urban scenario simulations and generalized scenario intelligence analysis.
+    Explicitly labeled as SIMULATION with evidence separation, 4-factor model, and uncertainty intervals.
     """
     from app.services.scenario_engine import ScenarioEngineService
     return await ScenarioEngineService.simulate_scenario(req)
@@ -1225,7 +1245,7 @@ async def run_scenario_simulation(payload: ResearchScenarioRequest):
 
 @router.get("/intelligence/evaluation")
 async def get_evaluation_and_ablation(
-    geography: str = Query("Bengaluru"),
+    geography: str = Query("Mysuru"),
     time_window: str = Query("7D"),
 ):
     """

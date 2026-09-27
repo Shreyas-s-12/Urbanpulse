@@ -21,12 +21,19 @@ interface NexusAssistantMessageProps {
 export default function NexusAssistantMessage({ msg }: NexusAssistantMessageProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Detect location clarification pattern
+  const isScenarioMsg =
+    msg.intent === 'SIMULATE' ||
+    msg.intent === 'SCENARIO_ANALYSIS' ||
+    msg.structuredResponse?.type === 'SCENARIO' ||
+    Boolean(msg.data?.scenario);
+
+  // Detect location clarification pattern (never trigger for valid SCENARIO responses)
   const isClarification =
-    msg.intent === 'CLARIFICATION' ||
-    msg.content?.toLowerCase().includes("couldn't identify the specific location") ||
-    msg.content?.toLowerCase().includes('please name a city, address') ||
-    msg.content?.toLowerCase().includes('location clarification');
+    !isScenarioMsg &&
+    (msg.intent === 'CLARIFICATION' ||
+      msg.content?.toLowerCase().includes("couldn't identify the specific location") ||
+      msg.content?.toLowerCase().includes('please name a city, address') ||
+      msg.content?.toLowerCase().includes('location clarification'));
 
   const hasSupportingData = Boolean(
     (msg.sources && msg.sources.length > 0) ||
@@ -42,6 +49,7 @@ export default function NexusAssistantMessage({ msg }: NexusAssistantMessageProp
         alignItems: 'flex-start',
         width: '100%',
         maxWidth: '100%',
+        minWidth: 0,
         background: 'transparent',
         border: 'none',
         padding: 0,
@@ -51,6 +59,18 @@ export default function NexusAssistantMessage({ msg }: NexusAssistantMessageProp
       {/* 1. Location Clarification State */}
       {isClarification ? (
         <NexusLocationClarification content={msg.content} confidence={msg.confidence} />
+      ) : isScenarioMsg ? (
+        <NexusScenarioResponse
+          response={
+            msg.structuredResponse || {
+              type: 'SCENARIO',
+              title: msg.data?.scenario?.scenarioTitle || 'Scenario Analysis',
+              summary: '',
+              metadata: msg.data?.scenario,
+            }
+          }
+          data={msg.data}
+        />
       ) : /* 2. Structured Responses */
       msg.structuredResponse?.type === 'CURRENT_STATUS' ? (
         <NexusConditionResponse response={msg.structuredResponse} data={msg.data} />

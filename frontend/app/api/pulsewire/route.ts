@@ -328,7 +328,7 @@ export async function GET(req: NextRequest) {
     locationLabel = targetState;
   } else {
     // CITY
-    const targetCity = city || query || 'Bengaluru';
+    const targetCity = city || query || 'Mysuru';
     const isIndian = countryCode === 'IN' || country.toLowerCase() === 'india' || ['bengaluru', 'bangalore', 'mysuru', 'delhi', 'mumbai', 'chennai', 'hyderabad', 'kolkata', 'pune'].includes(targetCity.toLowerCase());
     const regionParam = isIndian ? '&hl=en-IN&gl=IN&ceid=IN:en' : '&hl=en-US&gl=US&ceid=US:en';
     feedUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(targetCity)}+when:24h${regionParam}`;

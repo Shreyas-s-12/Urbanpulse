@@ -29,6 +29,99 @@ export function haversineDistanceMeters(lat1: number, lon1: number, lat2: number
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
+
+export const CANONICAL_DEFAULT_LOCATION: ResolvedLocation = {
+  latitude: 12.2958,
+  longitude: 76.6394,
+  city: 'Mysuru',
+  district: 'Mysuru',
+  state: 'Karnataka',
+  region: 'Karnataka',
+  country: 'India',
+  countryCode: 'IN',
+  timezone: 'Asia/Kolkata',
+  displayName: 'Mysuru, Karnataka, India',
+  name: 'Mysuru',
+  isUserLocation: false,
+  source: 'DEFAULT' as any,
+};
+
+function getInitialCanonicalLocation(): ResolvedLocation {
+  if (typeof window === 'undefined') {
+    return CANONICAL_DEFAULT_LOCATION;
+  }
+  try {
+    // Priority 1/2: URL query parameters if present
+    const params = new URLSearchParams(window.location.search);
+    const qLat = params.get('lat');
+    const qLng = params.get('lng');
+    const qCity = params.get('city') || params.get('location');
+    if (qLat && qLng) {
+      const latNum = parseFloat(qLat);
+      const lngNum = parseFloat(qLng);
+      if (!Number.isNaN(latNum) && !Number.isNaN(lngNum) && (latNum !== 0 || lngNum !== 0)) {
+        return {
+          latitude: latNum,
+          longitude: lngNum,
+          city: qCity || `${latNum.toFixed(4)}°N`,
+          displayName: qCity || `Location (${latNum.toFixed(4)}, ${lngNum.toFixed(4)})`,
+          country: 'India',
+          countryCode: 'IN',
+          timezone: 'Asia/Kolkata',
+          isUserLocation: false,
+          source: 'URL' as any,
+        };
+      }
+    }
+
+    // Priority 4: Existing saved canonical location in localStorage
+    const savedRaw = localStorage.getItem('up_active_canonical_location');
+    if (savedRaw) {
+      const parsed = JSON.parse(savedRaw);
+      if (
+        parsed &&
+        typeof parsed.latitude === 'number' &&
+        typeof parsed.longitude === 'number' &&
+        (parsed.latitude !== 0 || parsed.longitude !== 0)
+      ) {
+        return parsed as ResolvedLocation;
+      }
+    }
+  } catch {}
+
+  // Priority 5: Application's configured default location (Mysuru 12.2958, 76.6394)
+  return CANONICAL_DEFAULT_LOCATION;
+}
+
+export function syncLocationObservers(nextLoc: ResolvedLocation, prevLoc?: ResolvedLocation | null): void {
+  if (typeof window === 'undefined' || !nextLoc) return;
+  try {
+    if (nextLoc.latitude !== 0 || nextLoc.longitude !== 0) {
+      localStorage.setItem('up_active_canonical_location', JSON.stringify(nextLoc));
+    }
+  } catch {}
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(
+      `[UrbanPulse Location]\nsource: ${nextLoc.source || 'CANONICAL'}\nlabel: ${nextLoc.displayName || nextLoc.city}\nlatitude: ${nextLoc.latitude}\nlongitude: ${nextLoc.longitude}`
+    );
+    if (
+      prevLoc &&
+      (prevLoc.latitude !== nextLoc.latitude ||
+        prevLoc.longitude !== nextLoc.longitude ||
+        prevLoc.city !== nextLoc.city)
+    ) {
+      console.log(
+        `[UrbanPulse Location Update]\nprevious: ${prevLoc.city || prevLoc.displayName} (${prevLoc.latitude}, ${prevLoc.longitude})\nnext: ${nextLoc.city || nextLoc.displayName} (${nextLoc.latitude}, ${nextLoc.longitude})`
+      );
+    }
+  }
+
+  try {
+    window.dispatchEvent(new CustomEvent('up:canonical-location-changed', { detail: nextLoc }));
+  } catch {}
+}
+
 function getSavedRecents(): SelectedSearchLocation[] {
   if (typeof window === 'undefined') return [];
   try {
@@ -60,6 +153,8 @@ interface LocationState {
   activeSource: LocationSource;
   currentLocation: ResolvedLocation | null; // Canonical active location for all consumers
   activeLocationContext: LocationContext | null;
+  locationStatusNotice: string | null;
+  setLocationStatusNotice: (notice: string | null) => void;
   // 4. Accuracy & Sequence Tracking (Race Condition Protection)
   locationAccuracyState: LocationAccuracyState;
   gpsAccuracyMeters: number | null;
@@ -147,20 +242,27 @@ interface LocationState {
   toggleHeatmap: () => void;
   setIsHeatmapActive: (active: boolean) => void;
 }
-export const useLocationStore = create<LocationState>((set, get) => ({
+export const useLocationStore = create<LocationState>((set, get) => {
+  const initialCanonical = getInitialCanonicalLocation();
+  return {
   currentDeviceLocation: null,
   selectedLocation: null,
   selectedPOI: null,
   mapClickLocation: null,
   lastKnownLocation: null,
-  activeLocationMode: 'DEVICE',
-  activeSource: 'BROWSER_GEOLOCATION',
-  currentLocation: null,
-  activeLocationContext: null,
+  activeLocationMode: (initialCanonical.source === 'SEARCH' ? 'SEARCH' : initialCanonical.source === 'POI' ? 'POI' : initialCanonical.source === 'MAP_CLICK' ? 'MAP_CLICK' : 'DEVICE') as ActiveLocationMode,
+  activeSource: (initialCanonical.source || 'DEFAULT') as LocationSource,
+  currentLocation: initialCanonical,
+  activeLocationContext: {
+    ...initialCanonical,
+    source: (initialCanonical.source || 'DEFAULT') as LocationSource,
+  },
+  locationStatusNotice: null,
+  setLocationStatusNotice: (notice: string | null) => set({ locationStatusNotice: notice }),
   locationAccuracyState: 'IDLE',
   gpsAccuracyMeters: null,
   gpsTimestamp: null,
-  locationSequenceNumber: 0,
+  locationSequenceNumber: 1,
   overrideBlockCount: 0,
   isLiveTracking: false,
   isStale: false,
@@ -183,6 +285,8 @@ export const useLocationStore = create<LocationState>((set, get) => ({
   confirmManualPin: () => {
     const draft = get().manualDraftCoords;
     if (!draft) return;
+    const prevLoc = get().currentLocation;
+    const nextSeq = get().locationSequenceNumber + 1;
     const resolved: ResolvedLocation = {
       latitude: draft.latitude,
       longitude: draft.longitude,
@@ -204,6 +308,7 @@ export const useLocationStore = create<LocationState>((set, get) => ({
       timestamp: Date.now(),
     };
     set({
+      locationSequenceNumber: nextSeq,
       currentLocation: resolved,
       activeLocationContext: context,
       activeLocationMode: 'MANUAL',
@@ -212,6 +317,7 @@ export const useLocationStore = create<LocationState>((set, get) => ({
       manualDraftCoords: null,
       mapFollowMode: 'EXPLORE',
     });
+    syncLocationObservers(resolved, prevLoc);
   },
   cancelPinAdjustment: () => {
     set({ isAdjustingPin: false, manualDraftCoords: null });
@@ -272,6 +378,8 @@ export const useLocationStore = create<LocationState>((set, get) => ({
   confirmManualMapLocation: () => {
     const draft = get().mapClickDraft;
     if (!draft) return;
+    const prevLoc = get().currentLocation;
+    const nextSeq = get().locationSequenceNumber + 1;
     const meta = draft.addressMetadata;
     const isAdjusted = draft.isAdjusted || draft.source === 'MANUAL_ADJUSTMENT';
     const source = isAdjusted ? 'MANUAL_ADJUSTMENT' : 'MAP_CLICK';
@@ -306,6 +414,7 @@ export const useLocationStore = create<LocationState>((set, get) => ({
       addressMetadata: meta,
     };
     set({
+      locationSequenceNumber: nextSeq,
       mapClickLocation: mapClickLoc,
       mapSelectedLocation: mapClickLoc,
       activeLocationMode: source,
@@ -316,7 +425,9 @@ export const useLocationStore = create<LocationState>((set, get) => ({
       isChoosingOnMap: false,
       mapClickDraft: null,
       mapFollowMode: 'EXPLORE',
+      locationStatusNotice: null,
     });
+    syncLocationObservers(resolved, prevLoc);
   },
   cancelMapSelection: () => {
     set({
@@ -365,6 +476,8 @@ export const useLocationStore = create<LocationState>((set, get) => ({
     });
   },
   setManualMapLocation: (coords: { latitude: number; longitude: number }, meta?: AddressMetadata) => {
+    const prevLoc = get().currentLocation;
+    const nextSeq = get().locationSequenceNumber + 1;
     const resolved: ResolvedLocation = {
       latitude: coords.latitude,
       longitude: coords.longitude,
@@ -392,13 +505,16 @@ export const useLocationStore = create<LocationState>((set, get) => ({
       addressMetadata: meta,
     };
     set({
+      locationSequenceNumber: nextSeq,
       mapClickLocation: mapClickLoc,
       activeLocationMode: 'MAP_CLICK',
       activeSource: 'MAP_CLICK',
       currentLocation: resolved,
       activeLocationContext: context,
       isChoosingOnMap: false,
+      locationStatusNotice: null,
     });
+    syncLocationObservers(resolved, prevLoc);
   },
   selectedMapPoint: null,
   comparisonLocations: [],
@@ -473,7 +589,10 @@ export const useLocationStore = create<LocationState>((set, get) => ({
       timestamp: raw.timestamp,
       status: finalState,
     };
+    const prevLoc = get().currentLocation;
+    const nextSeq = Math.max(state.locationSequenceNumber + 1, seq || 0);
     set({
+      locationSequenceNumber: nextSeq,
       currentDeviceLocation: canonicalDeviceLocation,
       lastKnownLocation: canonicalDeviceLocation,
       activeLocationMode: 'DEVICE',
@@ -484,10 +603,14 @@ export const useLocationStore = create<LocationState>((set, get) => ({
       gpsTimestamp: raw.timestamp,
       locationAccuracyState: finalState,
       isResolvingLocation: false,
+      locationStatusNotice: null,
     });
+    syncLocationObservers(resolvedObj, prevLoc);
     return true;
   },
   updateDeviceAddressMetadata: (meta: AddressMetadata) => {
+    const prevLoc = get().currentLocation;
+    let syncedLoc: ResolvedLocation | null = null;
     set((state) => {
       if (!state.currentDeviceLocation) return state;
       const updatedRaw: RawDeviceLocation = {
@@ -511,6 +634,9 @@ export const useLocationStore = create<LocationState>((set, get) => ({
         source: 'DEVICE',
         addressMetadata: meta,
       };
+      if (state.activeLocationMode === 'DEVICE') {
+        syncedLoc = updatedResolved;
+      }
       return {
         currentDeviceLocation: updatedRaw,
         ...(state.activeLocationMode === 'DEVICE'
@@ -521,6 +647,9 @@ export const useLocationStore = create<LocationState>((set, get) => ({
           : {}),
       };
     });
+    if (syncedLoc) {
+      syncLocationObservers(syncedLoc, prevLoc);
+    }
   },
   setSelectedSearchLocation: (loc: SelectedSearchLocation, seq?: number) => {
     const state = get();
@@ -528,6 +657,8 @@ export const useLocationStore = create<LocationState>((set, get) => ({
       console.log(`[UrbanPulse] Discarded stale search sequence ${seq} (current: ${state.locationSequenceNumber})`);
       return;
     }
+    const prevLoc = state.currentLocation;
+    const nextSeq = state.locationSequenceNumber + 1;
     const resolved: ResolvedLocation = {
       latitude: loc.latitude,
       longitude: loc.longitude,
@@ -547,6 +678,7 @@ export const useLocationStore = create<LocationState>((set, get) => ({
     };
     get().addRecentLocation(loc);
     set({
+      locationSequenceNumber: nextSeq,
       selectedLocation: loc,
       activeLocationMode: 'SEARCH',
       activeSource: 'SEARCH',
@@ -554,15 +686,20 @@ export const useLocationStore = create<LocationState>((set, get) => ({
       activeLocationContext: context,
       searchQuery: '',
       isSearchDrawerOpen: false,
+      locationStatusNotice: null,
     });
+    syncLocationObservers(resolved, prevLoc);
   },
   setSelectedPOI: (poi: SelectedPoiLocation) => {
+    const prevLoc = get().currentLocation;
+    const nextSeq = get().locationSequenceNumber + 1;
     const resolved: ResolvedLocation = {
       latitude: poi.latitude,
       longitude: poi.longitude,
       city: poi.displayName,
       displayName: poi.formattedAddress ? `${poi.displayName} — ${poi.formattedAddress}` : poi.displayName,
-      country: null,
+      country: prevLoc?.country || null,
+      countryCode: prevLoc?.countryCode || null,
       isUserLocation: false,
       source: 'POI',
       placeId: poi.placeId,
@@ -572,14 +709,19 @@ export const useLocationStore = create<LocationState>((set, get) => ({
       source: 'POI',
     };
     set({
+      locationSequenceNumber: nextSeq,
       selectedPOI: poi,
       activeLocationMode: 'POI',
       activeSource: 'POI',
       currentLocation: resolved,
       activeLocationContext: context,
+      locationStatusNotice: null,
     });
+    syncLocationObservers(resolved, prevLoc);
   },
   setMapClickLocation: (coords: { latitude: number; longitude: number }, meta?: AddressMetadata) => {
+    const prevLoc = get().currentLocation;
+    const nextSeq = get().locationSequenceNumber + 1;
     const mapClick: MapClickLocation = {
       latitude: coords.latitude,
       longitude: coords.longitude,
@@ -603,16 +745,21 @@ export const useLocationStore = create<LocationState>((set, get) => ({
       source: 'MAP_CLICK',
     };
     set({
+      locationSequenceNumber: nextSeq,
       mapClickLocation: mapClick,
       activeLocationMode: 'MAP_CLICK',
       activeSource: 'MAP_CLICK',
       currentLocation: resolved,
       activeLocationContext: context,
+      locationStatusNotice: null,
     });
+    syncLocationObservers(resolved, prevLoc);
   },
   switchToDeviceLocation: () => {
     const dev = get().currentDeviceLocation;
     if (!dev) return;
+    const prevLoc = get().currentLocation;
+    const nextSeq = get().locationSequenceNumber + 1;
     const resolved: ResolvedLocation = {
       latitude: dev.latitude,
       longitude: dev.longitude,
@@ -634,12 +781,15 @@ export const useLocationStore = create<LocationState>((set, get) => ({
       accuracyMeters: dev.accuracyMeters,
     };
     set({
+      locationSequenceNumber: nextSeq,
       activeLocationMode: 'DEVICE',
       activeSource: 'DEVICE',
       currentLocation: resolved,
       activeLocationContext: context,
       searchQuery: '',
+      locationStatusNotice: null,
     });
+    syncLocationObservers(resolved, prevLoc);
   },
   setIsLiveTracking: (tracking: boolean) => set({ isLiveTracking: tracking }),
   // Backward compatibility actions
@@ -709,7 +859,8 @@ export const useLocationStore = create<LocationState>((set, get) => ({
   setUnits: (units) => set({ units }),
   setIsResolvingLocation: (resolving) => set({ isResolvingLocation: resolving }),
   setSearchQuery: (searchQuery) => set({ searchQuery }),
-}));
+  };
+});
 function rawLongitude(loc: any): number {
   return loc.rawLongitude ?? loc.longitude;
 }

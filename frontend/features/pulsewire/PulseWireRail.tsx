@@ -46,7 +46,7 @@ export default function PulseWireRail() {
   const [filterQuery, setFilterQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
 
-  const activeLoc = activeLocation || currentLocation;
+  const activeLoc = currentLocation || activeLocation;
 
   // Auto-sync scope with active location changes
   useEffect(() => {
@@ -130,7 +130,7 @@ export default function PulseWireRail() {
     );
   }
 
-  const activeCityLabel = locationLabel || activeLoc?.city || 'Bengaluru';
+  const activeCityLabel = locationLabel || activeLoc?.city || activeLoc?.displayName || 'Mysuru';
   let updateCountLabel = '';
   if (status === 'LOADING') {
     updateCountLabel = 'Retrieving...';
