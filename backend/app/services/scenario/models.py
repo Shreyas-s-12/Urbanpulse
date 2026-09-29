@@ -10,32 +10,53 @@ from pydantic import BaseModel, Field
 
 
 class ScenarioCategory(str, Enum):
-    RAINFALL = "RAINFALL"
+    EARTHQUAKE = "EARTHQUAKE"
     FLOOD = "FLOOD"
-    STORM = "STORM"
+    HEAVY_RAINFALL = "HEAVY_RAINFALL"
+    RAINFALL = "RAINFALL"
     CYCLONE = "CYCLONE"
+    STORM = "STORM"
+    LANDSLIDE = "LANDSLIDE"
+    WILDFIRE = "WILDFIRE"
     EXTREME_HEAT = "EXTREME_HEAT"
     DROUGHT = "DROUGHT"
-    LANDSLIDE = "LANDSLIDE"
-    EARTHQUAKE = "EARTHQUAKE"
-    WILDFIRE = "WILDFIRE"
+    TSUNAMI = "TSUNAMI"
+    EXTREME_WIND = "EXTREME_WIND"
+    AIR_POLLUTION = "AIR_POLLUTION"
+    AIR_QUALITY_EVENT = "AIR_QUALITY_EVENT"
+    WATER_SHORTAGE = "WATER_SHORTAGE"
     WATER_LEVEL_RISE = "WATER_LEVEL_RISE"
     COASTAL_INUNDATION = "COASTAL_INUNDATION"
     STORM_SURGE = "STORM_SURGE"
-    AIR_QUALITY_EVENT = "AIR_QUALITY_EVENT"
-    EXTREME_WIND = "EXTREME_WIND"
     ROAD_DISRUPTION = "ROAD_DISRUPTION"
+    INFRASTRUCTURE_FAILURE = "INFRASTRUCTURE_FAILURE"
+    POWER_OUTAGE = "POWER_OUTAGE"
     OTHER = "OTHER"
 
 
 class EvidenceType(str, Enum):
+    OBSERVED = "OBSERVED"
+    HISTORICAL = "HISTORICAL"
+    FORECAST = "FORECAST"
+    MODEL_DERIVED = "MODEL_DERIVED"
+    SCENARIO_ASSUMPTION = "SCENARIO_ASSUMPTION"
+    INFERENCE = "INFERENCE"
+    OFFICIAL_ALERT = "OFFICIAL_ALERT"
+    UNKNOWN_INSUFFICIENT = "UNKNOWN / INSUFFICIENT"
+    # Backward-compatible aliases
     HISTORICAL_EVIDENCE = "HISTORICAL EVIDENCE"
     MODEL_DERIVED_PREDICTION = "MODEL-DERIVED PREDICTION"
     CURRENT_OBSERVATION = "CURRENT OBSERVATION"
-    FORECAST = "FORECAST"
     ASSUMPTION = "ASSUMPTION"
-    INFERENCE = "INFERENCE"
     UNKNOWN_INSUFFICIENT_DATA = "UNKNOWN / INSUFFICIENT DATA"
+
+
+class UserRole(str, Enum):
+    CITIZEN = "CITIZEN"
+    EMERGENCY_RESPONDER = "EMERGENCY_RESPONDER"
+    MUNICIPAL_OFFICIAL = "MUNICIPAL_OFFICIAL"
+    URBAN_PLANNER = "URBAN_PLANNER"
+    GENERAL_USER = "GENERAL_USER"
 
 
 class ConfidenceLevel(str, Enum):
@@ -73,6 +94,8 @@ class ResolvedLocation(BaseModel):
 class ScenarioContext(BaseModel):
     intent: str = "SCENARIO_ANALYSIS"
     scenarioType: ScenarioCategory = ScenarioCategory.OTHER
+    situation: str = "OTHER"
+    scenario: str = "HYPOTHETICAL_SCENARIO"
     location: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
@@ -88,6 +111,8 @@ class ScenarioContext(BaseModel):
     targetDate: Optional[str] = None
     targetYear: Optional[int] = None
     radius: float = 5.0
+    parameters: Dict[str, Any] = Field(default_factory=dict)
+    userRole: str = UserRole.GENERAL_USER.value
     assumptions: List[str] = Field(default_factory=list)
 
 
@@ -96,10 +121,13 @@ class ScenarioDefinition(BaseModel):
     rawQuery: Optional[str] = None
     scenarioType: ScenarioCategory = ScenarioCategory.OTHER
     legacyScenarioType: str = "other"
+    situation: str = "OTHER"
+    scenario: str = "HYPOTHETICAL_SCENARIO"
     location: Optional[str] = None
     resolvedLocation: Optional[ResolvedLocation] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    parameters: Dict[str, Any] = Field(default_factory=dict)
     intensity: Optional[float] = None
     unit: Optional[str] = None
     displayIntensity: Optional[str] = None
@@ -114,13 +142,20 @@ class ScenarioDefinition(BaseModel):
     startTime: Optional[str] = None
     targetDate: Optional[str] = None
     targetYear: Optional[int] = None
+    requestedTime: Optional[str] = None
+    requestedYear: Optional[int] = None
     previousYear: Optional[int] = None
     historicalWindowYears: List[int] = Field(default_factory=list)
     radius: float = 5.0
+    requestedOutputs: List[str] = Field(default_factory=list)
+    userRole: str = UserRole.GENERAL_USER.value
+    evidenceRequirements: List[str] = Field(default_factory=list)
+    isHypothetical: bool = True
     isFollowUp: bool = False
     locationSource: str = "EXPLICIT_QUERY"  # EXPLICIT_QUERY | SELECTED_MAP_POI | ACTIVE_CONTEXT | UNRESOLVED
     additionalParameters: Dict[str, Any] = Field(default_factory=dict)
     missingInformation: List[str] = Field(default_factory=list)
+    isSufficient: bool = True
 
 
 class EvidenceStatement(BaseModel):
@@ -195,3 +230,27 @@ class UncertaintyReport(BaseModel):
     missingData: List[str] = Field(default_factory=list)
     recommendedRealtimeInputs: List[str] = Field(default_factory=list)
     majorPredictionConfidences: Dict[str, ConfidenceLevel] = Field(default_factory=dict)
+
+
+class RoleRecommendations(BaseModel):
+    citizen: Dict[str, Any]
+    emergencyResponder: Dict[str, Any]
+    municipalOfficial: Dict[str, Any]
+    urbanPlanner: Dict[str, Any]
+    generalUser: Dict[str, Any]
+
+
+class ScenarioEvaluationRecord(BaseModel):
+    evaluationId: str
+    scenarioCategory: str
+    location: str
+    coordinates: Dict[str, float]
+    inputs: Dict[str, Any]
+    selectedTools: List[str]
+    retrievedEvidence: List[Dict[str, Any]]
+    modelVersion: str = "2.0-Generalized"
+    generatedOutputs: Dict[str, Any]
+    uncertainty: Dict[str, Any]
+    timestamps: Dict[str, str]
+    sourceProvenance: List[Dict[str, Any]]
+

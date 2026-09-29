@@ -31,6 +31,11 @@ export const NexusScenarioResponse: React.FC<NexusScenarioResponseProps> = ({ re
   const affectedRoads: any[] = meta.affectedRoads || reportSections.AFFECTED_INFRASTRUCTURE?.affectedRoads || [];
   const assumptions: string[] = meta.assumptions || [];
   const dataSources: any[] = meta.dataSources || reportSections.DATA_SOURCES || response.sources || [];
+  const roleRec = meta.roleRecommendations || reportSections.ROLE_RECOMMENDATIONS || {};
+  const isHypothetical = meta.isHypothetical || Boolean(meta.hypotheticalDisclaimer);
+  const disclaimerText =
+    meta.hypotheticalDisclaimer ||
+    'This is a hypothetical scenario. UrbanPulse does NOT predict the occurrence of earthquakes, cyclones, or extreme disasters.';
 
   const scenarioDisplay =
     scenBlock.displayName ||
@@ -103,6 +108,32 @@ export const NexusScenarioResponse: React.FC<NexusScenarioResponseProps> = ({ re
           CONFIDENCE: {confidenceLevel} ({confidencePct}%)
         </span>
       </div>
+
+      {/* Prominent Hypothetical Disclaimer Banner */}
+      {isHypothetical && (
+        <div
+          style={{
+            padding: '8px 10px',
+            borderRadius: '8px',
+            backgroundColor: '#FEF2F2',
+            border: '1px solid #FCA5A5',
+            color: '#991B1B',
+            fontSize: '11px',
+            lineHeight: 1.45,
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '8px',
+          }}
+        >
+          <span style={{ fontSize: '13px', lineHeight: 1 }}>⚠️</span>
+          <div>
+            <strong style={{ display: 'block', fontWeight: 700, color: '#7F1D1D', marginBottom: '2px' }}>
+              HYPOTHETICAL DISASTER SCENARIO
+            </strong>
+            <span>{disclaimerText}</span>
+          </div>
+        </div>
+      )}
 
       {/* Structured Scenario Header Grid (Section 14) */}
       <div
@@ -343,6 +374,76 @@ export const NexusScenarioResponse: React.FC<NexusScenarioResponseProps> = ({ re
           {confBlock.rationale && (
             <div style={{ color: 'var(--text-muted)', marginTop: '2px' }}>{confBlock.rationale}</div>
           )}
+        </div>
+      )}
+
+      {/* Role-Aware Decision Support */}
+      {roleRec && Object.keys(roleRec).length > 0 && (
+        <div
+          style={{
+            padding: '8px 10px',
+            borderRadius: '8px',
+            backgroundColor: 'var(--bg-surface-secondary)',
+            border: '1px solid var(--border-subtle)',
+            fontSize: '11px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: '10.5px', fontWeight: 800, color: 'var(--text-primary)' }}>
+              ROLE-AWARE ACTION GUIDANCE
+            </span>
+            <span
+              style={{
+                fontSize: '9.5px',
+                fontWeight: 700,
+                padding: '1px 6px',
+                borderRadius: '4px',
+                backgroundColor: 'var(--badge-info-bg, #EFF6FF)',
+                color: 'var(--badge-info-text, #1D4ED8)',
+                border: '1px solid var(--badge-info-border, #BFDBFE)',
+              }}
+            >
+              DECISION SUPPORT
+            </span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '6px' }}>
+            {roleRec.citizen?.recommendedActions && (
+              <div style={{ padding: '6px 8px', borderRadius: '6px', backgroundColor: 'var(--assistant-card-bg)', border: '1px solid var(--border-subtle)' }}>
+                <strong style={{ color: 'var(--accent-primary)', display: 'block', marginBottom: '2px', fontSize: '10.5px' }}>👤 Citizen / Resident</strong>
+                {roleRec.citizen.recommendedActions.slice(0, 2).map((act: string, idx: number) => (
+                  <div key={idx} style={{ color: 'var(--text-secondary)', fontSize: '10px' }}>• {act}</div>
+                ))}
+              </div>
+            )}
+            {roleRec.emergencyResponder?.operationalPriorities && (
+              <div style={{ padding: '6px 8px', borderRadius: '6px', backgroundColor: 'var(--assistant-card-bg)', border: '1px solid var(--border-subtle)' }}>
+                <strong style={{ color: '#DC2626', display: 'block', marginBottom: '2px', fontSize: '10.5px' }}>🚨 Emergency Responder</strong>
+                {roleRec.emergencyResponder.operationalPriorities.slice(0, 2).map((act: string, idx: number) => (
+                  <div key={idx} style={{ color: 'var(--text-secondary)', fontSize: '10px' }}>• {act}</div>
+                ))}
+              </div>
+            )}
+            {roleRec.municipalOfficial?.civicProtocols && (
+              <div style={{ padding: '6px 8px', borderRadius: '6px', backgroundColor: 'var(--assistant-card-bg)', border: '1px solid var(--border-subtle)' }}>
+                <strong style={{ color: '#D97706', display: 'block', marginBottom: '2px', fontSize: '10.5px' }}>🏛️ Municipal Official</strong>
+                {roleRec.municipalOfficial.civicProtocols.slice(0, 2).map((act: string, idx: number) => (
+                  <div key={idx} style={{ color: 'var(--text-secondary)', fontSize: '10px' }}>• {act}</div>
+                ))}
+              </div>
+            )}
+            {roleRec.urbanPlanner?.mitigationMeasures && (
+              <div style={{ padding: '6px 8px', borderRadius: '6px', backgroundColor: 'var(--assistant-card-bg)', border: '1px solid var(--border-subtle)' }}>
+                <strong style={{ color: '#2563EB', display: 'block', marginBottom: '2px', fontSize: '10.5px' }}>📐 Urban Planner</strong>
+                {roleRec.urbanPlanner.mitigationMeasures.slice(0, 2).map((act: string, idx: number) => (
+                  <div key={idx} style={{ color: 'var(--text-secondary)', fontSize: '10px' }}>• {act}</div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

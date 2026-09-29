@@ -251,8 +251,20 @@ class PredictionEngine:
             prediction_statements.append(
                 EvidenceStatement(
                     statement=(
+                        "This is a hypothetical earthquake scenario. UrbanPulse does NOT predict the occurrence of earthquakes, "
+                        "and does not invent earthquake probabilities. Seismological science cannot predict the timing or location of earthquakes. "
+                        f"The model evaluates physical consequence vulnerability for {loc_name} assuming ground shaking occurs."
+                    ),
+                    evidenceType=EvidenceType.ASSUMPTION,
+                    confidence=ConfidenceLevel.HIGH,
+                    source="UrbanPulse Scenario Disclaimer & Scientific Integrity Standard",
+                )
+            )
+            prediction_statements.append(
+                EvidenceStatement(
+                    statement=(
                         f"For a hypothetical Mw {eff_intensity:.1f} seismic event near {loc_name}, attenuation modeling projects "
-                        f"{'light tremor perception without structural damage (Mw < 4.0)' if severity_band == 'LOW_ROUTINE' else 'moderate-to-strong ground shaking across built-up sectors with potential non-structural/corridor inspection delays'}."
+                        f"{'light tremor perception without structural collapse (Mw < 4.0)' if severity_band == 'LOW_ROUTINE' else 'moderate-to-strong ground shaking across built-up sectors with potential non-structural damage, utility stress, and corridor clearance delays'}."
                     ),
                     evidenceType=EvidenceType.MODEL_DERIVED_PREDICTION,
                     confidence=ConfidenceLevel.MEDIUM,
@@ -276,6 +288,16 @@ class PredictionEngine:
 
         # Environmental Impact summary tailored to the scenario
         env_impact = cls._build_environmental_impact(cat, eff_intensity, dur_hrs, severity_band, features)
+
+        # Generate Role-Aware Recommendations
+        role_recommendations = cls._generate_role_recommendations(
+            cat=cat,
+            severity_band=severity_band,
+            features=features,
+            eff_intensity=eff_intensity,
+            spec=spec,
+            loc_name=loc_name,
+        )
 
         return {
             "effectiveIntensity": eff_intensity,
@@ -305,6 +327,7 @@ class PredictionEngine:
             },
             "fourFactors": [f.model_dump() for f in four_factors],
             "statements": [s.model_dump() for s in prediction_statements],
+            "roleRecommendations": role_recommendations,
         }
 
     @classmethod
@@ -588,3 +611,164 @@ class PredictionEngine:
             "summary": f"Modeled environmental perturbation under {cat.value} ({eff_intensity:g}) is classified as {severity_band.replace('_', ' ').lower()}.",
             "evidenceType": EvidenceType.MODEL_DERIVED_PREDICTION.value,
         }
+
+    @classmethod
+    def _generate_role_recommendations(
+        cls,
+        cat: ScenarioCategory,
+        severity_band: str,
+        features: Dict[str, Any],
+        eff_intensity: float,
+        spec: Any,
+        loc_name: str,
+    ) -> Dict[str, Any]:
+        """
+        Generates role-specific decision support tailored to the hazard category and location:
+        - CITIZEN
+        - EMERGENCY_RESPONDER
+        - MUNICIPAL_OFFICIAL
+        - URBAN_PLANNER
+        - GENERAL_USER
+        """
+        if cat == ScenarioCategory.EARTHQUAKE:
+            citizen_actions = [
+                "DROP, COVER, AND HOLD ON: If shaking occurs, immediately drop to knees, take cover under a sturdy desk or table, and protect head and neck.",
+                "Stay indoors away from exterior glass, windows, unanchored bookcases, and tall furniture until shaking stops.",
+                "Do NOT attempt to use elevators; do NOT run outside during active shaking due to falling masonry and glass debris.",
+                "Once shaking ceases, inspect your living space for gas leaks and smell of smoke; turn off main gas/breaker valves if odor or damage is detected.",
+                "Keep a battery-powered radio and emergency water (minimum 3 liters per person per day) in an easily accessible go-bag.",
+            ]
+            responder_actions = [
+                f"Establish emergency response staging areas in open spaces away from high-rise structures and potential building collapse envelopes in {loc_name}.",
+                "Prioritize rapid structural and clearance assessments along primary arterial corridors to ensure hospital and fire brigade access.",
+                "Monitor for secondary hazard escalation: ruptured gas lines, localized electrical fires, water main breaks, and damaged bridge viaducts.",
+                "Implement Urban Search and Rescue (USAR) triage protocols focusing on unreinforced masonry structures and older building stock.",
+            ]
+            municipal_actions = [
+                f"Activate Emergency Operations Center (EOC) protocols for {loc_name} to coordinate multi-agency disaster response.",
+                "Issue verified emergency broadcast advisories via SMS and sirens; combat rumors and specify designated assembly grounds.",
+                "Direct municipal electricity and water utilities to conduct emergency isolations in damaged sectors to prevent secondary fire or flood risks.",
+                "Coordinate with transit authorities to suspend metro/rail systems for mandatory track alignment and bridge span inspections.",
+            ]
+            planner_actions = [
+                f"Conduct systematic audit of building code compliance (e.g. IS 1893 seismic zoning standards) across {loc_name}'s building stock.",
+                "Prioritize structural retrofitting grants for soft-story commercial buildings, unreinforced masonry, and essential civic structures.",
+                "Update municipal microzonation maps to identify local soil amplification, high water table liquefaction zones, and slope failure pockets.",
+                "Incorporate flexible utility conduits and redundant arterial grid connectivity in master spatial redevelopment plans.",
+            ]
+        elif cat in (ScenarioCategory.RAINFALL, ScenarioCategory.FLOOD, ScenarioCategory.HEAVY_RAINFALL):
+            citizen_actions = [
+                "Move to higher ground immediately if in low-lying sectors or near unbanked drainage channels.",
+                "Never walk, swim, or drive through moving floodwaters ('Turn Around, Don't Drown') — 15 cm of moving water can knock an adult down.",
+                "Elevate critical household utilities, electrical appliances, and documents above ground floor level.",
+                "Keep emergency phone numbers (112, municipal helpline) saved offline and monitor official meteorological updates.",
+            ]
+            responder_actions = [
+                "Pre-deploy high-capacity dewatering pumps, rescue boats, and personnel to historically vulnerable underpasses and lake overflow channels.",
+                "Set up road closures and warning barriers at submerged underpasses and low-lying arterial bottlenecks.",
+                "Establish temporary medical triage centers outside the 100-year inundation floodplain envelope.",
+            ]
+            municipal_actions = [
+                "Activate round-the-clock stormwater control rooms and desilting teams at primary stormwater outfalls.",
+                "Coordinate real-time bus and traffic diversions away from waterlogged arterial intersections.",
+                "Prepare emergency relief shelters with potable water, hygiene kits, and backup power generators.",
+            ]
+            planner_actions = [
+                "Enforce buffer zones along riverbanks and lake beds, halting unauthorized reclamation and encroachment.",
+                "Upgrade municipal stormwater drainage trunk capacity to accommodate 50-year rainfall intensity baselines.",
+                "Mandate permeable pavements and decentralized rainwater percolation pits in all new commercial developments.",
+            ]
+        elif cat == ScenarioCategory.CYCLONE:
+            citizen_actions = [
+                "Secure or store loose outdoor furniture, tin roofs, and construction materials that could become high-speed airborne missiles.",
+                "Board or shutter glass windows; stay in an interior windowless room during peak cyclonic wind passage.",
+                "Charge all mobile devices and backup power banks; store 72 hours of non-perishable food and drinking water.",
+                "Heed official evacuation advisories immediately if residing in coastal low-lying or kutcha housing zones.",
+            ]
+            responder_actions = [
+                "Pre-position power-saw road clearance crews and heavy earthmovers along arterial evacuation routes to clear uprooted trees and poles.",
+                "Deploy emergency telecommunications satellite units in anticipation of coastal cellular tower failures.",
+                "Prepare storm-surge evacuation transport for vulnerable coastal fishing hamlets and informal settlements.",
+            ]
+            municipal_actions = [
+                "Issue mandatory port and beach closure directives; halt all marine operations and fishing trawler departures.",
+                "Shut down high-voltage overhead distribution lines in sectors experiencing sustained gusts >80 km/h to prevent electrocution.",
+                "Stock public shelters with emergency food rations, infant nutrition, and essential medical supplies.",
+            ]
+            planner_actions = [
+                "Transition overhead electrical and telecommunication distribution lines to underground insulated ducts in cyclone-prone corridors.",
+                "Establish mandatory coastal green belts (mangroves and shelterbelts) to attenuate storm-surge wave kinetic energy.",
+                "Enforce wind-resistant structural building codes (IS 875 Part 3) for all industrial sheds, signboards, and coastal structures.",
+            ]
+        elif cat == ScenarioCategory.EXTREME_HEAT:
+            citizen_actions = [
+                "Avoid strenuous outdoor activities between 11:00 AM and 4:00 PM when solar thermal irradiance is at its peak.",
+                "Maintain hydration by drinking water, ORS, or buttermilk frequently, even before feeling thirsty.",
+                "Wear loose, light-colored cotton clothing and cover head with a damp cloth or umbrella when outside.",
+                "Recognize early heat exhaustion symptoms (dizziness, nausea, headache, heavy sweating); seek immediate shade and cooling.",
+            ]
+            responder_actions = [
+                "Equip emergency ambulances with ice packs, intravenous saline fluids, and specialized heat-stroke cooling protocols.",
+                "Set up shaded drinking water and oral rehydration kiosks at major bus terminals, construction sites, and transit hubs.",
+            ]
+            municipal_actions = [
+                "Activate the Municipal Heat Action Plan (HAP): adjust school/construction working hours to early morning and late evening.",
+                "Coordinate with power utilities to ensure uninterruptible electricity supply to hospitals and cooling centers.",
+                "Deploy municipal water tankers to densely populated informal settlements experiencing high thermal stress.",
+            ]
+            planner_actions = [
+                "Implement cool-roof initiatives (high-albedo reflective coatings) on government, commercial, and residential buildings.",
+                "Expand urban canopy cover and vegetative shade corridors to mitigate Urban Heat Island (UHI) sensible heat accumulation.",
+                "Incorporate passive architectural ventilation and shading requirements into local municipal building bylaws.",
+            ]
+        else:
+            citizen_actions = [
+                f"Stay informed through official civic advisories regarding {spec.displayName.lower()} conditions.",
+                "Inspect personal living environment for potential vulnerabilities and maintain standard household emergency supplies.",
+                "Follow official safety instructions issued by local municipal and disaster management authorities.",
+            ]
+            responder_actions = [
+                f"Review operational contingency plans and staging protocols for {spec.displayName.lower()} scenarios.",
+                "Ensure emergency communications equipment and vehicle fleets are fully operational and fueled.",
+            ]
+            municipal_actions = [
+                f"Coordinate inter-agency monitoring between municipal departments, utilities, and emergency services for {spec.displayName.lower()}.",
+                "Keep emergency dispatch and civic helpline channels staffed and responsive.",
+            ]
+            planner_actions = [
+                f"Incorporate multi-hazard resilience and climate adaptation standards into long-term infrastructure planning.",
+                "Review critical infrastructure dependencies to eliminate single points of failure across {loc_name}.",
+            ]
+
+        return {
+            "citizen": {
+                "role": "Citizen / Resident",
+                "hazard": cat.value,
+                "posture": "PRECAUTIONARY" if severity_band == "LOW_ROUTINE" else "PROTECTIVE_ACTION",
+                "recommendedActions": citizen_actions,
+            },
+            "emergencyResponder": {
+                "role": "Emergency Responder & First Responder Teams",
+                "hazard": cat.value,
+                "readinessLevel": "STAGE_1_MONITORING" if severity_band == "LOW_ROUTINE" else "STAGE_3_RAPID_DEPLOYMENT",
+                "operationalPriorities": responder_actions,
+            },
+            "municipalOfficial": {
+                "role": "Municipal Official & City Administration",
+                "hazard": cat.value,
+                "eocActivation": "NORMAL" if severity_band == "LOW_ROUTINE" else "EOC_ACTIVATED",
+                "civicProtocols": municipal_actions,
+            },
+            "urbanPlanner": {
+                "role": "Urban Planner & Structural Engineer",
+                "hazard": cat.value,
+                "focus": "LONG_TERM_RESILIENCE",
+                "mitigationMeasures": planner_actions,
+            },
+            "generalUser": {
+                "role": "General Public / Commuter",
+                "summary": f"{spec.displayName} scenario evaluated for {loc_name}. Overall severity is classified as {severity_band.replace('_', ' ').lower()}.",
+                "keyTakeaway": citizen_actions[0] if citizen_actions else "Follow official guidance.",
+            },
+        }
+

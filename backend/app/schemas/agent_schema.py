@@ -28,6 +28,10 @@ AgentIntent = Literal[
     "MONITOR",
     "ANOMALY",
     "SIMULATE",
+    "SCENARIO_ANALYSIS",
+    "SAFETY_GUIDANCE",
+    "CURRENT_EVENT_QUERY",
+    "CURRENT_EVENT_EMERGENCY",
     "ASK_THE_MAP",
     "ACTIVITIES",
     "RISK_RADAR",
@@ -135,6 +139,8 @@ NexusResponseType = Literal[
     "LOCATION_INFO",
     "FACT",
     "GENERAL",
+    "GUIDANCE",
+    "EMERGENCY",
 ]
 
 

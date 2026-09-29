@@ -24,8 +24,16 @@ export default function NexusAssistantMessage({ msg }: NexusAssistantMessageProp
   const isScenarioMsg =
     msg.intent === 'SIMULATE' ||
     msg.intent === 'SCENARIO_ANALYSIS' ||
+    msg.intent === 'SAFETY_GUIDANCE' ||
+    msg.intent === 'CURRENT_EVENT_QUERY' ||
+    msg.intent === 'CURRENT_EVENT_EMERGENCY' ||
     msg.structuredResponse?.type === 'SCENARIO' ||
-    Boolean(msg.data?.scenario);
+    msg.structuredResponse?.type === 'GUIDANCE' ||
+    msg.structuredResponse?.type === 'EMERGENCY' ||
+    Boolean(msg.data?.scenario) ||
+    Boolean(msg.data?.safetyGuidance) ||
+    Boolean(msg.data?.emergency) ||
+    Boolean(msg.data?.currentEvent);
 
   // Detect location clarification pattern (never trigger for valid SCENARIO responses)
   const isClarification =

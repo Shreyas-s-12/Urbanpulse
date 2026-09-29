@@ -4,7 +4,7 @@ Integrates directly with the United States Geological Survey (USGS) real-time se
 Calculates local impact risk separated from scientific magnitude.
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 import httpx
 import math
 from datetime import datetime, timezone, timedelta
@@ -124,3 +124,33 @@ class EarthquakeProvider:
             pass
 
         return []
+
+    @classmethod
+    async def get_recent_earthquakes(
+        cls,
+        latitude: float,
+        longitude: float,
+        radius_km: float = 250.0,
+        days: int = 30,
+        min_magnitude: float = 1.5,
+    ) -> Dict[str, Any]:
+        """
+        Fetches recent earthquakes from USGS within radius for specified window.
+        Returns a structured dictionary with status and event list.
+        """
+        start = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d")
+        events = await cls.get_earthquakes(
+            latitude=latitude,
+            longitude=longitude,
+            radius_km=radius_km,
+            start_time=start,
+            min_magnitude=min_magnitude,
+        )
+        return {
+            "status": "AVAILABLE" if events else "NO_RECENT_EVENTS",
+            "events": events,
+            "count": len(events),
+            "daysQueried": days,
+            "radiusKm": radius_km,
+        }
+

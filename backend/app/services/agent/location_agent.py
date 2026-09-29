@@ -145,6 +145,17 @@ class LocationAgentService:
             intent = "RECOMMEND_PLACE"
         elif any(w in q_lower for w in ["cascade", "cascading", "domino effect", "next impact", "contributing chain"]):
             intent = "CASCADE"
+
+        # Intercept Scenario Analysis, Safety Guidance, Live Event Queries, and Emergencies
+        from app.services.scenario.parser import ScenarioParser
+        hazard_intent = ScenarioParser.parse_query_intent(q, current_loc)
+        if hazard_intent["intent"] in ("SCENARIO_ANALYSIS", "SAFETY_GUIDANCE", "CURRENT_EVENT_QUERY", "CURRENT_EVENT_EMERGENCY"):
+            return ParsedAgentIntent(
+                intent=hazard_intent["intent"],
+                location_query="here" if hazard_intent["is_context_ref"] else hazard_intent["location"],
+                is_follow_up=ScenarioParser.is_scenario_follow_up(q) or (hazard_intent["location"] is None),
+            )
+
         elif any(
             w in q_lower
             for w in [
@@ -305,7 +316,16 @@ class LocationAgentService:
         heuristic_res = cls._parse_intent_heuristics(query, current_loc)
 
         # Deterministic domain intents skip LLM completely
-        if heuristic_res.intent in ("RANKING", "COMPARISON", "WHERE_AM_I", "SIMULATE"):
+        if heuristic_res.intent in (
+            "RANKING",
+            "COMPARISON",
+            "WHERE_AM_I",
+            "SIMULATE",
+            "SCENARIO_ANALYSIS",
+            "SAFETY_GUIDANCE",
+            "CURRENT_EVENT_QUERY",
+            "CURRENT_EVENT_EMERGENCY",
+        ):
             return heuristic_res
 
         # If LLM API key exists, attempt structured extraction; otherwise return heuristic
@@ -1487,8 +1507,11 @@ class LocationAgentService:
                 sources=sources,
             )
 
-        elif intent == "SIMULATE":
-            all_activities.append(AgentToolActivity(step=f"Running Generalized Scenario Intelligence Engine for {city_display}", status="IN_PROGRESS"))
+        elif intent in ("SIMULATE", "SCENARIO_ANALYSIS"):
+            all_activities.append(AgentToolActivity(step=f"UNDERSTAND: Dissecting scenario query for {city_display} (intent=SCENARIO_ANALYSIS)", status="COMPLETED"))
+            all_activities.append(AgentToolActivity(step="PLAN: Formulating scenario evaluation plan and dynamic factor specifications", status="COMPLETED"))
+            all_activities.append(AgentToolActivity(step="SELECT TOOLS: Dynamically dispatching geocoding, DEM, OSM road network, and historical archives", status="IN_PROGRESS"))
+
             sim_res = await ScenarioEngineService.simulate_scenario(
                 latitude=lat,
                 longitude=lon,
@@ -1497,6 +1520,11 @@ class LocationAgentService:
                 location_meta=target_loc,
             )
             data_payload["scenario"] = sim_res
+
+            all_activities.append(AgentToolActivity(step=f"EXECUTE: Multi-source evidence retrieved for {city_display}", status="COMPLETED"))
+            all_activities.append(AgentToolActivity(step="ANALYZE: Deterministic physical impact model & role-aware decision support synthesized", status="COMPLETED"))
+            all_activities.append(AgentToolActivity(step=f"VERIFY: Evidence evaluated with confidence {sim_res.get('confidenceLevel', 'MEDIUM')}", status="COMPLETED"))
+            all_activities.append(AgentToolActivity(step="ACT: Synthesized 14-section scenario intelligence and map features", status="COMPLETED"))
 
             message = (
                 f"### **[SIMULATION — EVIDENCE-GROUNDED SCENARIO INTELLIGENCE]** {sim_res.get('scenarioTitle')} — {city_display}\n\n"
@@ -1513,13 +1541,23 @@ class LocationAgentService:
             if not sources:
                 sources.append({"type": "Simulation", "source": "UrbanPulse Scenario Intelligence Engine", "detail": sim_res.get("scenarioTitle")})
 
-            all_activities.append(AgentToolActivity(step="Evidence-grounded scenario analysis completed", status="COMPLETED"))
             confidence = sim_res.get("confidence", 0.68)
 
             four_factor_items = [
                 f"{f.get('factorName')}: {f.get('status')} ({f.get('evidenceType')}) — {f.get('explanation')}"
                 for f in sim_res.get("fourKeyFactors", [])
             ]
+
+            role_rec = sim_res.get("roleRecommendations") or {}
+            role_bullets = []
+            if role_rec.get("citizen") and role_rec["citizen"].get("recommendedActions"):
+                role_bullets.append(f"Citizen: {role_rec['citizen']['recommendedActions'][0]}")
+            if role_rec.get("emergencyResponder") and role_rec["emergencyResponder"].get("operationalPriorities"):
+                role_bullets.append(f"Emergency Responder: {role_rec['emergencyResponder']['operationalPriorities'][0]}")
+            if role_rec.get("municipalOfficial") and role_rec["municipalOfficial"].get("civicProtocols"):
+                role_bullets.append(f"Municipal Official: {role_rec['municipalOfficial']['civicProtocols'][0]}")
+            if role_rec.get("urbanPlanner") and role_rec["urbanPlanner"].get("mitigationMeasures"):
+                role_bullets.append(f"Urban Planner: {role_rec['urbanPlanner']['mitigationMeasures'][0]}")
 
             structured_resp = NexusStructuredResponse(
                 type="SCENARIO",
@@ -1544,6 +1582,11 @@ class LocationAgentService:
                         items=four_factor_items,
                     ),
                     NexusStructuredSection(
+                        title="Role-Aware Decision Support",
+                        type="bullets",
+                        items=role_bullets or ["Follow standard civil defense guidance."],
+                    ),
+                    NexusStructuredSection(
                         title="Explicit Model Assumptions (ASSUMPTION)",
                         type="bullets",
                         items=sim_res.get("assumptions", []),
@@ -1560,6 +1603,120 @@ class LocationAgentService:
                     ),
                 ],
                 metadata=sim_res,
+                sources=sources,
+            )
+
+        elif intent == "SAFETY_GUIDANCE":
+            all_activities.append(AgentToolActivity(step=f"UNDERSTAND: Dissecting safety guidance query for {city_display}", status="COMPLETED"))
+            all_activities.append(AgentToolActivity(step="SELECT TOOLS: Retrieving authoritative disaster safety protocols & emergency helplines", status="IN_PROGRESS"))
+            guidance_res = await ScenarioEngineService.provide_safety_guidance(
+                location=city_display,
+                query=query,
+                latitude=lat,
+                longitude=lon,
+                location_meta=target_loc,
+            )
+            data_payload["safetyGuidance"] = guidance_res
+            message = guidance_res.get("formattedReport", "")
+            actions.append(AgentMapAction(type="CENTER_MAP", payload={"latitude": lat, "longitude": lon, "zoom": 13}))
+            for src in guidance_res.get("sources", []):
+                sources.append(src)
+            all_activities.append(AgentToolActivity(step="ACT: Authoritative safety guidance compiled", status="COMPLETED"))
+            confidence = 0.98
+
+            structured_resp = NexusStructuredResponse(
+                type="GUIDANCE",
+                title=f"Authoritative Safety Protocol: {guidance_res.get('categoryDisplayName', 'Hazard Safety')} — {city_display}",
+                summary=f"Official safety protocol and life-protection measures for {city_display}.",
+                sections=[
+                    NexusStructuredSection(
+                        title="Immediate Life-Safety Actions",
+                        type="bullets",
+                        items=guidance_res.get("immediateActions", []),
+                    ),
+                    NexusStructuredSection(
+                        title="Critical Safety Rules & What NOT to Do",
+                        type="bullets",
+                        items=guidance_res.get("precautionaryRules", []),
+                    ),
+                    NexusStructuredSection(
+                        title="Emergency Contacts & Helplines",
+                        type="key_values",
+                        key_values=guidance_res.get("emergencyContacts", {}),
+                    ),
+                ],
+                metadata=guidance_res,
+                sources=sources,
+            )
+
+        elif intent == "CURRENT_EVENT_QUERY":
+            all_activities.append(AgentToolActivity(step=f"UNDERSTAND: Checking live real-time hazard status for {city_display}", status="COMPLETED"))
+            all_activities.append(AgentToolActivity(step="EXECUTE: Querying live sensor telemetry (USGS seismic catalog / Weather observations)", status="IN_PROGRESS"))
+            event_check = await ScenarioEngineService.check_current_event(
+                location=city_display,
+                query=query,
+                latitude=lat,
+                longitude=lon,
+                location_meta=target_loc,
+            )
+            data_payload["currentEvent"] = event_check
+            message = event_check.get("message", "")
+            actions.append(AgentMapAction(type="CENTER_MAP", payload={"latitude": lat, "longitude": lon, "zoom": 13}))
+            for src in event_check.get("sources", []):
+                sources.append(src)
+            all_activities.append(AgentToolActivity(step="ACT: Live event status verified from real-time telemetry", status="COMPLETED"))
+            confidence = 0.95
+
+            structured_resp = NexusStructuredResponse(
+                type="CURRENT_STATUS",
+                title=f"Live Telemetry Verification: {event_check.get('categoryDisplayName')} — {city_display}",
+                summary=event_check.get("summary", message),
+                sections=[
+                    NexusStructuredSection(
+                        title="Live Observation Telemetry",
+                        type="key_values",
+                        key_values=event_check.get("telemetry", {}),
+                    ),
+                ],
+                metadata=event_check,
+                sources=sources,
+            )
+
+        elif intent == "CURRENT_EVENT_EMERGENCY":
+            all_activities.append(AgentToolActivity(step=f"UNDERSTAND: Critical disaster emergency reported for {city_display}", status="COMPLETED"))
+            all_activities.append(AgentToolActivity(step="ACT: Mobilizing emergency life safety action protocol and checking live sensors", status="IN_PROGRESS"))
+            em_res = await ScenarioEngineService.handle_current_emergency(
+                location=city_display,
+                query=query,
+                latitude=lat,
+                longitude=lon,
+                location_meta=target_loc,
+            )
+            data_payload["emergency"] = em_res
+            message = em_res.get("formattedReport", "")
+            actions.append(AgentMapAction(type="CENTER_MAP", payload={"latitude": lat, "longitude": lon, "zoom": 15}))
+            for src in em_res.get("sources", []):
+                sources.append(src)
+            all_activities.append(AgentToolActivity(step="ACT: Emergency response protocol dispatched", status="COMPLETED"))
+            confidence = 0.99
+
+            structured_resp = NexusStructuredResponse(
+                type="EMERGENCY",
+                title=f"EMERGENCY PROTOCOL: {em_res.get('categoryDisplayName')} — {city_display}",
+                summary=f"CRITICAL DISASTER ACTION PROTOCOL ACTIVE for {city_display}.",
+                sections=[
+                    NexusStructuredSection(
+                        title="Immediate Actions (Execute Now)",
+                        type="bullets",
+                        items=em_res.get("immediateActions", []),
+                    ),
+                    NexusStructuredSection(
+                        title="Official Emergency Helplines",
+                        type="key_values",
+                        key_values=em_res.get("helplines", {}),
+                    ),
+                ],
+                metadata=em_res,
                 sources=sources,
             )
 

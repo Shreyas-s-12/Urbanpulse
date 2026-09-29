@@ -263,7 +263,7 @@ async def test_all_8_exact_acceptance_queries_and_followups():
 
     # Also verify LocationAgentService.process_interaction never returns LOCATION CLARIFICATION
     agent_res_1 = await LocationAgentService.process_interaction({"query": q1})
-    assert agent_res_1["intent"] == "SIMULATE"
+    assert agent_res_1["intent"] in ("SIMULATE", "SCENARIO_ANALYSIS")
     assert "couldn't identify the specific location" not in agent_res_1["message"].lower()
     assert agent_res_1["confidence"] > 0.5
     assert agent_res_1["data"].get("scenario") is not None

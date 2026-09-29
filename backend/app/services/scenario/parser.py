@@ -162,16 +162,20 @@ class ScenarioParser:
     @classmethod
     def extract_clean_location_phrase(cls, query: str) -> Tuple[Optional[str], bool]:
         """
-        Separates location phrases from scenario, intensity, duration, and temporal phrases.
+        Separates location phrases from scenario, intensity, duration, temporal, and hazard action phrases.
         Returns (extracted_location_name, is_context_reference).
-        NEVER returns 'What could happen if...' or '3 hours in Mysuru' as a location.
+        Supports:
+        - Spatial prepositions: "in Bengaluru", "around Mangalore", "across Tokyo", "for Rotterdam"
+        - Hazard action verbs: "if a cyclone hits Chennai", "earthquake strikes Delhi", "extreme heat affects Delhi"
+        - Location subject syntax: "if Bangalore experiences a major earthquake"
+        - Clean stripping of questions, durations, and temporal clauses ("right now", "today", "what should we do").
         """
         if not query or not query.strip():
             return None, False
 
         q = query.strip().rstrip("?.!,;")
 
-        # 1. Check for follow-up pattern: "What about <PlaceOrValue>?" / "How about <PlaceOrValue>?"
+        # 1. Follow-up patterns: "What about <PlaceOrValue>?" / "How about <PlaceOrValue>?"
         m_follow = re.match(
             r"^(?:and\s+)?(?:what\s+about|how\s+about)\s+(?:in|at|around|near|for)?\s*(.+)$",
             q,
@@ -179,22 +183,29 @@ class ScenarioParser:
         )
         if m_follow:
             remainder = m_follow.group(1).strip(" ?.!,;")
-            # If the remainder is purely a measurement or duration (e.g. "100 mm" or "6 hours"), it's NOT a location
             if any(p.search(remainder) for p, _ in cls._INTENSITY_PATTERNS) or cls._DURATION_PATTERN.fullmatch(remainder):
                 return None, False
             if remainder.lower() in cls._CONTEXT_LOCATION_EXPRESSIONS:
                 return None, True
             return remainder, False
 
-        # 2. Check if the query explicitly uses a context reference ("here", "near this location", "in this region")
+        # 2. Explicit context reference check
         q_lower = q.lower()
         for ctx_expr in sorted(cls._CONTEXT_LOCATION_EXPRESSIONS, key=len, reverse=True):
             if re.search(rf"\b{re.escape(ctx_expr)}\b", q_lower):
                 return None, True
 
-        # 3. Strip out duration, intensity, and relative date/year clauses BEFORE looking for location prepositions!
-        q_cleaned = q
-        # Strip duration clauses e.g. "in 3 hours", "over 6 hours", "for 3 days", "within 1 hour", "lasting 3 days"
+        # 3. Strip leading condition and inquiry clauses
+        q_cleaned = re.sub(
+            r"^(?:what\s+(?:could|would|might|can)?\s*happen\s+if|what\s+if|what\s+happens\s+if|"
+            r"what\s+should\s+(?:i|we)\s+do\s+if|how\s+(?:could|would|can|do)\s+|"
+            r"is\s+there\s+an?|did\s+an?|are\s+there|suppose|assume|simulate|analyze|predict)\s+",
+            "",
+            q,
+            flags=re.IGNORECASE,
+        )
+
+        # 4. Strip duration, intensity, year, and temporal clauses
         q_cleaned = re.sub(
             r"\b(?:in|within|over|for|lasting|during|across)\s+\d+(?:\.\d+)?\s*[- ]?(?:minute|minutes|min|mins|hour|hours|hr|hrs|h|day|days|week|weeks|month|months)\b",
             " ",
@@ -207,52 +218,204 @@ class ScenarioParser:
             q_cleaned,
             flags=re.IGNORECASE,
         )
-        # Strip year / relative time clauses e.g. "in 2028", "for 2030", "next year", "tomorrow", "next week", "next month"
         q_cleaned = re.sub(
             r"\b(?:in|for|by|during)?\s*(?:20\d{2}|next\s+year|this\s+year|next\s+month|next\s+week|tomorrow|today)\b",
             " ",
             q_cleaned,
             flags=re.IGNORECASE,
         )
-        # Strip intensity + unit clauses e.g. "50 mm", "45°C", "120 km/h", "by 2 meters"
         q_cleaned = re.sub(
             r"\b(?:by|of|to|reaches|reaching|at)?\s*[+-]?\d+(?:\.\d+)?\s*°?\s*(?:mm/hr|mm/h|mm|cm|°c|°f|celsius|fahrenheit|km/h|kmph|kph|m/s|mph|knots|meters/hour|meters|metres|meter|metre|m|litres|liters|aqi|%|magnitude|mw)\b",
             " ",
             q_cleaned,
             flags=re.IGNORECASE,
         )
-        # Normalize whitespace
+        # Strip trailing temporal words and question fragments
+        q_cleaned = re.sub(
+            r"\b(?:right\s+now|just\s+now|currently|at\s+present|today|yesterday|this\s+morning)\b",
+            " ",
+            q_cleaned,
+            flags=re.IGNORECASE,
+        )
+        q_cleaned = re.sub(
+            r"\b(?:what\s+should\s+(?:we|i)\s+do|what\s+to\s+do|what\s+can\s+(?:we|i)\s+do|please\s+advise|emergency\s+steps)\b",
+            " ",
+            q_cleaned,
+            flags=re.IGNORECASE,
+        )
         q_cleaned = re.sub(r"\s+", " ", q_cleaned).strip(" ,.?!;")
 
-        # 4. Extract trailing or embedded location phrase introduced by a spatial preposition:
-        #    "in <Location>", "around <Location>", "near <Location>", "at <Location>", "across <Location>"
-        spatial_matches = list(
-            re.finditer(
-                r"\b(?:in|around|near|at|across)\s+([A-Za-z][A-Za-z0-9\s,\-']{1,45}?)(?=\s+(?:if|when|where|during|under|with|and|or)\b|$)",
-                q_cleaned,
-            )
-        )
+        # Non-location words that should never be returned as a city/place
         non_location_terms = {
             "rainfall", "heavy rainfall", "rain", "flood", "flooding", "storm", "major storm",
             "cyclone", "heat", "extreme heat", "drought", "landslide", "earthquake", "wildfire",
             "wind", "extreme wind", "water level", "river levels", "scenario", "this scenario",
-            "risk", "vulnerability", "impact", "the impact", "areas", "roads",
+            "risk", "vulnerability", "impact", "the impact", "areas", "roads", "there", "it", "here",
+            "a major earthquake", "a cyclone", "a storm", "an earthquake", "heavy rain", "significantly",
+            "major damage", "damage", "disruption", "an event", "events", "place", "city", "region",
         }
 
+        # Pattern 1: Location as subject before action verb (e.g. "Bangalore experiences a major earthquake")
+        m_subj = re.search(
+            r"\b([A-Za-z][A-Za-z0-9\s,\-]{1,35}?)\s+(?:experiences|faces|suffers|witnesses|receives|encounters|is\s+hit\s+by|is\s+struck\s+by)\b",
+            q_cleaned,
+            re.IGNORECASE,
+        )
+        if m_subj:
+            cand = m_subj.group(1).strip(" ,.?!;")
+            cand_clean = re.sub(r"^(?:if|when|assume|that)\s+", "", cand, flags=re.IGNORECASE).strip()
+            if cand_clean.lower() not in non_location_terms and len(cand_clean) >= 2:
+                return cand_clean, False
+
+        # Pattern 2: Action verbs followed by location (e.g. "hits Chennai", "strikes Delhi", "affects Delhi", "passes near Chennai coastline")
+        verb_matches = list(
+            re.finditer(
+                r"\b(?:hits|strikes|affects|affect|impacts|impact|passes\s+near|submerges|inundates)\s+([A-Za-z][A-Za-z0-9\s,\-]{1,35}?)(?=\s+(?:if|when|where|during|under|with|and|or)\b|$)",
+                q_cleaned,
+                re.IGNORECASE,
+            )
+        )
+        if verb_matches:
+            for m in reversed(verb_matches):
+                cand = m.group(1).strip(" ,.?!;")
+                cand_low = cand.lower()
+                if cand_low in cls._CONTEXT_LOCATION_EXPRESSIONS:
+                    return None, True
+                if cand_low not in non_location_terms and len(cand) >= 2:
+                    return cand, False
+
+        # Pattern 3: Spatial prepositions (in/around/near/at/across/for <Location>)
+        spatial_matches = list(
+            re.finditer(
+                r"\b(?:in|around|near|at|across|for)\s+([A-Za-z][A-Za-z0-9\s,\-]{1,35}?)(?=\s+(?:if|when|where|during|under|with|and|or)\b|$)",
+                q_cleaned,
+                re.IGNORECASE,
+            )
+        )
         if spatial_matches:
-            # Prefer the last spatial preposition phrase (e.g., "... in Mysuru", "... around Chennai", "... in Delhi")
             for m in reversed(spatial_matches):
-                candidate = m.group(1).strip(" ,.?!;")
-                cand_low = candidate.lower()
+                cand = m.group(1).strip(" ,.?!;")
+                cand_low = cand.lower()
                 if cand_low in cls._CONTEXT_LOCATION_EXPRESSIONS:
                     return None, True
                 if cand_low not in non_location_terms and not any(
                     cand_low.startswith(prefix)
-                    for prefix in ("what ", "how ", "simulate ", "analyze ", "predict ", "assume ")
-                ):
-                    return candidate, False
+                    for prefix in ("what ", "how ", "simulate ", "analyze ", "predict ", "assume ", "is ", "did ")
+                ) and len(cand) >= 2:
+                    return cand, False
 
         return None, False
+
+    @classmethod
+    def parse_query_intent(cls, query: str, current_loc: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """
+        Classifies user query into one of 4 canonical hazard intents:
+        1. SCENARIO_ANALYSIS: Hypothetical what-if and consequence modeling
+        2. SAFETY_GUIDANCE: Authoritative safety actions and preparedness protocol
+        3. CURRENT_EVENT_QUERY: Checking whether an actual event is active/recorded right now
+        4. CURRENT_EVENT_EMERGENCY: Immediate emergency protocol for an active/just-occurred disaster
+        or returns intent='OTHER' if not a scenario/safety/hazard query.
+        """
+        q = (query or "").strip().lower()
+        clean_loc, is_ctx = cls.extract_clean_location_phrase(query)
+        cat = ScenarioRegistry.resolve_category(query)
+
+        # 1. CURRENT_EVENT_EMERGENCY
+        is_emergency = False
+        emergency_indicators = ["just happened", "just hit", "just struck", "just occurred", "emergency right now", "disaster hitting"]
+        action_asks = ["what should we do", "what to do", "what do we do", "emergency steps", "immediate action", "help us", "please advise"]
+        if any(ind in q for ind in emergency_indicators) and any(ask in q for ask in action_asks):
+            is_emergency = True
+        elif ("emergency steps" in q or "emergency protocol" in q) and any(ind in q for ind in ["just", "now", "hitting", "striking", "happening"]):
+            is_emergency = True
+
+        if is_emergency:
+            return {
+                "intent": "CURRENT_EVENT_EMERGENCY",
+                "location": clean_loc,
+                "is_context_ref": is_ctx,
+                "category": cat,
+                "situation": cat.value,
+                "scenario": f"EMERGENCY_{cat.value}",
+                "isHypothetical": False,
+            }
+
+        # 2. SAFETY_GUIDANCE
+        safety_indicators = [
+            "what should i do", "what should we do", "how do i protect", "how can i protect",
+            "how to prepare", "safety tips", "safety measures", "what to do during",
+            "how to stay safe", "safety protocol", "safety guidelines", "safety guidance",
+            "precautionary measures", "protective actions"
+        ]
+        if any(ind in q for ind in safety_indicators):
+            return {
+                "intent": "SAFETY_GUIDANCE",
+                "location": clean_loc,
+                "is_context_ref": is_ctx,
+                "category": cat,
+                "situation": cat.value,
+                "scenario": f"GUIDANCE_{cat.value}",
+                "isHypothetical": False,
+            }
+
+        # 3. CURRENT_EVENT_QUERY
+        current_query_patterns = [
+            r"\b(?:is there|did an?|are there|is it)\b.*\b(?:happen|happened|happening|hit|occurred|occur|strike|striking|active|right now|just now|today)\b",
+            r"\b(?:happening|flooding|shaking|tremor|struck)\s+in\b.*\b(?:right now|today|currently)\b",
+            r"\b(?:earthquake|tremor|quake|flood|cyclone)\s+(?:right now|today|just now|past 24 hours|recently)\b",
+            r"\b(?:is.*flooding right now|is there an earthquake right now|did an earthquake just happen)\b",
+        ]
+        if any(re.search(pat, q) for pat in current_query_patterns):
+            return {
+                "intent": "CURRENT_EVENT_QUERY",
+                "location": clean_loc,
+                "is_context_ref": is_ctx,
+                "category": cat,
+                "situation": cat.value,
+                "scenario": f"OBSERVED_{cat.value}",
+                "isHypothetical": False,
+            }
+
+        # 4. SCENARIO_ANALYSIS
+        scenario_indicators = [
+            "what could happen", "what would happen", "what happens if", "what if", "simulate", "scenario",
+            "hypothetical", "assume ", "what areas could be affected", "what roads could be disrupted",
+            "how could", "predict the impact", "experiences a", "experiences an", "if river levels rise",
+            "if rainfall reaches", "if heavy rainfall occurs", "if a cyclone passes", "if an earthquake strikes",
+            "if an earthquake hits"
+        ]
+        if any(ind in q for ind in scenario_indicators) or re.search(r"\b(?:analyze|simulate|predict)\b", q):
+            return {
+                "intent": "SCENARIO_ANALYSIS",
+                "location": clean_loc,
+                "is_context_ref": is_ctx,
+                "category": cat,
+                "situation": cat.value,
+                "scenario": f"HYPOTHETICAL_{cat.value}",
+                "isHypothetical": True,
+            }
+
+        if cls.is_scenario_follow_up(query):
+            return {
+                "intent": "SCENARIO_ANALYSIS",
+                "location": clean_loc,
+                "is_context_ref": is_ctx,
+                "category": cat,
+                "situation": cat.value,
+                "scenario": f"HYPOTHETICAL_{cat.value}",
+                "isHypothetical": True,
+            }
+
+        return {
+            "intent": "OTHER",
+            "location": clean_loc,
+            "is_context_ref": is_ctx,
+            "category": cat,
+            "situation": cat.value,
+            "scenario": cat.value,
+            "isHypothetical": False,
+        }
+
 
     @classmethod
     async def parse_and_resolve(
@@ -517,16 +680,32 @@ class ScenarioParser:
             radius_km=resolved_radius,
         )
 
-        # 8. Identify Missing Information (Section 4 & 15: Never silently invent values)
+        # Parameters dictionary with explicit UNKNOWN values for missing parameters (prompt requirement)
+        scenario_params = dict(params or {})
+        if category == ScenarioCategory.EARTHQUAKE:
+            scenario_params.setdefault("magnitude", f"{intensity:g} Mw" if intensity is not None else "UNKNOWN")
+            scenario_params.setdefault("epicenter", "UNKNOWN")
+            scenario_params.setdefault("depth", "UNKNOWN")
+            scenario_params.setdefault("time", "UNKNOWN")
+        else:
+            scenario_params.setdefault("intensity", f"{intensity:g} {unit or spec.defaultUnit}" if intensity is not None else "UNKNOWN")
+            scenario_params.setdefault("duration", display_duration or ("UNKNOWN" if duration_hours is None else f"{duration_hours:g} hours"))
+
+        # 8. Identify Missing Information (Never silently invent values; UNKNOWN parameters do NOT make scenario invalid)
         missing_info: List[str] = []
         if not resolved_loc.isResolved:
             missing_info.append(
                 "Target geographic location could not be resolved; please specify a city, landmark, or select a location on the map."
             )
         if intensity is None:
-            missing_info.append(
-                f"Scenario intensity ({spec.defaultUnit}) was not specified in the query; analysis reflects baseline susceptibility without a user-supplied intensity."
-            )
+            if category == ScenarioCategory.EARTHQUAKE:
+                missing_info.append(
+                    "Earthquake magnitude, epicenter, focal depth, and origin time are UNKNOWN / Unspecified in prompt. Analysis evaluates baseline seismic susceptibility and structural consequence modeling."
+                )
+            else:
+                missing_info.append(
+                    f"Scenario intensity ({spec.defaultUnit}) was not specified in the query; analysis reflects baseline susceptibility without a user-supplied intensity."
+                )
         if duration_hours is None and category in (
             ScenarioCategory.RAINFALL,
             ScenarioCategory.STORM,
@@ -538,15 +717,24 @@ class ScenarioParser:
                 f"Scenario duration was not specified for {spec.displayName}."
             )
 
+        situation_val = category.value
+        scenario_val = f"HYPOTHETICAL_{category.value}"
+        user_role_val = params.get("userRole") or "GENERAL_USER"
+        requested_outputs_val = params.get("requestedOutputs") or ["IMPACTS", "LIFELINES", "FACTORS", "RECOMMENDATIONS"]
+        evidence_reqs = ["HISTORICAL", "GEOSPATIAL", "INFRASTRUCTURE", "OBSERVED"]
+
         defn = ScenarioDefinition(
             intent="SCENARIO_ANALYSIS",
             rawQuery=raw_q or None,
             scenarioType=category,
             legacyScenarioType=legacy_type,
+            situation=situation_val,
+            scenario=scenario_val,
             location=resolved_loc.city or resolved_loc.displayName if resolved_loc.isResolved else explicit_query_loc,
             resolvedLocation=resolved_loc,
             latitude=resolved_loc.latitude,
             longitude=resolved_loc.longitude,
+            parameters=scenario_params,
             intensity=intensity,
             unit=unit or (spec.defaultUnit if intensity is not None else None),
             displayIntensity=display_intensity or (f"{intensity:g} {unit or spec.defaultUnit}" if intensity is not None else "Unspecified"),
@@ -561,13 +749,20 @@ class ScenarioParser:
             startTime=params.get("startTime") or params.get("date"),
             targetDate=target_date,
             targetYear=target_year,
+            requestedTime=params.get("requestedTime") or params.get("time") or target_date,
+            requestedYear=target_year,
             previousYear=previous_year,
             historicalWindowYears=historical_window_years,
             radius=resolved_radius,
+            requestedOutputs=requested_outputs_val,
+            userRole=user_role_val,
+            evidenceRequirements=evidence_reqs,
+            isHypothetical=True,
             isFollowUp=is_follow_up,
             locationSource=loc_source,
-            additionalParameters=params,
+            additionalParameters=scenario_params,
             missingInformation=missing_info,
+            isSufficient=resolved_loc.isResolved,
         )
 
         # Save to session ScenarioContext if location was resolved

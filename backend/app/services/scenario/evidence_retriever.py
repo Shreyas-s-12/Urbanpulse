@@ -209,7 +209,7 @@ class EvidenceRetriever:
         # 6. Historical Earthquake Catalog from USGS (if EARTHQUAKE scenario)
         if needs_seismic:
             try:
-                eq_data = EarthquakeProvider.get_recent_earthquakes(lat, lon, radius_km=max(250.0, radius_km * 10))
+                eq_data = await EarthquakeProvider.get_recent_earthquakes(lat, lon, radius_km=max(250.0, radius_km * 10))
                 if eq_data and eq_data.get("status") in ("AVAILABLE", "NO_RECENT_EVENTS"):
                     evidence["historicalArchive"]["seismic"] = eq_data
                     evidence["availability"]["seismicCatalog"] = True

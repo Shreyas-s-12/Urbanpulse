@@ -248,6 +248,7 @@ class ScenarioResponseGenerator:
             },
             "DATA_SOURCES": evidence.get("retrievedSources", []),
             "REAL_TIME_DATA_NEEDED": uncertainty.recommendedRealtimeInputs,
+            "ROLE_RECOMMENDATIONS": prediction.get("roleRecommendations", {}),
         }
 
         # Build formatted markdown report strictly following Section 28
@@ -331,6 +332,18 @@ class ScenarioResponseGenerator:
             "missingData": uncertainty.missingData,
             "recommendedRealtimeInputs": uncertainty.recommendedRealtimeInputs,
             "dataSources": evidence.get("retrievedSources", []),
+            "roleRecommendations": prediction.get("roleRecommendations", {}),
+            "isHypothetical": True,
+            "hypotheticalDisclaimer": (
+                "This is a hypothetical earthquake scenario. UrbanPulse does NOT predict the occurrence of earthquakes, cyclones, or extreme disasters."
+                if scenario.scenarioType == ScenarioCategory.EARTHQUAKE
+                else "This is a hypothetical scenario. UrbanPulse does NOT predict the occurrence of earthquakes, cyclones, or extreme disasters."
+            ),
+            "situation": scenario.situation,
+            "hypotheticalScenario": scenario.scenario or f"HYPOTHETICAL_{scenario.scenarioType.value}",
+            "scenarioCategory": scenario.scenarioType.value,
+            "dynamicFactors": [f.model_dump() for f in spec.dynamicFactors],
+            "requiredTools": list(spec.requiredTools),
             # Backward-Compatible Fields for Existing Frontend & Test Suites
             "baselineScore": baseline_score,
             "baseline": {
@@ -466,7 +479,37 @@ class ScenarioResponseGenerator:
             else ""
         )
 
+        role_rec = s.get("ROLE_RECOMMENDATIONS") or {}
+        role_lines = ""
+        if role_rec:
+            cit = role_rec.get("citizen", {})
+            cit_items = "\n".join(f"  - {act}" for act in cit.get("recommendedActions", []))
+            resp = role_rec.get("emergencyResponder", {})
+            resp_items = "\n".join(f"  - {act}" for act in resp.get("operationalPriorities", []))
+            muni = role_rec.get("municipalOfficial", {})
+            muni_items = "\n".join(f"  - {act}" for act in muni.get("civicProtocols", []))
+            plan = role_rec.get("urbanPlanner", {})
+            plan_items = "\n".join(f"  - {act}" for act in plan.get("mitigationMeasures", []))
+
+            role_lines = (
+                f"\n\n### 15. ROLE-AWARE DECISION SUPPORT\n"
+                f"- **Citizen / Resident ({cit.get('posture', 'PROTECTIVE')})**:\n{cit_items}\n"
+                f"- **Emergency Responder ({resp.get('readinessLevel', 'ACTIVE')})**:\n{resp_items}\n"
+                f"- **Municipal Official ({muni.get('eocActivation', 'ACTIVE')})**:\n{muni_items}\n"
+                f"- **Urban Planner & Structural Engineer ({plan.get('focus', 'RESILIENCE')})**:\n{plan_items}"
+            )
+
+        eq_disclaimer = ""
+        if scen.get("scenarioType") == "EARTHQUAKE":
+            eq_disclaimer = (
+                f"> [!IMPORTANT]\n"
+                f"> **Hypothetical Scenario**: This is a hypothetical earthquake scenario. "
+                f"UrbanPulse does NOT predict the occurrence of earthquakes and does not invent earthquake probabilities. "
+                f"The analysis models physical consequence vulnerability for {loc_display} assuming ground shaking occurs.\n\n"
+            )
+
         return (
+            f"{eq_disclaimer}"
             f"### 1. SCENARIO\n"
             f"- **Category**: `{scen['scenarioType']}` ({scen['displayName']})\n"
             f"- **Intensity**: `{scen['effectiveModeledIntensity']} {scen['unit']}` "
@@ -503,4 +546,5 @@ class ScenarioResponseGenerator:
             f"{source_lines}\n\n"
             f"### 14. REAL-TIME DATA NEEDED\n"
             f"{rt_lines}"
+            f"{role_lines}"
         )
